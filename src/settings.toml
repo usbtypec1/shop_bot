@@ -1,0 +1,22 @@
+[backup]
+backup_period = "0 0 */1 * *"
+sending_backup_period = "0 0 */1 * *"
+
+[payments]
+crypto_payments = "coinbase"
+
+[payments.qiwi]
+is_enabled = false
+payment_method = "number"
+
+[payments.yoomoney]
+is_enabled = false
+
+[payments.minerlock]
+is_enabled = false
+
+[payments.coinpayments]
+is_enabled = false
+
+[payments.coinbase]
+is_enabled = true
