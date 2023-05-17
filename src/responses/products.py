@@ -282,11 +282,6 @@ class AnotherProductQuantityResponse(base.BaseResponse):
         self.__available_quantity = available_quantity
 
     async def _send_response(self):
-        # message_text = (
-        #     '🛒 Enter the custom quantity:\n\n'
-        #     f'Minimum amount: <i>1 pc(s)</i>\n'
-        #     f'Maximum: <i>{self.__available_quantity} pc(s)</i>')
-
         message_text = (
             ' Enter a custom quantity:\n\n'
             f'Minimum amount: <i>1 pc</i>\n'
