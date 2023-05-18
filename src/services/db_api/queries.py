@@ -2,8 +2,14 @@ import decimal
 from typing import Iterable
 
 from sqlalchemy import (
-    orm, exists, select, func, delete, literal_column,
-    literal, update
+    orm,
+    exists,
+    select,
+    func,
+    delete,
+    literal_column,
+    literal,
+    update,
 )
 
 from services.db_api import schemas
