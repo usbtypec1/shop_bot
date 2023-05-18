@@ -219,8 +219,3 @@ async def add_product_unit(
             product.add_product_unit(product_unit, 'text')
     await state.update_data({'product_life_cycle': product})
     await SuccessUnitAddingResponse(message)
-
-
-import datetime
-
-datetime
