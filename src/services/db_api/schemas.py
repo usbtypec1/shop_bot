@@ -1,6 +1,3 @@
-import pathlib
-from typing import Optional
-
 import sqlalchemy
 from sqlalchemy import orm, sql
 
