@@ -1,12 +1,18 @@
+from collections.abc import Iterable
+
 import aiogram.types
 
-from keyboards.buttons import category_management_buttons, common_buttons, navigation_buttons
+from keyboards.buttons import (
+    category_management_buttons,
+    common_buttons,
+    navigation_buttons,
+)
 from keyboards.inline import callback_factories
 from services.db_api import schemas
 
 
 class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, categories: list[schemas.Category]):
+    def __init__(self, categories: Iterable[schemas.Category]):
         super().__init__(row_width=1)
         for category in categories:
             self.add(category_management_buttons.CategoryButton(category.name, category.id))
