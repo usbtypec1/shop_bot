@@ -1,5 +1,5 @@
 import sqlalchemy
-from sqlalchemy import orm, sql
+from sqlalchemy import orm, sql, UniqueConstraint
 
 from services.db_api import base
 
@@ -30,9 +30,14 @@ class User(BaseModel):
 class Category(BaseModel):
     __tablename__ = 'category'
     name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
+    icon = sqlalchemy.Column(sqlalchemy.String(255), nullable=True)
+    priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False,
+                                 unique=True)
+    are_stocks_displayed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    is_hidden = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    can_be_seen = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     subcategory = orm.relationship('Subcategory', backref='category',
                                    cascade="all, delete")
-
     product = orm.relationship('Product', backref='category',
                                cascade="all, delete")
 
@@ -40,12 +45,32 @@ class Category(BaseModel):
 class Subcategory(BaseModel):
     __tablename__ = 'subcategory'
     name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
+    icon = sqlalchemy.Column(sqlalchemy.String(255), nullable=True)
+    priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
+    are_stocks_displayed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    is_hidden = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    can_be_seen = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     category_id = sqlalchemy.Column(
         sqlalchemy.Integer,
-        sqlalchemy.ForeignKey('category.id', ondelete='CASCADE'), nullable=False
+        sqlalchemy.ForeignKey(
+            'category.id',
+            ondelete='CASCADE'
+        ),
+        nullable=False,
     )
-    product = orm.relationship('Product', backref='subcategory',
-                               cascade="all, delete")
+    product = orm.relationship(
+        'Product',
+        backref='subcategory',
+        cascade="all, delete",
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            'category_id',
+            'priority',
+            name='uq_subcategory_priority',
+        ),
+    )
 
 
 class Product(BaseModel):
