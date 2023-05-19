@@ -32,7 +32,10 @@ class Category(BaseModel):
     name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     icon = sqlalchemy.Column(sqlalchemy.String(255), nullable=True)
     priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    are_stocks_displayed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    max_displayed_stocks_count = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        nullable=False
+    )
     is_hidden = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     can_be_seen = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     subcategory = orm.relationship('Subcategory', backref='category',

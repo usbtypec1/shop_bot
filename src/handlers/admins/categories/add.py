@@ -85,46 +85,44 @@ async def on_category_priority_input(
         return
     priority = int(message.text)
     await state.update_data(priority=priority)
-    await CategoryCreateStates.are_stocks_displayed.set()
+    await CategoryCreateStates.max_displayed_stocks_count.set()
     markup = InlineKeyboardMarkup()
-    markup.add(
-        InlineKeyboardButton('Yes', callback_data='stocks-are-displayed'),
-        InlineKeyboardButton('No', callback_data='stocks-are-not-displayed'),
-    )
     await message.answer(
-        text=(
-            'Maximum Displayed Stock. Show the total number of products under'
-            ' all subcategories or under that subcategory?'
-        ),
+        text='Maximum Displayed Stock',
         reply_markup=markup,
     )
     logger.debug('Create category: step 3 - input priority', priority=priority)
 
 
-@dp.callback_query_handler(
+@dp.message_handler(
     IsUserAdmin(),
-    Text('stocks-are-displayed') | Text('stocks-are-not-displayed'),
-    state=CategoryCreateStates.are_stocks_displayed,
+    content_types=ContentType.TEXT,
+    state=CategoryCreateStates.max_displayed_stocks_count,
 )
-async def on_stocks_displayed_option_choice(
-        callback_query: CallbackQuery,
+async def on_max_displayed_stocks_count_choice(
+        message: Message,
         state: FSMContext,
 ) -> None:
-    are_stocks_displayed = callback_query.data == 'stocks-are-displayed'
-    await state.update_data(are_stocks_displayed=are_stocks_displayed)
+    if not message.text.isdigit():
+        await message.reply('It must be number')
+        return
+    max_displayed_stocks_count = int(message.text)
+    await state.update_data(
+        max_displayed_stocks_count=max_displayed_stocks_count,
+    )
     await CategoryCreateStates.is_hidden.set()
     markup = InlineKeyboardMarkup()
     markup.add(
         InlineKeyboardButton('Yes', callback_data='category-is-hidden'),
         InlineKeyboardButton('No', callback_data='category-is-not-hidden'),
     )
-    await callback_query.message.answer(
+    await message.answer(
         text='Hide this category?',
         reply_markup=markup,
     )
     logger.debug(
         'Create category: step 4 - choose stocks display option',
-        are_stocks_displayed=are_stocks_displayed,
+        max_displayed_stocks_count=max_displayed_stocks_count,
     )
 
 
@@ -164,7 +162,7 @@ async def on_can_be_seen_option_choice(
 ) -> None:
     can_be_seen = callback_query.data == 'category-can-be-seen'
     state_data = await state.get_data()
-    state_data = state_data | {'can_be_seen': can_be_seen}
+    await state.finish()
     logger.debug(
         'Create category: step 6 - choose can_be_seen option',
         can_be_seen=can_be_seen,
@@ -176,9 +174,9 @@ async def on_can_be_seen_option_choice(
             name=state_data['name'],
             icon=state_data['icon'],
             priority=state_data['priority'],
-            are_stocks_displayed=state_data['are_stocks_displayed'],
+            max_displayed_stocks_count=state_data['max_displayed_stocks_count'],
             is_hidden=state_data['is_hidden'],
-            can_be_seen=state_data['can_be_seen'],
+            can_be_seen=can_be_seen,
         )
         categories = get_all_categories(session)
     await callback_query.message.answer('✅ New category have been created')

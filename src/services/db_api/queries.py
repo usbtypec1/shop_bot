@@ -36,7 +36,7 @@ def add_category(
         session: orm.Session,
         name: str,
         priority: int,
-        are_stocks_displayed: bool,
+        max_displayed_stocks_count: int,
         is_hidden: bool,
         can_be_seen: bool,
         icon: str | None = None,
@@ -44,7 +44,7 @@ def add_category(
     category = schemas.Category(
         name=name,
         priority=priority,
-        are_stocks_displayed=are_stocks_displayed,
+        max_displayed_stocks_count=max_displayed_stocks_count,
         is_hidden=is_hidden,
         can_be_seen=can_be_seen,
         icon=icon,

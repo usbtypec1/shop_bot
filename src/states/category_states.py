@@ -6,7 +6,7 @@ class CategoryCreateStates(StatesGroup):
     name = State()
     icon = State()
     priority = State()
-    are_stocks_displayed = State()
+    max_displayed_stocks_count = State()
     is_hidden = State()
     can_be_seen = State()
 
