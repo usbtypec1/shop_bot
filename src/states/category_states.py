@@ -29,6 +29,13 @@ class SubcategoryCreateStates(StatesGroup):
     can_be_seen = State()
 
 
+class SubcategoryUpdateStates(StatesGroup):
+    name = State()
+    icon = State()
+    priority = State()
+    max_displayed_stocks_count = State()
+
+
 # TODO Delete all this crap below
 class EditCategories(state.StatesGroup):
     waiting_new_category_name = state.State()

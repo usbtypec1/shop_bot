@@ -58,7 +58,10 @@ class CategoryMenuResponse(BaseResponse):
         self.__update = update
         self.__subcategories = subcategories
         self.__category = category
-        self.__keyboard = CategoryMenuKeyboard(category_id=category.id)
+        self.__keyboard = CategoryMenuKeyboard(
+            category_id=category.id,
+            has_subcategories=bool(self.__subcategories),
+        )
 
     async def _send_response(self) -> Message:
         subcategories = [

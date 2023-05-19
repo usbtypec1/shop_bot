@@ -9,7 +9,10 @@ from keyboards.buttons import (
     navigation_buttons,
 )
 from keyboards.inline import callback_factories
-from keyboards.inline.callback_factories import CategoryUpdateCallbackData
+from keyboards.inline.callback_factories import (
+    CategoryUpdateCallbackData,
+    SubcategoryListCallbackData
+)
 from services.db_api import schemas
 
 
@@ -32,10 +35,19 @@ class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):
 
 
 class CategoryMenuKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, category_id: int):
+    def __init__(self, category_id: int, has_subcategories: bool):
         super().__init__()
         self.row(category_management_buttons.AddSubcategoriesButton(category_id))
-        self.row(category_management_buttons.EditSubcategoriesButton(category_id))
+
+        if has_subcategories:
+            self.row(
+                InlineKeyboardButton(
+                    text='✏️ Edit Subcategories',
+                    callback_data=SubcategoryListCallbackData().new(
+                        category_id=category_id,
+                    ),
+                ),
+            )
 
         buttons = (
             ('📝 Category Title', 'name'),
@@ -57,7 +69,6 @@ class CategoryMenuKeyboard(aiogram.types.InlineKeyboardMarkup):
                 ),
             )
 
-        self.row(category_management_buttons.DeleteSubcategoriesButton(category_id))
         self.row(category_management_buttons.DeleteCategoryButton(category_id))
         self.row(navigation_buttons.InlineBackButton(
             callback_query=callback_factories.CategoriesCallbackFactory().new(action='manage')),

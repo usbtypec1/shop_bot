@@ -15,7 +15,7 @@ from keyboards.inline.callback_factories import (
     CategoryCallbackFactory
 )
 from loader import dp
-from repositories.database import SubcategoryRepository
+from repositories.database import SubcategoryRepository, CategoryRepository
 from responses.category_management import (
     CategoriesResponse,
     CategoryMenuResponse
@@ -179,19 +179,22 @@ async def on_can_be_seen_option_choice(
 
     category_id: int = state_data['category_id']
 
+    category_repository = CategoryRepository(session_factory)
     subcategory_repository = SubcategoryRepository(session_factory)
     subcategory_repository.create(
         name=state_data['name'],
         icon=state_data['icon'],
         priority=state_data['priority'],
-        max_displayed_stocks_count=state_data['max_displayed_stocks_count'],
+        max_displayed_stock_count=state_data['max_displayed_stocks_count'],
         is_hidden=state_data['is_hidden'],
         can_be_seen=can_be_seen,
         category_id=category_id,
     )
     subcategories = subcategory_repository.get_by_category_id(category_id)
+    category = category_repository.get_by_id(category_id)
     await callback_query.message.answer('✅ New subcategory has been created')
     await CategoryMenuResponse(
+        category=category,
         update=callback_query.message,
         subcategories=subcategories,
     )
