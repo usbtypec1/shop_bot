@@ -4,6 +4,7 @@
 
 - Add new category creation flow.
 - Add functionality to edit category.
+- Add subcategory CRUD operations. 
 
 ## 2023-05-17
 
