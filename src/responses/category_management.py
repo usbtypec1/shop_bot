@@ -52,14 +52,13 @@ class CategoryMenuResponse(BaseResponse):
     def __init__(
             self,
             update: CallbackQuery | Message,
-            category_id: int,
-            category_name: str,
+            category: models.Category,
             subcategories: list[models.Subcategory],
     ):
         self.__update = update
         self.__subcategories = subcategories
-        self.__category_name = category_name
-        self.__keyboard = CategoryMenuKeyboard(category_id=category_id)
+        self.__category = category
+        self.__keyboard = CategoryMenuKeyboard(category_id=category.id)
 
     async def _send_response(self) -> Message:
         subcategories = [
@@ -67,8 +66,16 @@ class CategoryMenuResponse(BaseResponse):
             for i, subcategory in enumerate(self.__subcategories, start=1)
         ]
         subcategory_lines = '\n'.join(subcategories)
+        is_shown_to_users = '❌' if self.__category.is_hidden else '✅'
+        are_orders_prevented = '❌' if self.__category.can_be_seen else '✅'
+        icon = self.__category.icon or 'notset'
         message_text = (
-            f'📁 Category:\n{self.__category_name}\n\n'
+            f'📁 Category: {self.__category.name}\n'
+            f'Icon: {icon}\n'
+            f'Priority: {self.__category.priority}\n'
+            f'Max Displayed Stocks: {self.__category.max_displayed_stock_count}\n'
+            f'Shown to users: {is_shown_to_users}\n'
+            f'Orders prevented: {are_orders_prevented}\n\n'
             '🗂 Available subcategories:\n'
             f'{subcategory_lines}\n\n'
             '❗️ When deleting a category/subcategory,'

@@ -61,7 +61,6 @@ async def on_category_hidden_status_choice(
 
     await CategoryMenuResponse(
         update=callback_query,
-        category_id=category_id,
-        category_name=category.name,
+        category=category,
         subcategories=subcategories
     )

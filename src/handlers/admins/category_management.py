@@ -6,6 +6,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
 
+from repositories.database import CategoryRepository, SubcategoryRepository
 from responses.category_management import (
     SuccessAddingCategoryResponse,
     CategoriesResponse,
@@ -24,6 +25,7 @@ from keyboards.inline.callback_factories import (
 from loader import dp
 from services import db_api
 from services.db_api import queries
+from services.db_api.session import session_factory
 from states import category_states
 from states.category_states import (
     EditSubcategories, DeleteSubcategoryConfirm,
@@ -61,15 +63,17 @@ async def category_menu(
         callback_data: dict[str, str],
 ):
     category_id = int(callback_data['category_id'])
-    with db_api.create_session() as session:
-        category_name = queries.get_category(session, category_id).name
-        subcategory_list = queries.get_subcategories(session, category_id)
-        await CategoryMenuResponse(
-            update=query,
-            category_id=category_id,
-            category_name=category_name,
-            subcategories=subcategory_list,
-        )
+    category_repository = CategoryRepository(session_factory)
+    subcategory_repository = SubcategoryRepository(session_factory)
+
+    category = category_repository.get_by_id(category_id)
+    subcategories = subcategory_repository.get_by_category_id(category_id)
+
+    await CategoryMenuResponse(
+        update=query,
+        category=category,
+        subcategories=subcategories,
+    )
 
 
 @dp.callback_query_handler(

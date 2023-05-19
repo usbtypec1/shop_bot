@@ -53,7 +53,6 @@ async def on_category_priority_input(
 
     await CategoryMenuResponse(
         update=message,
-        category_id=category_id,
-        category_name=category.name,
+        category=category,
         subcategories=subcategories
     )
