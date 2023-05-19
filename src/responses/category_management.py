@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 from aiogram.types import CallbackQuery, Message
 
+import models
 from keyboards.inline.category_management_keyboards import (
     SubcategoriesForRemovalKeyboard,
     CategoryMenuKeyboard,
@@ -53,7 +54,7 @@ class CategoryMenuResponse(BaseResponse):
             update: CallbackQuery | Message,
             category_id: int,
             category_name: str,
-            subcategories: list[schemas.Subcategory],
+            subcategories: list[models.Subcategory],
     ):
         self.__update = update
         self.__subcategories = subcategories

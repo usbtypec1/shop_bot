@@ -73,57 +73,6 @@ async def category_menu(
 
 
 @dp.callback_query_handler(
-    CategoryCallbackFactory().filter(action='edit', subcategory_id=''),
-    is_admin.IsUserAdmin(),
-)
-async def edit_category(query: CallbackQuery,
-                        callback_data: dict[str, str],
-                        state: FSMContext):
-    category_id = int(callback_data['category_id'])
-    category_id = await EditCategoryResponse(
-        query=query,
-        category_id=category_id,
-    )
-    await state.update_data(category_id=category_id)
-    await category_states.EditCategories.waiting_new_category_name.set()
-
-
-@dp.message_handler(
-    is_admin.IsUserAdmin(),
-    state=category_states.EditCategories.waiting_new_category_name,
-)
-async def edit_category_name(
-        message: Message,
-        state: FSMContext,
-):
-    new_category_name = message.text.strip()
-    if not new_category_name:
-        await message.reply(
-            "The category name can't be empty. Please provide a valid name.")
-        return
-
-    async with state.proxy() as data:
-        category_id = data['category_id']
-
-    with db_api.create_session() as session:
-        queries.edit_category(session, category_id, new_category_name)
-        session.commit()
-
-    await state.finish()
-
-    await message.answer(
-        f'✅ Category {category_id} updated to: {new_category_name}')
-
-    with db_api.create_session() as session:
-        await CategoryMenuResponse(
-            update=message,
-            category_id=category_id,
-            category_name=queries.get_category(session, category_id).name,
-            subcategories=queries.get_subcategories(session, category_id),
-        )
-
-
-@dp.callback_query_handler(
     CategoryCallbackFactory().filter(action='edit_subcategory'),
     IsUserAdmin(),
 )

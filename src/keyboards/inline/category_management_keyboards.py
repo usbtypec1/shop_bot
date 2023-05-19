@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 
 import aiogram.types
+from aiogram.types import InlineKeyboardButton
 
 from keyboards.buttons import (
     category_management_buttons,
@@ -8,6 +9,7 @@ from keyboards.buttons import (
     navigation_buttons,
 )
 from keyboards.inline import callback_factories
+from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from services.db_api import schemas
 
 
@@ -34,11 +36,27 @@ class CategoryMenuKeyboard(aiogram.types.InlineKeyboardMarkup):
         super().__init__()
         self.row(category_management_buttons.AddSubcategoriesButton(category_id))
         self.row(category_management_buttons.EditSubcategoriesButton(category_id))
-        # self.row(
-        #     category_management_buttons.AddSubcategoriesButton(category_id),
-        #     category_management_buttons.EditSubcategoriesButton(category_id)
-        # )
-        self.row(category_management_buttons.EditCategoryButton(category_id))
+
+        buttons = (
+            ('📝 Category Title', 'name'),
+            ('📝 Category Icon', 'icon'),
+            ('📝 Priority', 'priority'),
+            ('📝 Max Displayed Stock', 'max-displayed-stock-count'),
+            ('📝 Hide Category', 'hidden-status'),
+            ('📝 Prevent Orders', 'can-be-seen-status'),
+        )
+
+        for text, field_to_update in buttons:
+            self.row(
+                InlineKeyboardButton(
+                    text=text,
+                    callback_data=CategoryUpdateCallbackData().new(
+                        category_id=category_id,
+                        field=field_to_update,
+                    ),
+                ),
+            )
+
         self.row(category_management_buttons.DeleteSubcategoriesButton(category_id))
         self.row(category_management_buttons.DeleteCategoryButton(category_id))
         self.row(navigation_buttons.InlineBackButton(
