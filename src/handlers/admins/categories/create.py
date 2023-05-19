@@ -1,6 +1,5 @@
 import structlog
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
 from aiogram.types import (
     Message,
     CallbackQuery,
@@ -14,10 +13,8 @@ from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import CategoriesCallbackFactory
 from loader import dp
 from responses.category_management import (
-    CategoryMenuResponse,
     CategoriesResponse
 )
-from services.db_api import create_session
 from services.db_api.queries import add_category, get_all_categories
 from services.db_api.session import session_factory
 from states.category_states import CategoryCreateStates
@@ -179,7 +176,7 @@ async def on_can_be_seen_option_choice(
             can_be_seen=can_be_seen,
         )
         categories = get_all_categories(session)
-    await callback_query.message.answer('✅ New category have been created')
+    await callback_query.message.answer('✅ New category has been created')
     await CategoriesResponse(
         update=callback_query.message,
         categories=categories,
