@@ -22,11 +22,38 @@ def add_user(session: orm.Session, telegram_id: int, username: str) -> None:
     session.merge(user)
 
 
-def add_category(session: orm.Session, name: str) -> schemas.Category:
-    category = schemas.Category(name=name)
-    session.add(category)
-    session.flush()
-    session.refresh(category)
+def shift_category_priorities(session: orm.Session, priority: int) -> None:
+    statement = (
+        update(schemas.Category)
+        .where(schemas.Category.priority >= priority)
+        .values(priority=schemas.Category.priority + 1)
+    )
+    session.execute(statement)
+
+
+def add_category(
+        *,
+        session: orm.Session,
+        name: str,
+        priority: int,
+        are_stocks_displayed: bool,
+        is_hidden: bool,
+        can_be_seen: bool,
+        icon: str | None = None,
+) -> schemas.Category:
+    category = schemas.Category(
+        name=name,
+        priority=priority,
+        are_stocks_displayed=are_stocks_displayed,
+        is_hidden=is_hidden,
+        can_be_seen=can_be_seen,
+        icon=icon,
+    )
+    with session.begin():
+        shift_category_priorities(session, priority)
+        session.add(category)
+        session.flush()
+        session.refresh(category)
     return category
 
 
@@ -40,11 +67,6 @@ def add_subcategory(
     session.flush()
     session.refresh(subcategory)
     return subcategory
-
-
-def add_categories(session: orm.Session, categories: list[str]) -> None:
-    for category_name in categories:
-        add_category(session, category_name)
 
 
 def add_subcategories(
