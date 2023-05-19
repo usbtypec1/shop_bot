@@ -115,7 +115,7 @@ class CategoryRepository(BaseRepository):
             max_displayed_stock_count: int,
     ) -> bool:
         """
-        Update the icon of a category with the given ID.
+        Update the max displayed stock count of a category with the given ID.
 
         Args:
             category_id: The ID of the category to update.
@@ -148,5 +148,45 @@ class CategoryRepository(BaseRepository):
                 logger.debug(
                     'Category repository:'
                     ' could not update max_displayed_stock_count'
+                )
+        return is_updated
+
+    def update_priority(
+            self,
+            *,
+            category_id,
+            category_priority: int,
+    ) -> bool:
+        """
+        Update the priority of a category with the given ID.
+
+        Args:
+            category_id: The ID of the category to update.
+            category_priority: Priority of the category.
+
+        Returns:
+            True if the category icon was successfully updated, False otherwise.
+        """
+        statement = (
+            update(Category)
+            .where(Category.id == category_id)
+            .values(priority=category_priority)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        is_updated = bool(result.rowcount)
+
+        with bound_contextvars(
+                category_id=category_id,
+                priority=category_priority,
+        ):
+            if is_updated:
+                logger.debug(
+                    'Category repository: priority successfully updated'
+                )
+            else:
+                logger.debug(
+                    'Category repository: could not update category priority'
                 )
         return is_updated
