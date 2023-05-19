@@ -41,7 +41,7 @@ class CategoryRepository(BaseRepository):
             can_be_seen=result.can_be_seen,
         )
 
-    def update_name(self, *, category_id, category_name: str) -> bool:
+    def update_name(self, *, category_id: int, category_name: str) -> bool:
         """
         Update the name of a category with the given ID.
 
@@ -75,7 +75,7 @@ class CategoryRepository(BaseRepository):
     def update_icon(
             self,
             *,
-            category_id,
+            category_id: int,
             category_icon: str | None = None,
     ) -> bool:
         """
@@ -111,7 +111,7 @@ class CategoryRepository(BaseRepository):
     def update_max_displayed_stock_count(
             self,
             *,
-            category_id,
+            category_id: int,
             max_displayed_stock_count: int,
     ) -> bool:
         """
@@ -154,7 +154,7 @@ class CategoryRepository(BaseRepository):
     def update_priority(
             self,
             *,
-            category_id,
+            category_id: int,
             category_priority: int,
     ) -> bool:
         """
@@ -165,7 +165,8 @@ class CategoryRepository(BaseRepository):
             category_priority: Priority of the category.
 
         Returns:
-            True if the category icon was successfully updated, False otherwise.
+            True if the category priority was successfully updated,
+            False otherwise.
         """
         statement = (
             update(Category)
@@ -188,5 +189,46 @@ class CategoryRepository(BaseRepository):
             else:
                 logger.debug(
                     'Category repository: could not update category priority'
+                )
+        return is_updated
+
+    def update_hidden_status(
+            self,
+            *,
+            category_id: int,
+            is_hidden: bool,
+    ) -> bool:
+        """
+        Update the hidden status of a category with the given ID.
+
+        Args:
+            category_id: The ID of the category to update.
+            is_hidden: Is category hidden.
+
+        Returns:
+            True if the category hidden status was successfully updated,
+            False otherwise.
+        """
+        statement = (
+            update(Category)
+            .where(Category.id == category_id)
+            .values(is_hidden=is_hidden)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        is_updated = bool(result.rowcount)
+
+        with bound_contextvars(
+                category_id=category_id,
+                is_hidden=is_hidden,
+        ):
+            if is_updated:
+                logger.debug(
+                    'Category repository: hidden status successfully updated'
+                )
+            else:
+                logger.debug(
+                    'Category repository: could not update hidden status'
                 )
         return is_updated
