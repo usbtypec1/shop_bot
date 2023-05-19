@@ -1,5 +1,5 @@
 import sqlalchemy
-from sqlalchemy import orm, sql, UniqueConstraint
+from sqlalchemy import orm, sql
 
 from services.db_api import base
 
@@ -31,8 +31,7 @@ class Category(BaseModel):
     __tablename__ = 'category'
     name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     icon = sqlalchemy.Column(sqlalchemy.String(255), nullable=True)
-    priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False,
-                                 unique=True)
+    priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
     are_stocks_displayed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     is_hidden = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     can_be_seen = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
@@ -62,14 +61,6 @@ class Subcategory(BaseModel):
         'Product',
         backref='subcategory',
         cascade="all, delete",
-    )
-
-    __table_args__ = (
-        UniqueConstraint(
-            'category_id',
-            'priority',
-            name='uq_subcategory_priority',
-        ),
     )
 
 
