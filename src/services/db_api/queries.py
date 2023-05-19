@@ -57,39 +57,6 @@ def add_category(
     return category
 
 
-def add_subcategory(
-        session: orm.Session,
-        name: str,
-        category_id: int,
-) -> schemas.Subcategory:
-    subcategory = schemas.Subcategory(name=name, category_id=category_id)
-    session.add(subcategory)
-    session.flush()
-    session.refresh(subcategory)
-    return subcategory
-
-
-def add_subcategories(
-        session: orm.Session,
-        subcategories: list[str],
-        category_id: int,
-) -> None:
-    for category_name in subcategories:
-        add_subcategory(session, category_name, category_id)
-
-
-def edit_category(
-        session: orm.Session,
-        category_id: int,
-        new_name: str,
-) -> None:
-    session.execute(
-        update(schemas.Category)
-        .where(schemas.Category.id == category_id)
-        .values(name=new_name)
-    )
-
-
 def edit_subcategory(
         session: orm.Session,
         subcategory_id: int,
