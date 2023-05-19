@@ -9,7 +9,10 @@ from .backup import dp
 from .support import dp
 from .statistics import dp
 from .shop_info import dp
-from . import categories
+from . import categories, subcategories
 
-
-__all__ = ('dp', )
+__all__ = (
+    'dp',
+    'categories',
+    'subcategories',
+)
