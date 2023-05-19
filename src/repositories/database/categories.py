@@ -13,6 +13,22 @@ logger = structlog.get_logger('app')
 
 class CategoryRepository(BaseRepository):
 
+    def get_all(self) -> list[models.Category]:
+        statement = select(Category)
+        with self._session_factory() as session:
+            result = session.scalars(statement).all()
+        return [
+            models.Category(
+                id=category.id,
+                name=category.name,
+                icon=category.icon,
+                priority=category.priority,
+                max_displayed_stock_count=category.max_displayed_stock_count,
+                is_hidden=category.is_hidden,
+                can_be_seen=category.can_be_seen,
+            ) for category in result
+        ]
+
     def get_by_id(self, category_id: int) -> models.Category:
         """
         Retrieve a category object by its ID.
