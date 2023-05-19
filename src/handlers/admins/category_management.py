@@ -6,30 +6,28 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
 
-from repositories.database import CategoryRepository, SubcategoryRepository
-from responses.category_management import (
-    SuccessAddingCategoryResponse,
-    CategoriesResponse,
-    CategoryMenuResponse,
-    EditCategoryResponse,
-    EditSubcategoryResponse,
-    SuccessRemovalCategoryResponse, AddCategoriesResponse
-)
 from filters import is_admin
 from filters.is_admin import IsUserAdmin
-from keyboards.inline import callback_factories
 from keyboards.inline.callback_factories import (
     CategoryCallbackFactory,
-    CategoriesCallbackFactory
+    CategoriesCallbackFactory,
 )
 from loader import dp
+from repositories.database import CategoryRepository, SubcategoryRepository
+from responses.category_management import (
+    CategoriesResponse,
+    CategoryMenuResponse,
+    EditSubcategoryResponse,
+    SuccessRemovalCategoryResponse,
+)
 from services import db_api
 from services.db_api import queries
 from services.db_api.session import session_factory
 from states import category_states
 from states.category_states import (
-    EditSubcategories, DeleteSubcategoryConfirm,
-    DeleteConfirm, AddSubcategories
+    EditSubcategories,
+    DeleteSubcategoryConfirm,
+    DeleteConfirm,
 )
 
 
@@ -377,52 +375,4 @@ async def process_delete_subcategory_confirm(
         await message.reply(
             f'⚠️ You have to type either yes or cancel,'
             f' or otherwise use the menu to back to the category.'
-        )
-
-
-@dp.callback_query_handler(
-    (
-            CategoryCallbackFactory().filter(
-                action='add_subcategories',
-                subcategory_id='')
-    ),
-    is_admin.IsUserAdmin(),
-)
-async def add_subcategories(
-        query: aiogram.types.CallbackQuery,
-        callback_data: dict[str, str],
-        state: FSMContext,
-):
-    await category_states.AddSubcategories.waiting_subcategory_name.set()
-    await state.update_data(category_id=int(callback_data['category_id']))
-    await AddCategoriesResponse(query)
-
-
-@dp.message_handler(
-    is_admin.IsUserAdmin(),
-    state=AddSubcategories.waiting_subcategory_name,
-)
-async def add_subcategories(
-        message: Message,
-        state: FSMContext,
-):
-    state_data = await state.get_data()
-    await state.finish()
-    category_id = state_data['category_id']
-    subcategory_names = message.text.split('\n')
-    with db_api.create_session() as session:
-        queries.add_subcategories(
-            session=session,
-            subcategories=subcategory_names,
-            category_id=category_id,
-        )
-    await SuccessAddingCategoryResponse(
-        message=message,
-        categories_quantity=len(subcategory_names),
-    )
-    with db_api.create_session() as session:
-        await CategoryMenuResponse(
-            message, category_id,
-            queries.get_category(session, category_id).name,
-            queries.get_subcategories(session, category_id)
         )
