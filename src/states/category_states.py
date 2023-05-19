@@ -16,8 +16,6 @@ class CategoryUpdateStates(StatesGroup):
     icon = State()
     priority = State()
     max_displayed_stocks_count = State()
-    is_hidden = State()
-    can_be_seen = State()
 
 
 class SubcategoryCreateStates(StatesGroup):

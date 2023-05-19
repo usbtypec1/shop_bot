@@ -73,8 +73,7 @@ class CategoryDetailView(View):
 
     def get_text(self) -> str:
         subcategories = [
-            f"{i}. (ID: {subcategory.id}) {subcategory.name}"
-            for i, subcategory in enumerate(self.__subcategories, start=1)
+            f"📍 {subcategory.name}" for subcategory in self.__subcategories
         ]
         subcategory_lines = '\n'.join(subcategories)
         is_shown_to_users = '❌' if self.__category.is_hidden else '✅'
@@ -122,8 +121,6 @@ class CategoryDetailView(View):
             ('📝 Category Icon', 'icon'),
             ('📝 Priority', 'priority'),
             ('📝 Max Displayed Stock', 'max-displayed-stock-count'),
-            ('📝 Hide Category', 'hidden-status'),
-            ('📝 Prevent Orders', 'can-be-seen-status'),
         )
 
         for text, field_to_update in buttons:
@@ -136,7 +133,33 @@ class CategoryDetailView(View):
                     ),
                 ),
             )
+        hidden_status_button_text = (
+             '📝 Show Category' if self.__category.is_hidden
+             else '📝 Hide Category'
+        )
+        markup.insert(
+            InlineKeyboardButton(
+                text=hidden_status_button_text,
+                callback_data=CategoryUpdateCallbackData().new(
+                    category_id=self.__category.id,
+                    field='hidden-status',
+                ),
+            ),
+        )
 
+        can_be_seen_status_button_text = (
+            '📝 Prevent Orders' if self.__category.can_be_seen
+            else '📝 Allow Orders'
+        )
+        markup.insert(
+            InlineKeyboardButton(
+                text=can_be_seen_status_button_text,
+                callback_data=CategoryUpdateCallbackData().new(
+                    category_id=self.__category.id,
+                    field='can-be-seen-status',
+                ),
+            ),
+        )
         markup.insert(
             InlineKeyboardButton(
                 text='❌🗑 Delete Category',
