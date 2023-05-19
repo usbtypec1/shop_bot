@@ -1,5 +1,17 @@
 from aiogram.dispatcher.filters import state
+from aiogram.dispatcher.filters.state import StatesGroup, State
 
+
+class CategoryCreateStates(StatesGroup):
+    name = State()
+    icon = State()
+    priority = State()
+    are_stocks_displayed = State()
+    is_hidden = State()
+    can_be_seen = State()
+
+
+# TODO Delete all this crap below
 class AddCategories(state.StatesGroup):
     waiting_category_name = state.State()
 
