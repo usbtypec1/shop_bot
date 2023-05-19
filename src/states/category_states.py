@@ -20,15 +20,16 @@ class CategoryUpdateStates(StatesGroup):
     can_be_seen = State()
 
 
+class SubcategoryCreateStates(StatesGroup):
+    name = State()
+    icon = State()
+    priority = State()
+    max_displayed_stocks_count = State()
+    is_hidden = State()
+    can_be_seen = State()
+
+
 # TODO Delete all this crap below
-class AddCategories(state.StatesGroup):
-    waiting_category_name = state.State()
-
-
-class AddSubcategories(state.StatesGroup):
-    waiting_subcategory_name = state.State()
-
-
 class EditCategories(state.StatesGroup):
     waiting_new_category_name = state.State()
 
