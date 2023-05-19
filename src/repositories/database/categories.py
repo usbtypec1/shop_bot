@@ -232,3 +232,45 @@ class CategoryRepository(BaseRepository):
                     'Category repository: could not update hidden status'
                 )
         return is_updated
+
+    def update_can_be_seen_status(
+            self,
+            *,
+            category_id: int,
+            can_be_seen: bool,
+    ) -> bool:
+        """
+        Update the can be seen status of a category with the given ID.
+
+        Args:
+            category_id: The ID of the category to update.
+            can_be_seen: Can category be seen.
+
+        Returns:
+            True if the category can be seen status was successfully updated,
+            False otherwise.
+        """
+        statement = (
+            update(Category)
+            .where(Category.id == category_id)
+            .values(can_be_seen=can_be_seen)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        is_updated = bool(result.rowcount)
+
+        with bound_contextvars(
+                category_id=category_id,
+                can_be_seen=can_be_seen,
+        ):
+            if is_updated:
+                logger.debug(
+                    'Category repository:'
+                    ' can be seen status successfully updated'
+                )
+            else:
+                logger.debug(
+                    'Category repository: could not update can be seen status'
+                )
+        return is_updated

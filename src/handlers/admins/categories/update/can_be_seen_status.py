@@ -14,32 +14,32 @@ from states.category_states import CategoryUpdateStates
 
 
 @dp.callback_query_handler(
-    CategoryUpdateCallbackData().filter(field='hidden-status'),
+    CategoryUpdateCallbackData().filter(field='can-be-seen-status'),
     state='*',
 )
-async def on_start_is_hidden_status_update_flow(
+async def on_start_can_be_seen_status_update_flow(
         callback_query: CallbackQuery,
         callback_data: dict,
         state: FSMContext
 ):
     category_id: int = callback_data['category_id']
-    await CategoryUpdateStates.is_hidden.set()
+    await CategoryUpdateStates.can_be_seen.set()
     await state.update_data(category_id=category_id)
     markup = InlineKeyboardMarkup()
     markup.add(
-        InlineKeyboardButton('Yes', callback_data='category-is-hidden'),
-        InlineKeyboardButton('No', callback_data='category-is-not-hidden'),
+        InlineKeyboardButton('Yes', callback_data='category-can-not-be-seen'),
+        InlineKeyboardButton('No', callback_data='category-can-be-seen'),
     )
     await callback_query.message.answer(
-        text='Hide this category?',
+        text='Prevent Users from seeing this category/subcategory?',
         reply_markup=markup,
     )
 
 
 @dp.callback_query_handler(
-    state=CategoryUpdateStates.is_hidden,
+    state=CategoryUpdateStates.can_be_seen,
 )
-async def on_category_hidden_status_choice(
+async def on_category_can_be_seen_status_choice(
         callback_query: CallbackQuery,
         state: FSMContext,
 ):
@@ -47,14 +47,14 @@ async def on_category_hidden_status_choice(
     await state.finish()
 
     category_id: int = state_data['category_id']
-    is_hidden = callback_query.data == 'category-is-hidden'
+    can_be_seen = callback_query.data == 'category-can-be-seen'
 
     category_repository = CategoryRepository(session_factory)
     subcategory_repository = SubcategoryRepository(session_factory)
 
-    category_repository.update_hidden_status(
+    category_repository.update_can_be_seen_status(
         category_id=category_id,
-        is_hidden=is_hidden,
+        can_be_seen=can_be_seen,
     )
     category = category_repository.get_by_id(category_id)
     subcategories = subcategory_repository.get_by_category_id(category_id)
