@@ -2,7 +2,8 @@
 
 ### Added
 
-- Add new category creation flow
+- Add new category creation flow.
+- Add functionality to edit category.
 
 ## 2023-05-17
 
