@@ -1,5 +1,6 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
+from emoji import is_emoji
 
 from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from loader import dp
@@ -10,25 +11,27 @@ from states.category_states import CategoryUpdateStates
 
 
 @dp.callback_query_handler(
-    CategoryUpdateCallbackData().filter(field='name'),
+    CategoryUpdateCallbackData().filter(field='icon'),
     state='*',
 )
-async def on_start_category_name_update_flow(
+async def on_start_category_icon_update_flow(
         callback_query: CallbackQuery,
         callback_data: dict,
         state: FSMContext
 ):
     category_id: int = callback_data['category_id']
-    await CategoryUpdateStates.name.set()
+    await CategoryUpdateStates.icon.set()
     await state.update_data(category_id=category_id)
-    await callback_query.message.answer('Provide new title')
+    await callback_query.message.answer(
+        'Provide new icon (Enter any A-Z text to delete)'
+    )
 
 
 @dp.message_handler(
     content_types=ContentType.TEXT,
-    state=CategoryUpdateStates.name,
+    state=CategoryUpdateStates.icon,
 )
-async def on_category_name_input(
+async def on_category_icon_input(
         message: Message,
         state: FSMContext,
 ):
@@ -36,13 +39,14 @@ async def on_category_name_input(
     await state.finish()
 
     category_id: int = state_data['category_id']
-    category_name = message.text
+    category_icon = message.text if is_emoji(message.text) else None
 
     category_repository = CategoryRepository(session_factory)
     subcategory_repository = SubcategoryRepository(session_factory)
-    category_repository.update_name(
+
+    category_repository.update_icon(
         category_id=category_id,
-        category_name=category_name,
+        category_icon=category_icon,
     )
     category = category_repository.get_by_id(category_id)
     subcategories = subcategory_repository.get_by_category_id(category_id)

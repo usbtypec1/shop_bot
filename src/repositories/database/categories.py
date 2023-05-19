@@ -71,3 +71,39 @@ class CategoryRepository(BaseRepository):
             else:
                 logger.debug('Category repository: could not update name')
         return is_updated
+
+    def update_icon(
+            self,
+            *,
+            category_id,
+            category_icon: str | None = None,
+    ) -> bool:
+        """
+        Update the icon of a category with the given ID.
+
+        Args:
+            category_id: The ID of the category to update.
+            category_icon: The new icon for the category.
+
+        Returns:
+            True if the category icon was successfully updated, False otherwise.
+        """
+        statement = (
+            update(Category)
+            .where(Category.id == category_id)
+            .values(icon=category_icon)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        is_updated = bool(result.rowcount)
+
+        with bound_contextvars(
+                category_id=category_id,
+                category_icon=category_icon,
+        ):
+            if is_updated:
+                logger.debug('Category repository: icon successfully updated')
+            else:
+                logger.debug('Category repository: could not update icon')
+        return is_updated
