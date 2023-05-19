@@ -15,7 +15,16 @@ class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):
     def __init__(self, categories: Iterable[schemas.Category]):
         super().__init__(row_width=1)
         for category in categories:
-            self.add(category_management_buttons.CategoryButton(category.name, category.id))
+            if category.icon is not None:
+                text = f'{category.icon} {category.name}'
+            else:
+                text = category.name
+            self.insert(
+                category_management_buttons.CategoryButton(
+                    category_id=category.id,
+                    category_name=text,
+                )
+            )
         self.add(category_management_buttons.AddCategoriesButton())
         self.add(common_buttons.CloseButton())
 
