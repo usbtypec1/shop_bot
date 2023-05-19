@@ -9,6 +9,7 @@ from .backup import dp
 from .support import dp
 from .statistics import dp
 from .shop_info import dp
+from . import categories
 
 
 __all__ = ('dp', )
