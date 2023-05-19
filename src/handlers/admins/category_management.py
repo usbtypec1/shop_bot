@@ -53,37 +53,6 @@ async def categories(query: aiogram.types.CallbackQuery):
 
 
 @dp.callback_query_handler(
-    callback_factories.CategoriesCallbackFactory().filter(action='add'),
-    IsUserAdmin(),
-)
-async def add_categories(query: aiogram.types.CallbackQuery):
-    await AddCategoriesResponse(query)
-    await category_states.AddCategories.waiting_category_name.set()
-
-
-@dp.message_handler(
-    IsUserAdmin(),
-    state=category_states.AddCategories.waiting_category_name,
-)
-async def add_categories(
-        message: Message,
-        state: FSMContext,
-):
-    await state.finish()
-    category_list = message.text.split('\n')
-    with db_api.create_session() as session:
-        queries.add_categories(session, category_list)
-
-    await SuccessAddingCategoryResponse(
-        message=message,
-        categories_quantity=len(category_list),
-    )
-
-    with db_api.create_session() as session:
-        await CategoriesResponse(message, queries.get_all_categories(session))
-
-
-@dp.callback_query_handler(
     CategoryCallbackFactory().filter(action='manage', subcategory_id=''),
     is_admin.IsUserAdmin(),
 )
