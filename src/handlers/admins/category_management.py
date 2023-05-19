@@ -17,7 +17,6 @@ from repositories.database import CategoryRepository, SubcategoryRepository
 from responses.category_management import (
     CategoriesResponse,
     CategoryMenuResponse,
-    EditSubcategoryResponse,
     SuccessRemovalCategoryResponse,
 )
 from services import db_api
@@ -72,33 +71,6 @@ async def category_menu(
         category=category,
         subcategories=subcategories,
     )
-
-
-@dp.callback_query_handler(
-    CategoryCallbackFactory().filter(action='edit_subcategory'),
-    IsUserAdmin(),
-)
-async def ask_subcategory_id(
-        query: CallbackQuery,
-        callback_data: dict,
-):
-    category_id = int(callback_data.get('category_id'))
-
-    with db_api.create_session() as session:
-        subcategories = queries.get_subcategories(session, category_id)
-        if not subcategories:
-            await query.message.answer(
-                "⚠️ There are no subcategories under this category"
-                " to edit their names."
-            )
-            await CategoryMenuResponse(
-                query.message, category_id,
-                queries.get_category(session, category_id).name,
-                subcategories
-            )
-            return
-    await EditSubcategoryResponse(query)
-    await category_states.EditSubcategories.waiting_subcategory_id.set()
 
 
 @dp.message_handler(

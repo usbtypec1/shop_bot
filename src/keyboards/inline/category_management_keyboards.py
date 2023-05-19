@@ -74,21 +74,3 @@ class CategoryMenuKeyboard(aiogram.types.InlineKeyboardMarkup):
             callback_query=callback_factories.CategoriesCallbackFactory().new(action='manage')),
             common_buttons.CloseButton()
         )
-
-class SubcategoriesForRemovalKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, subcategories: list[schemas.Subcategory], category_id: int):
-        super().__init__(row_width=1)
-        for subcategory in subcategories:
-            self.add(
-                category_management_buttons.SubcategoryForRemovalButton(
-                    subcategory.name, subcategory.id, category_id=category_id
-                )
-            )
-        self.row(
-            navigation_buttons.InlineBackButton(
-                callback_query=callback_factories.CategoryCallbackFactory().new(
-                    action='manage', category_id=category_id, subcategory_id=''
-                )
-            ),
-            common_buttons.CloseButton()
-        )

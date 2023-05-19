@@ -4,7 +4,6 @@ from aiogram.types import CallbackQuery, Message
 
 import models
 from keyboards.inline.category_management_keyboards import (
-    SubcategoriesForRemovalKeyboard,
     CategoryMenuKeyboard,
     CategoriesKeyboard,
 )
@@ -34,18 +33,6 @@ class CategoriesResponse(BaseResponse):
                 return await self.__update.message.edit_text(
                     message_text, reply_markup=self.__keyboard
                 )
-
-
-class AddCategoriesResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery):
-        self.__query = query
-
-    async def _send_response(self) -> Message:
-        await self.__query.answer()
-        return await self.__query.message.edit_text(
-            '✏️ Enter the title\n'
-            'One Category - in each row'
-        )
 
 
 class CategoryMenuResponse(BaseResponse):
@@ -106,77 +93,3 @@ class SuccessRemovalCategoryResponse(BaseResponse):
         await self.__query.answer()
         await self.__query.message.delete()
         return await self.__query.message.answer('✅ Category Removed')
-
-
-class SuccessAddingCategoryResponse(BaseResponse):
-    def __init__(self, message: Message, categories_quantity: int):
-        self.__message = message
-        self.__categories_quantity = categories_quantity
-
-    async def _send_response(self) -> Message:
-        return await self.__message.answer(
-            text=f'✅ Total categories Added: {self.__categories_quantity}'
-        )
-
-
-class DeleteSubcategoriesResponse(BaseResponse):
-    def __init__(
-            self,
-            update: CallbackQuery | Message,
-            subcategories: list[schemas.Subcategory],
-            category_id: int,
-    ):
-        self.__update = update
-        self.__keyboard = SubcategoriesForRemovalKeyboard(
-            subcategories=subcategories,
-            category_id=category_id,
-        )
-
-    async def _send_response(self) -> Message:
-        message_text = '📁 Select subcategory'
-        match self.__update:
-            case CallbackQuery():
-                await self.__update.answer()
-                return await self.__update.message.edit_text(
-                    text=message_text,
-                    reply_markup=self.__keyboard,
-                )
-            case Message():
-                await self.__update.answer(
-                    text=message_text,
-                    reply_markup=self.__keyboard,
-                )
-
-
-class SuccessRemovalSubcategoryResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery):
-        self.__query = query
-
-    async def _send_response(self) -> Message:
-        await self.__query.answer()
-        return await self.__query.message.edit_text('✅ Category Removed')
-
-
-class EditCategoryResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery, category_id: int):
-        self.__query = query
-        self.category_id = category_id
-
-    async def _send_response(self) -> int:
-        await self.__query.answer()
-        await self.__query.message.answer(
-            f'✏️ Enter the new name for Category {self.category_id}:'
-        )
-        return self.category_id
-
-
-class EditSubcategoryResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery):
-        self.__query = query
-
-    async def _send_response(self) -> None:
-        await self.__query.answer()
-        await self.__query.message.answer(
-            '🔢 Please enter the subcategory id that you want to edit'
-            ' (after the (ID:) in the above list):'
-        )
