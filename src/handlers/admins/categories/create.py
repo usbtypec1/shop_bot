@@ -12,12 +12,14 @@ from emoji import is_emoji
 from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import CategoriesCallbackFactory
 from loader import dp
+from repositories.database import CategoryRepository, SubcategoryRepository
 from responses.category_management import (
     CategoriesResponse
 )
 from services.db_api.queries import add_category, get_all_categories
 from services.db_api.session import session_factory
 from states.category_states import CategoryCreateStates
+from views import CategoryDetailView, CategoryListView, answer_view
 
 logger = structlog.get_logger('app')
 
@@ -165,19 +167,16 @@ async def on_can_be_seen_option_choice(
         can_be_seen=can_be_seen,
     )
 
-    with session_factory() as session:
-        add_category(
-            session=session,
-            name=state_data['name'],
-            icon=state_data['icon'],
-            priority=state_data['priority'],
-            max_displayed_stocks_count=state_data['max_displayed_stocks_count'],
-            is_hidden=state_data['is_hidden'],
-            can_be_seen=can_be_seen,
-        )
-        categories = get_all_categories(session)
-    await callback_query.message.answer('✅ New category has been created')
-    await CategoriesResponse(
-        update=callback_query.message,
-        categories=categories,
+    category_repository = CategoryRepository(session_factory)
+    category_repository.create(
+        name=state_data['name'],
+        icon=state_data['icon'],
+        priority=state_data['priority'],
+        max_displayed_stock_count=state_data['max_displayed_stocks_count'],
+        is_hidden=state_data['is_hidden'],
+        can_be_seen=can_be_seen,
     )
+    categories = category_repository.get_all()
+    view = CategoryListView(categories)
+    await callback_query.message.answer('✅ New category has been created')
+    await answer_view(message=callback_query.message, view=view)

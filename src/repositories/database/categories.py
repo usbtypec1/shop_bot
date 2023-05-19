@@ -1,5 +1,6 @@
 import structlog
-from sqlalchemy import update, select
+from sqlalchemy import update, select, exists
+from sqlalchemy.orm import Session
 from structlog.contextvars import bound_contextvars
 
 import models
@@ -55,6 +56,60 @@ class CategoryRepository(BaseRepository):
             max_displayed_stock_count=result.max_displayed_stock_count,
             is_hidden=result.is_hidden,
             can_be_seen=result.can_be_seen,
+        )
+
+    def __shift_subcategory_priorities(
+            self,
+            *,
+            session: Session,
+            priority: int,
+    ) -> None:
+        statement = (
+            update(Category)
+            .where(Category.priority >= priority)
+            .values(priority=Category.priority + 1)
+        )
+        session.execute(statement)
+
+    def create(
+            self,
+            *,
+            name: str,
+            priority: int,
+            max_displayed_stock_count: int,
+            is_hidden: bool,
+            can_be_seen: bool,
+            icon: str | None = None,
+    ) -> models.Subcategory:
+        category = Category(
+            name=name,
+            icon=icon,
+            priority=priority,
+            is_hidden=is_hidden,
+            can_be_seen=can_be_seen,
+            max_displayed_stock_count=max_displayed_stock_count,
+        )
+        statement = select(exists().where(Category.priority == priority))
+        with self._session_factory() as session:
+            with session.begin():
+                is_same_priority_category_exists = session.scalar(statement)
+                if is_same_priority_category_exists:
+                    self.__shift_subcategory_priorities(
+                        session=session,
+                        priority=priority,
+                    )
+                session.add(category)
+                session.flush()
+                session.refresh(category)
+        return models.Subcategory(
+            id=category.id,
+            name=category.name,
+            icon=category.icon,
+            priority=category.priority,
+            is_hidden=category.is_hidden,
+            can_be_seen=category.can_be_seen,
+            category_id=category.category_id,
+            max_displayed_stock_count=category.max_displayed_stock_count,
         )
 
     def update_name(self, *, category_id: int, category_name: str) -> bool:

@@ -3,7 +3,6 @@ import asyncio
 import aiogram
 from aiogram import dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
 
 from filters import is_admin
@@ -28,17 +27,6 @@ from states.category_states import (
     DeleteSubcategoryConfirm,
     DeleteConfirm,
 )
-
-
-@dp.message_handler(
-    Text('📁 Categories Control'),
-    IsUserAdmin(),
-)
-async def categories(message: aiogram.types.Message):
-    with db_api.create_session() as session:
-        await CategoriesResponse(
-            message, queries.get_all_categories(session)
-        )
 
 
 @dp.callback_query_handler(
