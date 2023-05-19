@@ -36,7 +36,7 @@ class CategoryRepository(BaseRepository):
             name=result.name,
             icon=result.icon,
             priority=result.priority,
-            max_displayed_stocks_count=result.max_displayed_stocks_count,
+            max_displayed_stock_count=result.max_displayed_stock_count,
             is_hidden=result.is_hidden,
             can_be_seen=result.can_be_seen,
         )
@@ -106,4 +106,47 @@ class CategoryRepository(BaseRepository):
                 logger.debug('Category repository: icon successfully updated')
             else:
                 logger.debug('Category repository: could not update icon')
+        return is_updated
+
+    def update_max_displayed_stock_count(
+            self,
+            *,
+            category_id,
+            max_displayed_stock_count: int,
+    ) -> bool:
+        """
+        Update the icon of a category with the given ID.
+
+        Args:
+            category_id: The ID of the category to update.
+            max_displayed_stock_count: Max displayed stock count for
+                                                the category.
+
+        Returns:
+            True if the category icon was successfully updated, False otherwise.
+        """
+        statement = (
+            update(Category)
+            .where(Category.id == category_id)
+            .values(max_displayed_stock_count=max_displayed_stock_count)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        is_updated = bool(result.rowcount)
+
+        with bound_contextvars(
+                category_id=category_id,
+                max_displayed_stock_count=max_displayed_stock_count,
+        ):
+            if is_updated:
+                logger.debug(
+                    'Category repository:'
+                    ' max displayed stock count successfully updated'
+                )
+            else:
+                logger.debug(
+                    'Category repository:'
+                    ' could not update max_displayed_stock_count'
+                )
         return is_updated

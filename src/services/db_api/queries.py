@@ -44,7 +44,7 @@ def add_category(
     category = schemas.Category(
         name=name,
         priority=priority,
-        max_displayed_stocks_count=max_displayed_stocks_count,
+        max_displayed_stock_count=max_displayed_stocks_count,
         is_hidden=is_hidden,
         can_be_seen=can_be_seen,
         icon=icon,

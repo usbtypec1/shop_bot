@@ -32,7 +32,7 @@ class Category(BaseModel):
     name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     icon = sqlalchemy.Column(sqlalchemy.String(255), nullable=True)
     priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    max_displayed_stocks_count = sqlalchemy.Column(
+    max_displayed_stock_count = sqlalchemy.Column(
         sqlalchemy.Integer,
         nullable=False
     )
@@ -49,7 +49,10 @@ class Subcategory(BaseModel):
     name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
     icon = sqlalchemy.Column(sqlalchemy.String(255), nullable=True)
     priority = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
-    are_stocks_displayed = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
+    max_displayed_stock_count = sqlalchemy.Column(
+        sqlalchemy.Integer,
+        nullable=False
+    )
     is_hidden = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     can_be_seen = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
     category_id = sqlalchemy.Column(

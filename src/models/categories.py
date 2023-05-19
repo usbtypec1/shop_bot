@@ -9,7 +9,7 @@ class Category:
     name: str
     icon: str | None
     priority: int
-    max_displayed_stocks_count: int
+    max_displayed_stock_count: int
     is_hidden: bool
     can_be_seen: bool
 
@@ -20,7 +20,7 @@ class Subcategory:
     name: str
     icon: str | None
     priority: int
-    max_displayed_stocks_count: int
+    max_displayed_stock_count: int
     is_hidden: bool
     can_be_seen: bool
     category_id: int
