@@ -101,7 +101,7 @@ class BalanceRefillNotification(BaseNotification):
 
 
 class NewSupportRequestNotification(BaseNotification):
-    def __init__(self, support_request: schemas.SupportRequest):
+    def __init__(self, support_request: schemas.SupportTicket):
         self.__support_request = support_request
 
     async def send(self):

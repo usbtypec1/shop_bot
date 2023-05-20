@@ -26,7 +26,7 @@ class UserSupportKeyboard(aiogram.types.ReplyKeyboardMarkup):
 
 
 class NewSupportRequestSubjectsKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, subjects: list[schemas.SupportSubject]):
+    def __init__(self, subjects):
         super().__init__(row_width=1)
         for subject in subjects:
             self.add(support_buttons.NewSupportRequestSubjectButton(subject.id, subject.name))
@@ -34,7 +34,7 @@ class NewSupportRequestSubjectsKeyboard(aiogram.types.InlineKeyboardMarkup):
 
 
 class SupportRequestsKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, support_requests: list[schemas.SupportRequest], is_open: bool = None, user_id: bool = None):
+    def __init__(self, support_requests: list[schemas.SupportTicket], is_open: bool = None, user_id: bool = None):
         super().__init__(row_width=1)
         for request in support_requests:
             self.add(support_buttons.SupportRequestButton(is_open, user_id or '', request.id, request.issue))

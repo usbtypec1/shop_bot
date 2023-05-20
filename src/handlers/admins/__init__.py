@@ -6,10 +6,10 @@ from .payments_management import dp
 from .products import dp
 from .users import dp
 from .backup import dp
-from .support import dp
+# from .support import dp
 from .statistics import dp
 from .shop_info import dp
-from . import categories, subcategories
+from . import categories, subcategories, support_tickets
 
 __all__ = (
     'dp',

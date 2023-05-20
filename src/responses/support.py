@@ -40,7 +40,7 @@ class SuccessAddingSupportSubjectResponse(base.BaseResponse):
 
 
 class NewSupportRequestResponse(base.BaseResponse):
-    def __init__(self, message: aiogram.types.Message, subjects: list[schemas.SupportSubject]):
+    def __init__(self, message: aiogram.types.Message, subjects):
         self.__message = message
         self.__keyboard = support_keybords.NewSupportRequestSubjectsKeyboard(subjects)
 
@@ -71,7 +71,7 @@ class SuccessAddingSupportRequestResponse(base.BaseResponse):
 
 class UserSupportRequestsResponse(base.BaseResponse):
     def __init__(self, update: aiogram.types.Message | aiogram.types.CallbackQuery,
-                 support_requests: list[schemas.SupportRequest]):
+                 support_requests: list[schemas.SupportTicket]):
         self.__update = update
         self.__keyboard = support_keybords.SupportRequestsKeyboard(support_requests, user_id=self.__update.from_user.id)
 
@@ -82,7 +82,7 @@ class UserSupportRequestsResponse(base.BaseResponse):
 
 class ClosedSupportRequestsResponse(base.BaseResponse):
     def __init__(self, update: aiogram.types.Message | aiogram.types.CallbackQuery,
-                 support_requests: list[schemas.SupportRequest]):
+                 support_requests: list[schemas.SupportTicket]):
         self.__update = update
         self.__keyboard = support_keybords.SupportRequestsKeyboard(
             support_requests, is_open=False
@@ -98,7 +98,7 @@ class ClosedSupportRequestsResponse(base.BaseResponse):
 
 class OpenSupportRequestsResponse(base.BaseResponse):
     def __init__(self, update: aiogram.types.Message | aiogram.types.CallbackQuery,
-                 support_requests: list[schemas.SupportRequest]):
+                 support_requests: list[schemas.SupportTicket]):
         self.__update = update
         self.__keyboard = support_keybords.SupportRequestsKeyboard(
             support_requests, is_open=True
@@ -113,7 +113,7 @@ class OpenSupportRequestsResponse(base.BaseResponse):
 
 
 class SupportRequestResponse(base.BaseResponse):
-    def __init__(self, query: aiogram.types.CallbackQuery, support_request: schemas.SupportRequest,
+    def __init__(self, query: aiogram.types.CallbackQuery, support_request: schemas.SupportTicket,
                  is_open: bool = None, user_id: int = None):
         self.__query = query
         self.__request = support_request

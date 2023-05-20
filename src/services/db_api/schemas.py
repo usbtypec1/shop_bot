@@ -1,3 +1,5 @@
+import enum
+
 from sqlalchemy import (
     sql,
     Column,
@@ -9,6 +11,7 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
     Text,
+    Enum,
 )
 from sqlalchemy.orm import relationship
 
@@ -165,28 +168,25 @@ class Sale(BaseModel):
     )
 
 
-class SupportSubject(BaseModel):
-    __tablename__ = 'support_subject'
-    name = Column(String(255), nullable=False, unique=True)
+class SupportTicketStatus(enum.Enum):
+    OPEN = 'Open'
+    PENDING = 'Pending'
+    ON_HOLD = 'On Hold'
+    CLOSED = 'Closed'
 
 
-class SupportRequest(BaseModel):
-    __tablename__ = 'support_request'
+class SupportTicket(BaseModel):
+    __tablename__ = 'support_tickets'
 
     user_id = Column(Integer, ForeignKey('user.telegram_id'), nullable=False)
-    subject_id = Column(Integer, ForeignKey('support_subject.id'))
-    username = Column(String)
-    is_open = Column(Boolean, default=True)
+    subject = Column(String(64), nullable=False)
     issue = Column(Text, nullable=False)
-    answer = Column(Text)
-
-    subject = relationship(
-        'SupportSubject',
-        lazy=False,
-        backref='support_request',
-        cascade='all, delete',
+    answer = Column(Text, nullable=True)
+    status = Column(
+        Enum(SupportTicketStatus),
+        default=SupportTicketStatus.OPEN,
+        nullable=False,
     )
-    user = relationship('User', backref='support_request', lazy=False)
 
 
 class ShopInformation(BaseModel):
