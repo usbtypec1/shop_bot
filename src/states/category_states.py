@@ -34,6 +34,14 @@ class SubcategoryUpdateStates(StatesGroup):
     max_displayed_stocks_count = State()
 
 
+class CategoryDeleteStates(StatesGroup):
+    confirm = State()
+
+
+class SubcategoryDeleteStates(StatesGroup):
+    confirm = State()
+
+
 # TODO Delete all this crap below
 class EditCategories(state.StatesGroup):
     waiting_new_category_name = state.State()

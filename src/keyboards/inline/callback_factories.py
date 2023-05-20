@@ -1,6 +1,16 @@
 from aiogram.utils.callback_data import CallbackData
 
 
+class CategoryDeleteCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('category-delete', 'category_id')
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data=callback_data)
+        return {'category_id': int(callback_data['category_id'])}
+
+
 class SubcategoryDeleteCallbackData(CallbackData):
 
     def __init__(self):
@@ -32,6 +42,16 @@ class SubcategoryDetailCallbackData(CallbackData):
     def parse(self, callback_data: str) -> dict:
         callback_data = super().parse(callback_data=callback_data)
         return {'subcategory_id': int(callback_data['subcategory_id'])}
+
+
+class CategoryDetailCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('category-detail', 'category_id')
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data=callback_data)
+        return {'category_id': int(callback_data['category_id'])}
 
 
 class SubcategoryListCallbackData(CallbackData):

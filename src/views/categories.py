@@ -10,12 +10,15 @@ from keyboards.inline.callback_factories import (
     SubcategoryListCallbackData,
     CategoryUpdateCallbackData,
     CategoriesCallbackFactory,
+    CategoryDeleteCallbackData,
+    CategoryDetailCallbackData,
 )
 from views.base import View
 
 __all__ = (
     'CategoryDetailView',
     'CategoryListView',
+    'CategoryAskDeleteConfirmationView',
 )
 
 
@@ -41,10 +44,8 @@ class CategoryListView(View):
             markup.insert(
                 InlineKeyboardButton(
                     text=text,
-                    callback_data=CategoryCallbackFactory().new(
-                        action='manage',
+                    callback_data=CategoryDetailCallbackData().new(
                         category_id=category.id,
-                        subcategory_id='',
                     )
                 ),
             )
@@ -163,10 +164,8 @@ class CategoryDetailView(View):
         markup.insert(
             InlineKeyboardButton(
                 text='❌🗑 Delete Category',
-                callback_data=CategoryCallbackFactory().new(
-                    action='delete',
+                callback_data=CategoryDeleteCallbackData().new(
                     category_id=self.__category.id,
-                    subcategory_id='',
                 ),
             ),
         )
@@ -177,5 +176,28 @@ class CategoryDetailView(View):
                 )
             ),
             CloseButton(),
+        )
+        return markup
+
+
+class CategoryAskDeleteConfirmationView(View):
+    text = '❗️ Are you sure you want to delete this category?'
+
+    def __init__(self, category_id: int):
+        self.__category_id = category_id
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup()
+        markup.row(
+            InlineKeyboardButton(
+                text='Yes',
+                callback_data='category-delete-confirm',
+            ),
+            InlineKeyboardButton(
+                text='No',
+                callback_data=CategoryDetailCallbackData().new(
+                    category_id=self.__category_id,
+                ),
+            ),
         )
         return markup

@@ -148,8 +148,11 @@ async def on_hidden_option_choice(
     await SubcategoryCreateStates.can_be_seen.set()
     markup = InlineKeyboardMarkup()
     markup.add(
-        InlineKeyboardButton('Yes', callback_data='subcategory-can-be-seen'),
-        InlineKeyboardButton('No', callback_data='subcategory-can-not-be-seen'),
+        InlineKeyboardButton(
+            text='Yes',
+            callback_data='subcategory-can-not-be-seen',
+        ),
+        InlineKeyboardButton('No', callback_data='subcategory-can-be-seen'),
     )
     await callback_query.message.answer(
         text='Prevent Users from seeing this subcategory?',

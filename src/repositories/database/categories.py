@@ -1,11 +1,11 @@
 import structlog
-from sqlalchemy import update, select, exists
+from sqlalchemy import update, select, exists, delete
 from sqlalchemy.orm import Session
 from structlog.contextvars import bound_contextvars
 
 import models
 from repositories.database.base import BaseRepository
-from services.db_api.schemas import Category
+from services.db_api.schemas import Category, Subcategory
 
 __all__ = ('CategoryRepository',)
 
@@ -58,6 +58,34 @@ class CategoryRepository(BaseRepository):
             can_be_seen=result.can_be_seen,
         )
 
+    def delete_by_id(self, category_id: int) -> bool:
+        statement_to_delete_category = (
+            delete(Category)
+            .where(Category.id == category_id)
+        )
+        statement_to_delete_subcategories = (
+            delete(Subcategory)
+            .where(Subcategory.category_id == category_id)
+        )
+
+        with (
+            bound_contextvars(category_id=category_id),
+            self._session_factory() as session,
+            session.begin(),
+        ):
+            logger.debug('Category repository: deleting category')
+
+            result = session.execute(statement_to_delete_category)
+            session.execute(statement_to_delete_subcategories)
+
+            is_deleted = bool(result.rowcount)
+
+            if is_deleted:
+                logger.debug('Category repository: deleted category')
+            else:
+                logger.debug('Ccategory repository: could not delete category')
+        return is_deleted
+
     def __shift_subcategory_priorities(
             self,
             *,
@@ -80,7 +108,7 @@ class CategoryRepository(BaseRepository):
             is_hidden: bool,
             can_be_seen: bool,
             icon: str | None = None,
-    ) -> models.Subcategory:
+    ) -> models.Category:
         category = Category(
             name=name,
             icon=icon,
@@ -101,14 +129,13 @@ class CategoryRepository(BaseRepository):
                 session.add(category)
                 session.flush()
                 session.refresh(category)
-        return models.Subcategory(
+        return models.Category(
             id=category.id,
             name=category.name,
             icon=category.icon,
             priority=category.priority,
             is_hidden=category.is_hidden,
             can_be_seen=category.can_be_seen,
-            category_id=category.category_id,
             max_displayed_stock_count=category.max_displayed_stock_count,
         )
 

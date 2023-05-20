@@ -136,41 +136,6 @@ async def edit_subcategory_name(
         )
 
 
-@dp.callback_query_handler(
-    CategoryCallbackFactory().filter(action='delete', subcategory_id=''),
-    IsUserAdmin(),
-)
-async def delete_category(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-        state: FSMContext,
-):
-    await state.update_data(category_id=callback_data['category_id'])
-
-    await DeleteConfirm.waiting_for_delete_category_confirm.set()
-    await query.message.reply(
-        '❓ Are you sure you want to delete this category? (Type yes or cancel)'
-        ' \n💡 Please make sure there are no subcategories under this category'
-        ' first otherwise you will NOT be able to delete this category.'
-    )
-
-
-@dp.callback_query_handler(
-    CategoryCallbackFactory().filter(action='delete', subcategory_id=''),
-    is_admin.IsUserAdmin(),
-)
-async def delete_category(query: aiogram.types.CallbackQuery,
-                          callback_data: dict[str, str]):
-    with db_api.create_session() as session:
-        queries.delete_category(session, int(callback_data['category_id']))
-    await SuccessRemovalCategoryResponse(query)
-    with db_api.create_session() as session:
-        await CategoriesResponse(
-            update=query.message,
-            categories=queries.get_all_categories(session),
-        )
-
-
 @dp.message_handler(
     is_admin.IsUserAdmin(),
     state=category_states.DeleteConfirm.waiting_for_delete_category_confirm,
