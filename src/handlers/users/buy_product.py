@@ -10,8 +10,10 @@ import responses.payments
 import responses.products
 from keyboards.inline import callback_factories
 from loader import dp
+from repositories.database import CategoryRepository, SubcategoryRepository
 from services import db_api, notifications
 from services.db_api import queries
+from services.db_api.session import session_factory
 from services.payments_apis import coinbase_api
 from states import product_states
 
@@ -44,13 +46,26 @@ async def categories(query: aiogram.types.CallbackQuery):
 async def category_items(query: aiogram.types.CallbackQuery,
                          callback_data: dict[str, str]):
     category_id = int(callback_data['category_id'])
+    category_repository = CategoryRepository(session_factory)
+    subcategory_repository = SubcategoryRepository(session_factory)
+
+    category = category_repository.get_by_id(category_id)
+    subcategories = subcategory_repository.get_by_category_id(category_id)
+
+    if not category.can_be_seen:
+        await query.answer('Coming soon...', show_alert=True)
+        return
+
     with db_api.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
         category_item_list = queries.get_category_items(session, category_id)
-        await responses.products.CategoryItemsResponse(query,
-                                                       category_item_list,
-                                                       category_id)
+        await responses.products.CategoryItemsResponse(
+            update=query,
+            subcategories=subcategories,
+            products=category_item_list,
+            category_id=category_id,
+        )
 
 
 @dp.callback_query_handler(
@@ -62,6 +77,14 @@ async def subcategory_products(query: aiogram.types.CallbackQuery,
     category_id = int(callback_data['category_id'])
     subcategory_id = callback_data['subcategory_id']
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
+    subcategory_repository = SubcategoryRepository(session_factory)
+
+    subcategory = subcategory_repository.get_by_id(subcategory_id)
+
+    if not subcategory.can_be_seen:
+        await query.answer('Coming soon...', show_alert=True)
+        return
+
     with db_api.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase

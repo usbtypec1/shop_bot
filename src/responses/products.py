@@ -1,20 +1,18 @@
 import typing
+from collections.abc import Iterable
 
 import aiogram.types
-from aiogram.types import MediaGroup
 
+import config
+import models
 from keyboards.buttons import navigation_buttons
 from keyboards.inline import (
-    product_keyboards, callback_factories,
-    payments_keyboards
+    product_keyboards,
+    callback_factories,
+    payments_keyboards,
 )
 from responses import base
 from services.db_api import schemas
-
-import config
-
-from aiogram.utils.markdown import escape_md
-
 from services.files import answer_media_with_text, answer_medias
 
 
@@ -46,17 +44,17 @@ class CategoriesResponses(base.BaseResponse):
 class CategoryItemsResponse(base.BaseResponse):
     def __init__(self,
                  update: aiogram.types.Message | aiogram.types.CallbackQuery,
-                 items: list[tuple[int, str, str]], category_id: int):
+                 subcategories: Iterable[models.Subcategory],
+                 products: list[tuple[int, str, str]], category_id: int):
         self.__update = update
-        self.__items = items
-        self.__keyboard = product_keyboards.CategoryItemsKeyboard(items,
-                                                                  category_id)
+        self.__items = products
+        self.__keyboard = product_keyboards.CategoryItemsKeyboard(
+            subcategories=subcategories,
+            products=products,
+            category_id=category_id,
+        )
 
     async def _send_response(self) -> aiogram.types.Message:
-        # message_text = (
-        #     '🛒 All available products and subcategories' if self.__items
-        #     else '😔 Oh, there is nothing here ('
-        # )
         if not self.__items:
             message_text = '😔 Oh, there is nothing here \('
         else:

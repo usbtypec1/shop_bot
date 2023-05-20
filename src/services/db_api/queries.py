@@ -247,19 +247,13 @@ def get_category_items(
         offset: int | None = None,
 ) -> list[tuple[int, str, str]]:
     statement = select(
-        schemas.Subcategory.id,
-        literal_column("subcategory.name"),
-        literal('subcategory')) \
-        .filter_by(category_id=category_id
-                   )
-    statement = statement.union(select(
         schemas.Product.id,
         literal_column('product.name') + ' | $' +
         literal_column('product.price') + ' | ' +
         literal_column('product.quantity') + ' pc(s)',
         literal('product')).filter_by(
         category_id=category_id, subcategory_id=None
-    ))
+    )
     if limit is not None:
         statement = statement.limit(limit)
         if offset is not None:
