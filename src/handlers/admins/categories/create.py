@@ -12,14 +12,10 @@ from emoji import is_emoji
 from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import CategoriesCallbackFactory
 from loader import dp
-from repositories.database import CategoryRepository, SubcategoryRepository
-from responses.category_management import (
-    CategoriesResponse
-)
-from services.db_api.queries import add_category, get_all_categories
+from repositories.database import CategoryRepository
 from services.db_api.session import session_factory
 from states.category_states import CategoryCreateStates
-from views import CategoryDetailView, CategoryListView, answer_view
+from views import CategoryListView, answer_view
 
 logger = structlog.get_logger('app')
 

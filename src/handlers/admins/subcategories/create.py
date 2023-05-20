@@ -10,17 +10,10 @@ from aiogram.types import (
 from emoji import is_emoji
 
 from filters.is_admin import IsUserAdmin
-from keyboards.inline.callback_factories import (
-    CategoriesCallbackFactory,
-    CategoryCallbackFactory
-)
+from keyboards.inline.callback_factories import CategoryCallbackFactory
 from loader import dp
 from repositories.database import SubcategoryRepository, CategoryRepository
-from responses.category_management import (
-    CategoriesResponse,
-    CategoryMenuResponse
-)
-from services.db_api.queries import add_category, get_all_categories
+from responses.category_management import CategoryMenuResponse
 from services.db_api.session import session_factory
 from states.category_states import SubcategoryCreateStates
 
