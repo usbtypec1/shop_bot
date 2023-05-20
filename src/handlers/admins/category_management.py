@@ -16,7 +16,6 @@ from repositories.database import CategoryRepository, SubcategoryRepository
 from responses.category_management import (
     CategoriesResponse,
     CategoryMenuResponse,
-    SuccessRemovalCategoryResponse,
 )
 from services import db_api
 from services.db_api import queries

@@ -83,13 +83,3 @@ class CategoryMenuResponse(BaseResponse):
                     text=message_text,
                     reply_markup=self.__keyboard,
                 )
-
-
-class SuccessRemovalCategoryResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery):
-        self.__query = query
-
-    async def _send_response(self) -> Message:
-        await self.__query.answer()
-        await self.__query.message.delete()
-        return await self.__query.message.answer('✅ Category Removed')

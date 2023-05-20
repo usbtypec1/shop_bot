@@ -1,5 +1,5 @@
 from aiogram.dispatcher.filters import Text
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 
 from filters.is_admin import IsUserAdmin
 from loader import dp
@@ -16,3 +16,13 @@ async def on_show_support_menu(
 ) -> None:
     view = AdminSupportMenuView()
     await answer_view(message=message, view=view)
+
+
+@dp.message_handler(
+    Text('📗 Open Tickets'),
+    IsUserAdmin(),
+    state='*',
+)
+async def on_show_open_tickets_list(
+        message: Message,
+) -> None:
