@@ -21,7 +21,7 @@ async def on_start_category_max_displayed_stock_count_update_flow(
     subcategory_id: int = callback_data['subcategory_id']
     await SubcategoryUpdateStates.max_displayed_stocks_count.set()
     await state.update_data(subcategory_id=subcategory_id)
-    await callback_query.message.answer('Provide max displayed stock')
+    await callback_query.message.edit_text('Provide max displayed stock')
 
 
 @dp.message_handler(

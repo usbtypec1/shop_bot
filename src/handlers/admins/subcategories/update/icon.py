@@ -22,7 +22,7 @@ async def on_start_subcategory_icon_update_flow(
     subcategory_id: int = callback_data['subcategory_id']
     await SubcategoryUpdateStates.icon.set()
     await state.update_data(subcategory_id=subcategory_id)
-    await callback_query.message.answer(
+    await callback_query.message.edit_text(
         'Provide new icon (Enter any A-Z text to delete)'
     )
 

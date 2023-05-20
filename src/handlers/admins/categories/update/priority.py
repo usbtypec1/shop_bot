@@ -4,9 +4,9 @@ from aiogram.types import CallbackQuery, ContentType, Message
 from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from responses.category_management import CategoryMenuResponse
 from services.db_api.session import session_factory
 from states.category_states import CategoryUpdateStates
+from views import CategoryDetailView, answer_view
 
 
 @dp.callback_query_handler(
@@ -21,7 +21,7 @@ async def on_start_category_priority_update_flow(
     category_id: int = callback_data['category_id']
     await CategoryUpdateStates.priority.set()
     await state.update_data(category_id=category_id)
-    await callback_query.message.answer('Provide priority value')
+    await callback_query.message.edit_text('Provide priority value')
 
 
 @dp.message_handler(
@@ -51,8 +51,5 @@ async def on_category_priority_input(
     category = category_repository.get_by_id(category_id)
     subcategories = subcategory_repository.get_by_category_id(category_id)
 
-    await CategoryMenuResponse(
-        update=message,
-        category=category,
-        subcategories=subcategories
-    )
+    view = CategoryDetailView(category=category, subcategories=subcategories)
+    await answer_view(message=message, view=view)

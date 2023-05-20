@@ -21,7 +21,7 @@ async def on_start_subcategory_name_update_flow(
     subcategory_id: int = callback_data['subcategory_id']
     await SubcategoryUpdateStates.name.set()
     await state.update_data(subcategory_id=subcategory_id)
-    await callback_query.message.answer('Provide new title')
+    await callback_query.message.edit_text('Provide new title')
 
 
 @dp.message_handler(

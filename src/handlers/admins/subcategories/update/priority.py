@@ -21,7 +21,7 @@ async def on_start_subcategory_priority_update_flow(
     subcategory_id: int = callback_data['subcategory_id']
     await SubcategoryUpdateStates.priority.set()
     await state.update_data(subcategory_id=subcategory_id)
-    await callback_query.message.answer('Provide priority value')
+    await callback_query.message.edit_text('Provide priority value')
 
 
 @dp.message_handler(

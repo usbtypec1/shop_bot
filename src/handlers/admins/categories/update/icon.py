@@ -5,9 +5,9 @@ from emoji import is_emoji
 from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from responses.category_management import CategoryMenuResponse
 from services.db_api.session import session_factory
 from states.category_states import CategoryUpdateStates
+from views import answer_view, CategoryDetailView
 
 
 @dp.callback_query_handler(
@@ -51,8 +51,5 @@ async def on_category_icon_input(
     category = category_repository.get_by_id(category_id)
     subcategories = subcategory_repository.get_by_category_id(category_id)
 
-    await CategoryMenuResponse(
-        update=message,
-        category=category,
-        subcategories=subcategories
-    )
+    view = CategoryDetailView(category=category, subcategories=subcategories)
+    await answer_view(message=message, view=view)
