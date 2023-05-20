@@ -712,6 +712,10 @@ def get_total_balance(session: orm.Session) -> float:
     return session.scalar(
         select(func.sum(schemas.User.balance)))
 
+## to get the user's balance in src/handlers/users/profile.py
+def get_user_balance(session: orm.Session, user_id: int) -> float:
+    return session.query(schemas.User.balance).filter(schemas.User.id == user_id).scalar()
+
 
 def check_is_user_exists(session: orm.Session, telegram_id: int) -> bool:
     statement = exists(
