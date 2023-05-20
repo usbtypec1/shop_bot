@@ -23,15 +23,27 @@ class BalanceResponse(BaseResponse):
         )
 
 
-class BalanceAmountResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery):
-        self.__query = query
+# class BalanceAmountResponse(BaseResponse):
+#     def __init__(self, query: CallbackQuery):
+#         self.__query = query
+
+#     async def _send_response(self):
+#         await self.__query.answer()
+#         await self.__query.message.edit_text('🔢 Enter amount')
+
+class BalanceResponse(base.BaseResponse):
+
+    def __init__(self, message: aiogram.types.Message, balance: float):
+        self.__message = message
+        self.__balance = balance
+        self.__keyboard = balance_keyboards.TopUpBalanceKeyboard()
 
     async def _send_response(self):
-        await self.__query.answer()
-        await self.__query.message.edit_text('🔢 Enter amount')
-
-
+        await self.__message.answer(
+            f'💰 You current balance: ${self.__balance:.2f}\n\n'
+            f'Would you like to top up your balance?', reply_markup=self.__keyboard
+        )
+        
 class IncorrectBalanceAmountResponse(BaseResponse):
     def __init__(self, message: Message):
         self.__message = message
