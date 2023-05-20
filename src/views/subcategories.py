@@ -3,10 +3,12 @@ from collections.abc import Iterable
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 import models
+from keyboards.buttons.common_buttons import CloseButton
 from keyboards.inline.callback_factories import (
     SubcategoryDetailCallbackData,
     SubcategoryUpdateCallbackData,
-    SubcategoryDeleteCallbackData,
+    SubcategoryDeleteCallbackData, SubcategoryListCallbackData,
+    CategoryDetailCallbackData,
 )
 from views.base import View
 
@@ -19,8 +21,14 @@ __all__ = (
 
 class SubcategoryListView(View):
 
-    def __init__(self, subcategories: Iterable[models.Subcategory]):
+    def __init__(
+            self,
+            *,
+            subcategories: Iterable[models.Subcategory],
+            category_id: int,
+    ):
         self.__subcategories = tuple(subcategories)
+        self.__category_id = category_id
 
     def get_text(self) -> str:
         return (
@@ -43,6 +51,15 @@ class SubcategoryListView(View):
                     ),
                 ),
             )
+        markup.row(
+            InlineKeyboardButton(
+                text='⬅️ Back',
+                callback_data=CategoryDetailCallbackData().new(
+                    category_id=self.__category_id,
+                )
+            ),
+            CloseButton(),
+        )
         return markup
 
 
@@ -86,8 +103,8 @@ class SubcategoryDetailView(View):
                 ),
             )
         hidden_status_button_text = (
-             '📝 Show Category' if self.__subcategory.is_hidden
-             else '📝 Hide Category'
+            '📝 Show Category' if self.__subcategory.is_hidden
+            else '📝 Hide Category'
         )
         markup.insert(
             InlineKeyboardButton(
@@ -114,13 +131,20 @@ class SubcategoryDetailView(View):
         )
         markup.insert(
             InlineKeyboardButton(
-                '❌🗑️ Delete Subcategory',
-                callback_data=(
-                    SubcategoryDeleteCallbackData().new(
-                        subcategory_id=self.__subcategory.id,
-                    )
+                text='❌🗑️ Delete Subcategory',
+                callback_data=SubcategoryDeleteCallbackData().new(
+                    subcategory_id=self.__subcategory.id,
                 ),
             ),
+        )
+        markup.row(
+            InlineKeyboardButton(
+                text='⬅️ Back',
+                callback_data=SubcategoryListCallbackData().new(
+                    category_id=self.__subcategory.category_id,
+                ),
+            ),
+            CloseButton(),
         )
         return markup
 

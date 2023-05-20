@@ -18,5 +18,8 @@ async def on_show_subcategories_list(
     category_id: int = callback_data['category_id']
     subcategory_repository = SubcategoryRepository(session_factory)
     subcategories = subcategory_repository.get_by_category_id(category_id)
-    view = SubcategoryListView(subcategories)
+    view = SubcategoryListView(
+        subcategories=subcategories,
+        category_id=category_id,
+    )
     await edit_message_by_view(message=callback_query.message, view=view)
