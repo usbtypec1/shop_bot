@@ -101,6 +101,27 @@ class SupportTicketRepository(BaseRepository):
             ) for support_ticket, telegram_id in result
         ]
 
+    def get_all_closed(self) -> list[models.SupportTicket]:
+        statement = (
+            select(SupportTicket, User.telegram_id)
+            .join(User, SupportTicket.user_id == User.id)
+            .where(SupportTicket.status == SupportTicketStatus.CLOSED)
+            .order_by(SupportTicket.created_at.desc())
+        )
+        with self._session_factory() as session:
+            result = session.execute(statement).all()
+        return [
+            models.SupportTicket(
+                id=support_ticket.id,
+                user_id=support_ticket.user_id,
+                user_telegram_id=telegram_id,
+                subject=support_ticket.subject,
+                issue=support_ticket.issue,
+                answer=support_ticket.answer,
+                status=support_ticket.status,
+            ) for support_ticket, telegram_id in result
+        ]
+
     def delete_by_id(self, support_ticket_id: int) -> bool:
         statement = (
             delete(SupportTicket)

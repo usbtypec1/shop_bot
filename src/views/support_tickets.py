@@ -19,6 +19,8 @@ from services.time_utils import get_now_datetime
 from views.base import View
 
 __all__ = (
+    'AdminClosedSupportTicketListView',
+    'AdminOpenSupportTicketListView',
     'SupportTicketStatusChangedNotificationView',
     'SupportTicketAskDeleteConfirmationView',
     'SupportTicketStatusListView',
@@ -92,12 +94,20 @@ class SupportTicketAskDeleteConfirmationView(View):
 class SupportTicketStatusListView(View):
     text = 'Choose status'
 
-    def __init__(self, support_ticket_id: int):
+    def __init__(
+            self,
+            *,
+            support_ticket_id: int,
+            current_status: models.SupportTicketStatus,
+    ):
         self.__support_ticket_id = support_ticket_id
+        self.__current_status = current_status
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()
         for status in models.SupportTicketStatus:
+            if status == self.__current_status:
+                continue
             markup.row(
                 InlineKeyboardButton(
                     text=status.value,
@@ -156,7 +166,7 @@ class AdminSupportTicketDetailView(View):
 
 
 class AdminSupportTicketListView(View):
-    text = '📗 Open Tickets'
+    text = 'Tickets'
 
     def __init__(self, support_tickets: Iterable[models.SupportTicket]):
         self.__support_tickets = support_tickets
@@ -178,6 +188,14 @@ class AdminSupportTicketListView(View):
                 ),
             )
         return markup
+
+
+class AdminOpenSupportTicketListView(AdminSupportTicketListView):
+    text = '📗 Open Tickets'
+
+
+class AdminClosedSupportTicketListView(AdminSupportTicketListView):
+    text = '📕 Closed Tickets'
 
 
 class SupportTicketDetailView(View):
