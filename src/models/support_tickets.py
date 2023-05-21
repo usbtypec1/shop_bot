@@ -12,6 +12,7 @@ __all__ = (
 class SupportTicket:
     id: int
     user_id: int
+    user_telegram_id: int
     subject: str
     issue: str
     answer: str | None

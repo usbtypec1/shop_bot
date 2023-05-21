@@ -74,6 +74,7 @@ async def on_support_ticket_issue_input(
     user = user_repository.get_by_telegram_id(message.from_user.id)
     support_ticket = support_ticket_repository.create(
         user_id=user.id,
+        user_telegram_id=message.from_user.id,
         subject=subject,
         issue=issue,
     )

@@ -15,7 +15,6 @@ from views import SupportTicketListView, answer_view
 async def on_show_support_tickets_list(message: Message) -> None:
     user_repository = UserRepository(session_factory)
     support_ticket_repository = SupportTicketRepository(session_factory)
-    user = user_repository.get_by_telegram_id(message.from_user.id)
-    support_tickets = support_ticket_repository.get_by_user_id(user.id)
+    support_tickets = support_ticket_repository.get_by_user_telegram_id(message.from_user.id)
     view = SupportTicketListView(support_tickets)
     await answer_view(message=message, view=view)

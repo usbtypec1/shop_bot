@@ -8,5 +8,9 @@ class SupportTicketCreateStates(StatesGroup):
     issue = State()
 
 
+class SupportTicketDeleteStatus(StatesGroup):
+    confirm = State()
+
+
 class AnswerSupportRequest(state.StatesGroup):
     waiting_answer = state.State()

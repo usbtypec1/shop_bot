@@ -1,4 +1,5 @@
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery
 
 from filters.is_admin import IsUserAdmin
@@ -29,6 +30,7 @@ async def on_ask_delete_category_confirmation(
 
 @dp.callback_query_handler(
     IsUserAdmin(),
+    Text('category-delete-confirm'),
     state=CategoryDeleteStates.confirm,
 )
 async def on_delete_category_confirm(

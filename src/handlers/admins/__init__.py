@@ -1,7 +1,6 @@
 from .start import dp
 from .mailing import dp
 from .shop_management import dp
-from .category_management import dp
 from .payments_management import dp
 from .products import dp
 from .users import dp
