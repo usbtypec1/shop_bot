@@ -164,5 +164,5 @@ data/products/pictures/*
 data/products/units/*
 data/database.db
 data/pending/*
-
+backups/
 src/.env2
