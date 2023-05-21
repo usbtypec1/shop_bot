@@ -1,3 +1,13 @@
+## 2023-05-21
+
+### Added:
+
+- Rename `SupportRequest` to `SupportTicket`.
+- Add new support ticket statuses:
+    - On Hold
+    - Pending
+- Change user new ticket submission flow.
+
 ## 2023-05-20
 
 ### Added
