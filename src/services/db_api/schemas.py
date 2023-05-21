@@ -189,6 +189,22 @@ class SupportTicket(BaseModel):
     )
 
 
+class SupportTicketReplySource(enum.Enum):
+    USER = 'User'
+    ADMIN = 'Admin'
+
+
+class SupportTicketReply(BaseModel):
+    __tablename__ = 'support_ticket_replies'
+
+    support_ticket_id = Column(
+        Integer,
+        ForeignKey('support_tickets.id'),
+        nullable=False,
+    )
+    source = Column(Enum(SupportTicketReplySource), nullable=False)
+
+
 class ShopInformation(BaseModel):
     __tablename__ = 'shop_information'
 
