@@ -203,6 +203,7 @@ class SupportTicketReply(BaseModel):
         nullable=False,
     )
     source = Column(Enum(SupportTicketReplySource), nullable=False)
+    text = Column(Text, nullable=False)
 
 
 class ShopInformation(BaseModel):
