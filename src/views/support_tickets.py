@@ -13,7 +13,7 @@ from keyboards.inline.callback_factories import (
     AdminSupportTicketDetailCallbackData,
     SupportTicketStatusListCallbackData,
     SupportTicketStatusUpdateCallbackData,
-    SupportTicketDeleteCallbackData,
+    SupportTicketDeleteCallbackData, SupportTicketAnswerUpdateCallbackData,
 )
 from services.time_utils import get_now_datetime
 from views.base import View
@@ -145,7 +145,9 @@ class AdminSupportTicketDetailView(View):
             markup.row(
                 InlineKeyboardButton(
                     text='✏️ Answer',
-                    callback_data='g'  # TODO implement
+                    callback_data=SupportTicketAnswerUpdateCallbackData().new(
+                        support_ticket_id=self.__support_ticket.id,
+                    ),
                 ),
             )
         markup.add(

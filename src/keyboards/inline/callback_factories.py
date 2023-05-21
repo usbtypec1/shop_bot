@@ -3,6 +3,19 @@ from aiogram.utils.callback_data import CallbackData
 import models
 
 
+class SupportTicketAnswerUpdateCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__(
+            'support-ticket-answer-update',
+            'support_ticket_id',
+        )
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data)
+        return {'support_ticket_id': int(callback_data['support_ticket_id'])}
+
+
 class SupportTicketDeleteCallbackData(CallbackData):
 
     def __init__(self):
@@ -13,7 +26,7 @@ class SupportTicketDeleteCallbackData(CallbackData):
 
     def parse(self, callback_data: str) -> dict:
         callback_data = super().parse(callback_data)
-        return {'support_ticket_id': int(callback_data['support_ticket_id']),}
+        return {'support_ticket_id': int(callback_data['support_ticket_id'])}
 
 
 class SupportTicketStatusUpdateCallbackData(CallbackData):

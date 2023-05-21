@@ -147,3 +147,19 @@ class SupportTicketRepository(BaseRepository):
             with session.begin():
                 result = session.execute(statement)
         return bool(result.rowcount)
+
+    def update_support_ticket_answer(
+            self,
+            *,
+            support_ticket_id: int,
+            answer: str,
+    ) -> bool:
+        statement = (
+            update(SupportTicket)
+            .where(SupportTicket.id == support_ticket_id)
+            .values(answer=answer)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        return bool(result.rowcount)

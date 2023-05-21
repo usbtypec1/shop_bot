@@ -12,5 +12,9 @@ class SupportTicketDeleteStatus(StatesGroup):
     confirm = State()
 
 
+class AdminSupportTicketUpdateStates(StatesGroup):
+    answer = State()
+
+
 class AnswerSupportRequest(state.StatesGroup):
     waiting_answer = state.State()
