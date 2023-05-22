@@ -1,4 +1,3 @@
-from aiogram.dispatcher.filters import state
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
@@ -14,7 +13,3 @@ class SupportTicketDeleteStatus(StatesGroup):
 
 class AdminSupportTicketUpdateStates(StatesGroup):
     answer = State()
-
-
-class AnswerSupportRequest(state.StatesGroup):
-    waiting_answer = state.State()
