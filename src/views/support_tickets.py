@@ -13,7 +13,10 @@ from keyboards.inline.callback_factories import (
     AdminSupportTicketDetailCallbackData,
     SupportTicketStatusListCallbackData,
     SupportTicketStatusUpdateCallbackData,
-    SupportTicketDeleteCallbackData, SupportTicketAnswerUpdateCallbackData,
+    SupportTicketDeleteCallbackData,
+    SupportTicketAnswerUpdateCallbackData,
+    SupportTicketReplyCreateCallbackData,
+    SupportTicketReplyListCallbackData,
 )
 from services.time_utils import get_now_datetime
 from views.base import View
@@ -202,8 +205,14 @@ class AdminClosedSupportTicketListView(AdminSupportTicketListView):
 
 class SupportTicketDetailView(View):
 
-    def __init__(self, support_ticket: models.SupportTicket):
+    def __init__(
+            self,
+            *,
+            support_ticket: models.SupportTicket,
+            has_replies: bool,
+    ):
         self.__support_ticket = support_ticket
+        self.__has_replies = has_replies
 
     def get_text(self) -> str:
         lines = [
@@ -220,19 +229,33 @@ class SupportTicketDetailView(View):
         return '\n'.join(lines)
 
     def get_reply_markup(self) -> InlineKeyboardMarkup | None:
+        markup = InlineKeyboardMarkup()
         if self.__support_ticket.status != models.SupportTicketStatus.CLOSED:
-            markup = InlineKeyboardMarkup(row_width=1)
-            markup.add(
+            markup.row(
                 InlineKeyboardButton(
                     text='➕ Reply',
-                    callback_data='reply'
+                    callback_data=SupportTicketReplyCreateCallbackData().new(
+                        support_ticket_id=self.__support_ticket.id,
+                    ),
                 ),
+            )
+        if self.__has_replies:
+            markup.row(
+                InlineKeyboardButton(
+                    text='Replies',
+                    callback_data=SupportTicketReplyListCallbackData().new(
+                        support_ticket_id=self.__support_ticket.id,
+                    ),
+                ),
+            )
+        if self.__support_ticket.status != models.SupportTicketStatus.CLOSED:
+            markup.row(
                 InlineKeyboardButton(
                     text='❌ Close ticket',
                     callback_data='close',
                 ),
             )
-            return markup
+        return markup
 
 
 class SupportTicketListView(View):
