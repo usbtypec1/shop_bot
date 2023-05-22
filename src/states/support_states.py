@@ -13,3 +13,7 @@ class SupportTicketDeleteStatus(StatesGroup):
 
 class AdminSupportTicketUpdateStates(StatesGroup):
     answer = State()
+
+
+class SupportTicketReplyCreateStates(SupportTicketDeleteStatus):
+    text = State()
