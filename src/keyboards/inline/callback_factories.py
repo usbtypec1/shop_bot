@@ -3,6 +3,15 @@ from aiogram.utils.callback_data import CallbackData
 import models
 
 
+class SupportTicketReplyListCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__(
+            'support-ticket-reply-list',
+            'support_ticket_id',
+        )
+
+
 class SupportTicketReplyCreateCallbackData(CallbackData):
 
     def __init__(self):
