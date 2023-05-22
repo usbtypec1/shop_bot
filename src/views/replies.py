@@ -11,9 +11,9 @@ class SupportTicketReplyView(View):
 
     def get_text(self) -> str:
         match self.__support_ticket_reply.source:
-            case models.SupportTicketReplySource.USER():
+            case models.SupportTicketReplySource.USER:
                 return f'From user: {self.__support_ticket_reply.text}'
-            case models.SupportTicketReplySource.ADMIN():
+            case models.SupportTicketReplySource.ADMIN:
                 return f'From admin: {self.__support_ticket_reply.text}'
             case _:
                 raise ValueError(
