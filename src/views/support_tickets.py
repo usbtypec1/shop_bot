@@ -49,7 +49,7 @@ class SupportTicketStatusChangedNotificationView(View):
             '❗️The status of your ticket was changed to'
             f' <b>{self.__support_ticket.status.value}</b>.',
             f'📆 Date: {now:%m/%d/%Y %H:%M}',
-            f'🆔 Ticket Number: #{self.__support_ticket.id}',
+            f'🆔 Ticket Number: #{self.__support_ticket.id_display}',
             f'📱 New Status: {self.__support_ticket.status.value}',
             '📧 Message: The status of your ticket was changed to'
             f' {self.__support_ticket.status.value}.\n',
@@ -130,7 +130,7 @@ class AdminSupportTicketDetailView(View):
 
     def get_text(self) -> str:
         lines = [
-            f'🆔 Request number: {self.__support_ticket.id}',
+            f'🆔 Request number: {self.__support_ticket.id_display}',
             f'➖➖➖➖➖➖➖➖➖➖',
             f'📗 Request Subject: {self.__support_ticket.subject}',
             f'{self.__support_ticket.issue}',
@@ -181,7 +181,7 @@ class AdminSupportTicketListView(View):
         for support_ticket in self.__support_tickets:
             text = (
                 f'{support_ticket.status.value}'
-                f' | #{support_ticket.id}'
+                f' | #{support_ticket.id_display}'
                 f' | {support_ticket.subject}'
             )
             markup.row(
@@ -216,7 +216,7 @@ class SupportTicketDetailView(View):
 
     def get_text(self) -> str:
         lines = [
-            f'🆔 Request number: #{self.__support_ticket.id}',
+            f'🆔 Request number: #{self.__support_ticket.id_display}',
             '➖➖➖➖➖➖➖➖➖➖',
             f'📗 Request Subject: {self.__support_ticket.subject}',
             f'📋 Description: {self.__support_ticket.issue}',
@@ -274,7 +274,7 @@ class SupportTicketListView(View):
         for support_ticket in self.__support_tickets:
             text = (
                 f'{support_ticket.status.value}'
-                f' | #{support_ticket.id}'
+                f' | #{support_ticket.id_display}'
                 f' | {support_ticket.subject}'
             )
             markup.row(
@@ -306,7 +306,8 @@ class SupportTicketCreatedView(View):
             'Your Support Enquiry has been sent.'
             ' We will respond within the next few hours.'
             ' Please expect delays on holidays and weekends.'
-            f'\nRequest number: #{self.__support_ticket_id}'
+            '\nRequest number:'
+            f' #{models.SupportTicket.to_display_id(self.__support_ticket_id)}'
         )
 
 
