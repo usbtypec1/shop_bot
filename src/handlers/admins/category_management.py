@@ -395,6 +395,72 @@ async def process_delete_subcategory_id(
             f'⚠️ Invalid subcategory ID. Please provide a valid ID.')
 
 
+# @dp.message_handler(
+#     IsUserAdmin(),
+#     state=DeleteConfirm.waiting_for_delete_subcategory_confirm,
+# )
+# async def process_delete_subcategory_confirm(
+#         message: Message,
+#         state: FSMContext,
+# ):
+#     state_data = await state.get_data()
+#     category_id = state_data['category_id']
+#     subcategory_id = state_data['subcategory_id']
+#     if message.text.lower() == 'yes':
+#         with db_api.create_session() as session:
+#             subcategory = queries.get_subcategory(session, subcategory_id)
+#             if subcategory:
+#                 queries.delete_subcategory(session, subcategory_id)
+#                 session.commit()
+
+#                 await message.reply(
+#                     '⌛️ Deleting Subcategory, Products and all of their images'
+#                     ' from the database and file system...\n'
+#                     'It will be refreshed in 5 seconds...'
+#                 )
+#                 await asyncio.sleep(
+#                     5)  # Add a delay of 5 seconds so the deletion finishes
+#                 await message.answer(
+#                     '✅ Successfully Removed the Selected Subcategory!')
+
+#                 category = queries.get_category(session, category_id)
+#                 if category:
+#                     category_name = category.name
+#                     subcategories = queries.get_subcategories(
+#                         session=session,
+#                         category_id=category_id,
+#                     )
+#                     await CategoryMenuResponse(
+#                         update=message,
+#                         category_id=category_id,
+#                         category_name=category_name,
+#                         subcategories=subcategories,
+#                     )
+#                     await state.finish()
+#                 else:
+#                     await message.reply(
+#                         f'⚠️ No category found with ID {category_id}.')
+#             else:
+#                 await message.reply(
+#                     f'⚠️ No subcategory found with ID {subcategory_id}.')
+#     elif message.text.lower() == 'cancel':
+#         await state.finish()
+#         with db_api.create_session() as session:
+#             await CategoryMenuResponse(
+#                 message, category_id,
+#                 queries.get_category(session, category_id).name,
+#                 queries.get_subcategories(session, category_id)
+#             )
+#     else:
+#         await message.reply(
+#             f'⚠️ You have to type either yes or cancel,'
+#             f' or otherwise use the menu to back to the category.'
+#         )
+
+### Tweaking this handler so it will not encounter any session errors..
+### This query attempt, "category = queries.get_category(session, category_id)", happened after the session has already been closed, leading to the InvalidRequestError.
+## to fix it:
+
 @dp.message_handler(
     IsUserAdmin(),
     state=DeleteConfirm.waiting_for_delete_subcategory_confirm,
@@ -418,31 +484,93 @@ async def process_delete_subcategory_confirm(
                     ' from the database and file system...\n'
                     'It will be refreshed in 5 seconds...'
                 )
-                await asyncio.sleep(
-                    5)  # Add a delay of 5 seconds so the deletion finishes
-                await message.answer(
-                    '✅ Successfully Removed the Selected Subcategory!')
+        # We close the first session here.
+        await asyncio.sleep(5)  # Add a delay of 5 seconds so the deletion finishes
+        # Now we open a new session to continue the database operations.
+        with db_api.create_session() as session:
+            await message.answer(
+                '✅ Successfully Removed the Selected Subcategory!')
 
-                category = queries.get_category(session, category_id)
-                if category:
-                    category_name = category.name
-                    subcategories = queries.get_subcategories(
-                        session=session,
-                        category_id=category_id,
-                    )
-                    await CategoryMenuResponse(
-                        update=message,
-                        category_id=category_id,
-                        category_name=category_name,
-                        subcategories=subcategories,
-                    )
-                    await state.finish()
-                else:
-                    await message.reply(
-                        f'⚠️ No category found with ID {category_id}.')
+            category = queries.get_category(session, category_id)
+            if category:
+                category_name = category.name
+                subcategories = queries.get_subcategories(
+                    session=session,
+                    category_id=category_id,
+                )
+                await CategoryMenuResponse(
+                    update=message,
+                    category_id=category_id,
+                    category_name=category_name,
+                    subcategories=subcategories,
+                )
+                await state.finish()
             else:
                 await message.reply(
-                    f'⚠️ No subcategory found with ID {subcategory_id}.')
+                    f'⚠️ No category found with ID {category_id}.')
+    elif message.text.lower() == 'cancel':
+        await state.finish()
+        with db_api.create_session() as session:
+            await CategoryMenuResponse(
+                message, category_id,
+                queries.get_category(session, category_id).name,
+                queries.get_subcategories(session, category_id)
+            )
+    else:
+        await message.reply(
+            f'⚠️ You have to type either yes or cancel,'
+            f' or otherwise use the menu to back to the category.'
+        )
+
+
+
+@dp.message_handler(
+    IsUserAdmin(),
+    state=DeleteConfirm.waiting_for_delete_subcategory_confirm,
+)
+async def process_delete_subcategory_confirm(
+        message: Message,
+        state: FSMContext,
+):
+    state_data = await state.get_data()
+    category_id = state_data['category_id']
+    subcategory_id = state_data['subcategory_id']
+    if message.text.lower() == 'yes':
+        with db_api.create_session() as session:
+            subcategory = queries.get_subcategory(session, subcategory_id)
+            if subcategory:
+                queries.delete_subcategory(session, subcategory_id)
+                session.commit()
+
+                await message.reply(
+                    '⌛️ Deleting Subcategory, Products and all of their images'
+                    ' from the database and file system...\n'
+                    'It will be refreshed in 5 seconds...'
+                )
+        # We close the first session here.
+        await asyncio.sleep(5)  # Add a delay of 5 seconds so the deletion finishes
+        # Now we open a new session to continue the database operations.
+        with db_api.create_session() as session:
+            await message.answer(
+                '✅ Successfully Removed the Selected Subcategory!')
+
+            category = queries.get_category(session, category_id)
+            if category:
+                category_name = category.name
+                subcategories = queries.get_subcategories(
+                    session=session,
+                    category_id=category_id,
+                )
+                await CategoryMenuResponse(
+                    update=message,
+                    category_id=category_id,
+                    category_name=category_name,
+                    subcategories=subcategories,
+                )
+                await state.finish()
+            else:
+                await message.reply(
+                    f'⚠️ No category found with ID {category_id}.')
     elif message.text.lower() == 'cancel':
         await state.finish()
         with db_api.create_session() as session:
