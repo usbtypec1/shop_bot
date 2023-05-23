@@ -605,10 +605,42 @@ def delete_category(session: orm.Session, category_id: int) -> None:
         delete(schemas.Category).filter_by(id=category_id))
 
 
+# def delete_subcategory(session: orm.Session, subcategory_id: int) -> None:
+#     # First, get all products within the subcategory
+#     products = session.query(schemas.Product).filter_by(
+#         subcategory_id=subcategory_id).all()
+
+#     # Next, for each product, remove associated file from the filesystem
+#     for product in products:
+#         if product.picture is not None:
+#             file_path = config.PRODUCT_PICTURE_PATH / product.picture
+#             if file_path.exists():
+#                 file_path.unlink()  # Delete the file from the local storage
+
+#     # Then, delete all products within the subcategory
+#     session.execute(delete(schemas.Product).filter_by(
+#         subcategory_id=subcategory_id))
+
+#     # Finally, delete the subcategory itself
+#     session.execute(
+#         delete(schemas.Subcategory).filter_by(id=subcategory_id))
+
+### the previous delete_subcategory, did not check if the product has any images linked in the database and filesystem.
+### This could cause an error when a subcategory contains products that has no images.
+### I fixed it with the following:
+
+
 def delete_subcategory(session: orm.Session, subcategory_id: int) -> None:
     # First, get all products within the subcategory
     products = session.query(schemas.Product).filter_by(
         subcategory_id=subcategory_id).all()
+
+    # If there are no products, just delete the subcategory
+    if not products:
+        session.execute(delete(schemas.Subcategory).filter_by(id=subcategory_id))
+        return
+
+    # If there are products, proceed with the existing logic
 
     # Next, for each product, remove associated file from the filesystem
     for product in products:
@@ -622,8 +654,7 @@ def delete_subcategory(session: orm.Session, subcategory_id: int) -> None:
         subcategory_id=subcategory_id))
 
     # Finally, delete the subcategory itself
-    session.execute(
-        delete(schemas.Subcategory).filter_by(id=subcategory_id))
+    session.execute(delete(schemas.Subcategory).filter_by(id=subcategory_id))
 
 
 def delete_product(session: orm.Session, product_id: int) -> None:
