@@ -8,7 +8,7 @@ from loader import dp
 from repositories.database import ShopInfoRepository
 from repositories.database.support_tickets import SupportTicketRepository
 from repositories.database.users import UserRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from services.rate_limit import check_support_ticket_create_rate_limit
 from states.support_states import SupportTicketCreateStates
 from views import answer_view, SupportRulesAcceptView, SupportTicketCreatedView

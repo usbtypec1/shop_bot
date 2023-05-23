@@ -2,7 +2,7 @@ import aiogram.types
 
 from keyboards.reply import support_keybords
 from responses import base
-from services.db_api import schemas
+from database import schemas
 
 
 class UserSupportRequestsResponse(base.BaseResponse):

@@ -6,7 +6,7 @@ from keyboards.inline.callback_factories import (
 )
 from loader import dp
 from repositories.database.support_tickets import SupportTicketRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from views import AdminSupportTicketDetailView, edit_message_by_view
 
 

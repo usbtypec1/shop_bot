@@ -1,7 +1,7 @@
 import aiogram.types
 from aiogram.dispatcher import middlewares, handler
-from services.db_api import queries
-from services import db_api
+from database import queries
+import database
 
 
 class BannedUserMiddleware(middlewares.BaseMiddleware):
@@ -13,6 +13,6 @@ class BannedUserMiddleware(middlewares.BaseMiddleware):
         elif update.callback_query:
             user_id = update.callback_query.from_user.id
         if user_id is not None:
-            with db_api.create_session() as session:
+            with database.create_session() as session:
                 if queries.check_is_user_banned(session, user_id):
                     raise handler.CancelHandler()

@@ -2,7 +2,7 @@ import enum
 
 from sqlalchemy import Column, Enum, Text
 
-from services.db_api.schemas.base import Base
+from database.schemas.base import Base
 
 __all__ = (
     'ShopInfoField',

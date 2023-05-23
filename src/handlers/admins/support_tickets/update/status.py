@@ -9,7 +9,7 @@ from keyboards.inline.callback_factories import (
 from loader import dp
 from repositories.database.support_tickets import SupportTicketRepository
 from services.alerts import notify_user_ticket_status_changed
-from services.db_api.session import session_factory
+from database.session import session_factory
 from views import (
     SupportTicketStatusListView,
     edit_message_by_view,

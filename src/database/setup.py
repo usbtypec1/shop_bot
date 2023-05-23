@@ -1,7 +1,7 @@
 import structlog
 
-from services.db_api.engine import engine
-from services.db_api.schemas.base import Base
+from database.engine import engine
+from database.schemas.base import Base
 
 __all__ = ('init_tables',)
 

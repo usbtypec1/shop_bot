@@ -11,7 +11,7 @@ from sqlalchemy import (
     literal,
 )
 
-from services.db_api import schemas
+from database import schemas
 
 
 def add_user(session: orm.Session, telegram_id: int, username: str) -> None:

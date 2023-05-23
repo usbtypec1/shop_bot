@@ -6,7 +6,7 @@ import aiogram.utils.exceptions
 import config
 from config import AppSettings
 from loader import bot
-from services.db_api import schemas
+from database import schemas
 
 
 class BaseNotification(abc.ABC):

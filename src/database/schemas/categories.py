@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy.orm import relationship
 
-from services.db_api.schemas.base import BaseModel
+from database.schemas.base import BaseModel
 
 __all__ = ('Category',)
 

@@ -4,8 +4,9 @@ import responses.product_management
 from filters import is_admin
 from keyboards.inline import callback_factories
 from loader import dp
-from services import db_api, product_services
-from services.db_api import queries
+from services import product_services
+import database
+from database import queries
 
 
 @dp.callback_query_handler(
@@ -14,7 +15,7 @@ async def delete_product(query: aiogram.types.CallbackQuery, callback_data: dict
     category_id = int(callback_data['category_id'])
     subcategory_id = callback_data['subcategory_id']
     product_id = int(callback_data['product_id'])
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product_services.ProductLifeCycle(product_id=product_id).load_from_db(session).delete(session)
         await responses.product_management.SuccessRemovalUnitResponse(query)
         if subcategory_id != '':
@@ -35,7 +36,7 @@ async def delete_product_units(query: aiogram.types.CallbackQuery, callback_data
     category_id = int(category_id) if category_id != '' else None
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
     product_id = int(callback_data['product_id'])
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product_life_cycle = product_services.ProductLifeCycle(
             product_id=product_id).load_from_db(session).delete_product_units(session)
         product = queries.get_product(session, product_id)

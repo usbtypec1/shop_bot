@@ -9,7 +9,7 @@ import keyboards.reply.product_management_keyboards
 from keyboards.inline import product_management_keyboards
 from keyboards.reply import shop_management_keyboards
 from responses import base
-from services.db_api import schemas
+from database import schemas
 from services.files import answer_medias, answer_media_with_text
 
 logger = structlog.get_logger('responses')

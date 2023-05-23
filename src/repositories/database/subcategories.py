@@ -5,7 +5,7 @@ from structlog.contextvars import bound_contextvars
 
 import models
 from repositories.database.base import BaseRepository
-from services.db_api.schemas import Subcategory
+from database.schemas import Subcategory
 
 __all__ = ('SubcategoryRepository',)
 

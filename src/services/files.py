@@ -14,7 +14,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-from services.db_api.schemas import Product
+from database.schemas import Product
 
 logger = structlog.get_logger('app')
 

@@ -4,7 +4,7 @@ from aiogram.types import Message
 from filters.is_admin import IsUserAdmin
 from loader import dp
 from repositories.database import CategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from views import CategoryListView, answer_view
 
 

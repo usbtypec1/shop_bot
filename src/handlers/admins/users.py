@@ -8,14 +8,14 @@ from filters import is_admin
 from keyboards.inline import callback_factories
 from keyboards.inline import common_keybords
 from loader import dp, bot
-from services import db_api
-from services.db_api import queries
+import database
+from database import queries
 from states import users_states
 
 
 @dp.message_handler(filters.Text('🙍‍♂ Users'), is_admin.IsUserAdmin())
 async def users(message: aiogram.types.Message):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         total_balance, page_size = queries.get_total_balance(session), 10
         await responses.users.UsersResponse(
             message, queries.get_users(session, page_size + 1), total_balance,
@@ -27,7 +27,7 @@ async def users(message: aiogram.types.Message):
     callback_factories.UserCallbackFactory().filter(filter='', id='', action=''), is_admin.IsUserAdmin()
 )
 async def users(query: aiogram.types.CallbackQuery, callback_data: dict):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         total_balance = queries.get_total_balance(session)
         page, page_size = int(callback_data['page']), 10
         await responses.users.UsersResponse(
@@ -55,7 +55,7 @@ async def search_users(message: aiogram.types.Message, state: dispatcher.FSMCont
             ids.append(int(identifier))
         else:
             usernames.append(identifier.lower())
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user_list = queries.get_users(session, page_size + 1, page_size * page, usernames, ids)
         for user in user_list:
             total_balance += decimal.Decimal(str(user.balance))
@@ -81,7 +81,7 @@ async def users(query: aiogram.types.CallbackQuery, callback_data: dict):
             ids.append(int(identifier))
         else:
             usernames.append(identifier.lower())
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user_list = queries.get_users(session, page_size + 1, page_size * page, usernames, ids)
         for user in user_list:
             total_balance += decimal.Decimal(str(user.balance))
@@ -94,7 +94,7 @@ async def users(query: aiogram.types.CallbackQuery, callback_data: dict):
     callback_factories.UserCallbackFactory().filter(action='manage'), is_admin.IsUserAdmin()
 )
 async def user_menu(query: aiogram.types.CallbackQuery, callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, int(callback_data['id']))
         number_of_orders = queries.count_user_orders(session, user.id)
         await responses.users.UserResponse(query, user, number_of_orders, callback_data)
@@ -104,7 +104,7 @@ async def user_menu(query: aiogram.types.CallbackQuery, callback_data: dict[str:
     callback_factories.UserCallbackFactory().filter(action='ban', is_confirmed=''), is_admin.IsUserAdmin()
 )
 async def ban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, int(callback_data['id']))
         await responses.users.BanUserAlertResponse(query, user, callback_data)
 
@@ -113,7 +113,7 @@ async def ban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str: 
     callback_factories.UserCallbackFactory().filter(action='ban'), is_admin.IsUserAdmin()
 )
 async def ban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user_id = int(callback_data['id'])
         if callback_data['is_confirmed'] == 'yes':
             user = queries.ban_user(session, user_id)
@@ -127,7 +127,7 @@ async def ban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, 
     callback_factories.UserCallbackFactory().filter(action='unban', is_confirmed=''), is_admin.IsUserAdmin()
 )
 async def unban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, int(callback_data['id']))
         await responses.users.UnbanUserAlertResponse(query, user, callback_data)
 
@@ -136,7 +136,7 @@ async def unban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str
     callback_factories.UserCallbackFactory().filter(action='unban'), is_admin.IsUserAdmin()
 )
 async def unban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user_id = int(callback_data['id'])
         if callback_data['is_confirmed'] == 'yes':
             user = queries.unban_user(session, user_id)
@@ -150,7 +150,7 @@ async def unban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str
     callback_factories.UserCallbackFactory().filter(action='delete', is_confirmed=''), is_admin.IsUserAdmin()
 )
 async def delete_user(query: aiogram.types.CallbackQuery, callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, int(callback_data['id']))
         await responses.users.DeleteUserAlert(query, user, callback_data)
 
@@ -159,7 +159,7 @@ async def delete_user(query: aiogram.types.CallbackQuery, callback_data: dict[st
     callback_factories.UserCallbackFactory().filter(action='delete'), is_admin.IsUserAdmin()
 )
 async def delete_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user_id = int(callback_data['id'])
         user = queries.get_user(session, user_id)
         if callback_data['is_confirmed'] == 'yes':
@@ -189,7 +189,7 @@ async def edit_balance(query: aiogram.types.CallbackQuery, callback_data: dict[s
 async def enter_new_balance(message: aiogram.types.Message, state: dispatcher.FSMContext):
     if message.text.replace('.', '').isdigit():
         callback_data = (await state.get_data())['callback_data']
-        with db_api.create_session() as session:
+        with database.create_session() as session:
             user = queries.get_user(session, callback_data['user_id'])
             await responses.users.EditBalanceAlertResponse(
                 message, user, message.text, callback_data
@@ -206,7 +206,7 @@ async def balance_editing_reason(query: aiogram.types.CallbackQuery, callback_da
     if callback_data['is_confirmed'] == 'yes':
         await responses.users.BalanceEditingReasonResponse(query, callback_data)
     else:
-        with db_api.create_session() as session:
+        with database.create_session() as session:
             user_id = int(callback_data['user_id'])
             user = queries.get_user(session, user_id)
             await responses.users.UserResponse(
@@ -216,7 +216,7 @@ async def balance_editing_reason(query: aiogram.types.CallbackQuery, callback_da
 
 @dp.callback_query_handler(callback_factories.EditUserBalanceCallbackFactory().filter(), is_admin.IsUserAdmin())
 async def edit_balance(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         new_balance = float(callback_data['balance'])
         user_id = int(callback_data['user_id'])
         match callback_data['reason']:
@@ -249,7 +249,7 @@ async def top_up_balance(query: aiogram.types.CallbackQuery, callback_data: dict
 async def enter_balance(message: aiogram.types.Message, state: dispatcher.FSMContext):
     if message.text.replace('.', '').isdigit():
         callback_data = (await state.get_data())['callback_data']
-        with db_api.create_session() as session:
+        with database.create_session() as session:
             user = queries.get_user(session, callback_data['user_id'])
             await responses.users.TopUpBalanceAlertResponse(
                 message, user, message.text, callback_data
@@ -266,7 +266,7 @@ async def balance_refill_method(query: aiogram.types.CallbackQuery, callback_dat
     if callback_data['is_confirmed'] == 'yes':
         await responses.users.BalanceRefillMethodResponse(query, callback_data)
     else:
-        with db_api.create_session() as session:
+        with database.create_session() as session:
             user_id = int(callback_data['user_id'])
             user = queries.get_user(session, user_id)
             await responses.users.UserResponse(
@@ -276,7 +276,7 @@ async def balance_refill_method(query: aiogram.types.CallbackQuery, callback_dat
 
 @dp.callback_query_handler(callback_factories.TopUpUserBalanceCallbackFactory().filter(), is_admin.IsUserAdmin())
 async def top_up_balance(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         balance_delta = decimal.Decimal(callback_data['balance_delta'])
         user_id = int(callback_data['user_id'])
         reason = callback_data['payment_method'].capitalize()

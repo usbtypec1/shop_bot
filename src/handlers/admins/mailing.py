@@ -6,8 +6,8 @@ import responses.mailing
 import responses.main_menu
 from filters import is_admin
 from loader import dp
-from services import db_api
-from services.db_api import queries
+import database
+from database import queries
 from states import mailing_states
 
 
@@ -25,7 +25,7 @@ async def create_newsletter(message: aiogram.types.Message):
 @dp.message_handler(is_admin.IsUserAdmin(), state=mailing_states.MailingStates.waiting_newsletter, content_types='any')
 async def send_newsletter(message: aiogram.types.Message, state: dispatcher.FSMContext):
     await state.finish()
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         users_id = queries.get_users_telegram_id(session)
     await responses.mailing.MailingStartResponse(message)
     successfully_newsletters = unsuccessfully_newsletters = 0

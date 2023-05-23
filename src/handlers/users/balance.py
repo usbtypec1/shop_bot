@@ -7,15 +7,16 @@ import responses.balance
 import responses.payments
 from keyboards.inline import callback_factories
 from loader import dp
-from services import db_api, notifications
-from services.db_api import queries
+from services import notifications
+import database
+from database import queries
 from services.payments_apis import coinbase_api
 from states import balance_states
 
 
 @dp.message_handler(filters.Text('💲 Balance'))
 async def balance(message: aiogram.types.Message):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, message.from_user.id):
             raise exceptions.UserNotInDatabase
         await responses.balance.BalanceResponse(
@@ -25,7 +26,7 @@ async def balance(message: aiogram.types.Message):
 
 @dp.callback_query_handler(callback_factories.TopUpBalanceCallbackFactory().filter(amount='', payment_method=''))
 async def top_up_balance(query: aiogram.types.CallbackQuery, callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
     await responses.balance.BalanceAmountResponse(query)
@@ -35,7 +36,7 @@ async def top_up_balance(query: aiogram.types.CallbackQuery, callback_data: dict
 
 @dp.message_handler(state=balance_states.TopUpBalance.waiting_for_amount)
 async def balance_amount(message: aiogram.types.Message, state: aiogram.dispatcher.FSMContext):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, message.from_user.id):
             raise exceptions.UserNotInDatabase
     if message.text.replace('.', '').isdigit() and '-' not in message.text:
@@ -55,7 +56,7 @@ async def balance_amount(message: aiogram.types.Message, state: aiogram.dispatch
     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE)
 )
 async def top_up_balance_with_coinbase(query: aiogram.types.CallbackQuery, callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, telegram_id=query.from_user.id)
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase

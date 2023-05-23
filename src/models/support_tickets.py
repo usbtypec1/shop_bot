@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
-from services.db_api.schemas import SupportTicketStatus
+from database.schemas import SupportTicketStatus
 
 __all__ = (
     'SupportTicket',

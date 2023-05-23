@@ -9,9 +9,8 @@ import config
 import handlers
 import middlewares
 import tasks
-from services import db_api
 from services import notifications
-from services.db_api.setup import init_tables
+from database.setup import init_tables
 
 logger = structlog.get_logger('app')
 

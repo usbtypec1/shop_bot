@@ -11,9 +11,10 @@ import responses.products
 from keyboards.inline import callback_factories
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from services import db_api, notifications
-from services.db_api import queries
-from services.db_api.session import session_factory
+from services import notifications
+import database
+from database import queries
+from database.session import session_factory
 from services.payments_apis import coinbase_api
 from states import product_states
 
@@ -21,7 +22,7 @@ from states import product_states
 @dp.message_handler(filters.Text('🛒 Products'),
                     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE))
 async def categories(message: aiogram.types.Message):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, message.from_user.id):
             raise exceptions.UserNotInDatabase
         category_list = queries.get_all_categories(session)
@@ -33,7 +34,7 @@ async def categories(message: aiogram.types.Message):
     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE)
 )
 async def categories(query: aiogram.types.CallbackQuery):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
         category_list = queries.get_all_categories(session)
@@ -56,7 +57,7 @@ async def category_items(query: aiogram.types.CallbackQuery,
         await query.answer('Coming soon...', show_alert=True)
         return
 
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
         category_item_list = queries.get_category_items(session, category_id)
@@ -85,7 +86,7 @@ async def subcategory_products(query: aiogram.types.CallbackQuery,
         await query.answer('Coming soon...', show_alert=True)
         return
 
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
         products = queries.get_category_products(session, category_id,
@@ -105,7 +106,7 @@ async def product_menu(query: aiogram.types.CallbackQuery,
     subcategory_id = callback_data['subcategory_id']
     category_id = int(callback_data['category_id'])
     subcategory_id = subcategory_id if subcategory_id != '' else None
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
         product = queries.get_product(session, product_id)
@@ -135,7 +136,7 @@ async def product_menu(query: aiogram.types.CallbackQuery,
     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE))
 async def product_quantity(query: aiogram.types.CallbackQuery,
                            callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
     await responses.products.ProductQuantityResponse(
@@ -150,7 +151,7 @@ async def product_quantity(query: aiogram.types.CallbackQuery,
     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE))
 async def own_product_quantity(query: aiogram.types.CallbackQuery,
                                callback_data: dict[str, str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
     await product_states.EnterProductQuantity.waiting_quantity.set()
@@ -166,7 +167,7 @@ async def own_product_quantity(query: aiogram.types.CallbackQuery,
 )
 async def product_quantity(query: aiogram.types.CallbackQuery,
                            callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
             raise exceptions.UserNotInDatabase
     await responses.products.PaymentMethodResponse(
@@ -178,7 +179,7 @@ async def product_quantity(query: aiogram.types.CallbackQuery,
 @dp.message_handler(state=product_states.EnterProductQuantity.waiting_quantity)
 async def another_product_quantity(message: aiogram.types.Message,
                                    state: dispatcher.FSMContext):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         if not queries.check_is_user_exists(session, message.from_user.id):
             raise exceptions.UserNotInDatabase
     quantity = message.text
@@ -231,7 +232,7 @@ async def pay_with_coinpayments(query: aiogram.types.CallbackQuery):
     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE))
 async def pay_with_coinbase(query: aiogram.types.CallbackQuery,
                             callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, telegram_id=query.from_user.id)
         if user is None:
             raise exceptions.UserNotInDatabase
@@ -275,7 +276,7 @@ async def pay_with_coinbase(query: aiogram.types.CallbackQuery,
     filters.ChatTypeFilter(aiogram.types.ChatType.PRIVATE))
 async def pay_with_balance(query: aiogram.types.CallbackQuery,
                            callback_data: dict[str: str]):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product = queries.get_product(session, int(callback_data['product_id']))
         quantity = int(callback_data['quantity'])
         amount = float(quantity * decimal.Decimal(str(product.price)))

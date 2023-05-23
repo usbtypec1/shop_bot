@@ -1,6 +1,6 @@
 from sqlalchemy import BigInteger, Column, Float, String, Boolean
 
-from services.db_api.schemas.base import BaseModel
+from database.schemas.base import BaseModel
 
 __all__ = ('User',)
 

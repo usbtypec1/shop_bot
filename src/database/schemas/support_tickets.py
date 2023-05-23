@@ -9,7 +9,7 @@ from sqlalchemy import (
     Enum,
 )
 
-from services.db_api.schemas.base import BaseModel
+from database.schemas.base import BaseModel
 
 __all__ = (
     'SupportTicketStatus',

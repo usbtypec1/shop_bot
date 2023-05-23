@@ -1,4 +1,4 @@
-from services.db_api.schemas import ShopInfoField
+from database.schemas import ShopInfoField
 
 __all__ = ('ShopInfo',)
 

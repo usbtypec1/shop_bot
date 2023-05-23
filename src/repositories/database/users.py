@@ -3,7 +3,7 @@ from sqlalchemy import select
 import exceptions
 import models
 from repositories.database.base import BaseRepository
-from services.db_api.schemas import User
+from database.schemas import User
 
 __all__ = ('UserRepository',)
 
