@@ -6,6 +6,8 @@ from services.db_api.engine import engine
 
 __all__ = (
     'session_factory',
+    'create_session',
+    'RawSession',
 )
 
 

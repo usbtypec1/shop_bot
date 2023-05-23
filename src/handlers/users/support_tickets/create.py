@@ -1,12 +1,13 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, ContentType, ReplyKeyboardRemove, Update
+from aiogram.types import Message, ContentType, Update
 
+import models
 from exceptions import SupportTicketCreateRateLimitError
 from loader import dp
+from repositories.database import ShopInfoRepository
 from repositories.database.support_tickets import SupportTicketRepository
 from repositories.database.users import UserRepository
-from services.db_api.queries import get_rules
 from services.db_api.session import session_factory
 from services.rate_limit import check_support_ticket_create_rate_limit
 from states.support_states import SupportTicketCreateStates
@@ -44,9 +45,11 @@ async def on_start_support_ticket_creation_flow(message: Message) -> None:
             last_ticket_created_at=support_ticket.created_at,
         )
 
-    with session_factory() as session:
-        rules = get_rules(session)
-    rules = rules.value if rules is not None else 'Rules'
+    shop_info_repository = ShopInfoRepository(session_factory)
+    rules = shop_info_repository.get_value_or_none(
+        key=models.ShopInfo.SUPPORT_RULES.name,
+    )
+    rules = rules or 'Rules'
     await SupportTicketCreateStates.confirm_rules.set()
     view = SupportRulesAcceptView()
     await message.answer(rules)

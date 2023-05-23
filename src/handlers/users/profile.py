@@ -23,7 +23,7 @@ import exceptions
 #             queries.get_purchases(session, user.id, limit=10)
 #         )
 
- @dp.message_handler(filters.Text('📱 Profile'))
+@dp.message_handler(filters.Text('📱 Profile'))
 async def profile(message: aiogram.types.Message):
     with db_api.create_session() as session:
         user = queries.get_user(session, telegram_id=message.from_user.id)

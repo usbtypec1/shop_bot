@@ -31,9 +31,9 @@ class BalanceResponse(BaseResponse):
 #         await self.__query.answer()
 #         await self.__query.message.edit_text('🔢 Enter amount')
 
-class BalanceResponse(base.BaseResponse):
+class BalanceResponse(BaseResponse):
 
-    def __init__(self, message: aiogram.types.Message, balance: float):
+    def __init__(self, message: Message, balance: float):
         self.__message = message
         self.__balance = balance
         self.__keyboard = balance_keyboards.TopUpBalanceKeyboard()

@@ -20,7 +20,8 @@ async def accept_rules(message: aiogram.types.Message):
         )
         await responses.start.NewUserResponse(message)
         await responses.main_menu.AdminMainMenuResponse(message)
-        await notifications.NewUserNotification(message.from_user.id, message.from_user.username).send()
+        await notifications.NewUserNotification(message.from_user.id,
+                                                message.from_user.username).send()
 
 
 @dp.message_handler(filters.CommandStart(), is_admin.IsUserAdmin())
