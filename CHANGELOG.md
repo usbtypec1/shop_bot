@@ -1,3 +1,9 @@
+## 2023-05-23
+
+### Added:
+
+- Tickets search system.
+
 ## 2023-05-22
 
 ### Added:
