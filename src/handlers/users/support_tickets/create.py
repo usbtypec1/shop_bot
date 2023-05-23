@@ -1,14 +1,30 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, ContentType, ReplyKeyboardRemove
+from aiogram.types import Message, ContentType, ReplyKeyboardRemove, Update
 
+from exceptions import SupportTicketCreateRateLimitError
 from loader import dp
 from repositories.database.support_tickets import SupportTicketRepository
 from repositories.database.users import UserRepository
 from services.db_api.queries import get_rules
 from services.db_api.session import session_factory
+from services.rate_limit import check_support_ticket_create_rate_limit
 from states.support_states import SupportTicketCreateStates
 from views import answer_view, SupportRulesAcceptView, SupportTicketCreatedView
+
+
+@dp.errors_handler(
+    exception=SupportTicketCreateRateLimitError,
+)
+async def on_support_ticket_create_rate_limit_error(
+        update: Update,
+        exception: SupportTicketCreateRateLimitError,
+) -> bool:
+    await update.message.answer(
+        f'You have to wait for {exception.remaining_time_in_seconds}s'
+        f' in order to open another ticket'
+    )
+    return True
 
 
 @dp.message_handler(
@@ -17,6 +33,17 @@ from views import answer_view, SupportRulesAcceptView, SupportTicketCreatedView
     state='*',
 )
 async def on_start_support_ticket_creation_flow(message: Message) -> None:
+    support_ticket_repository = SupportTicketRepository(session_factory)
+    support_ticket = (
+        support_ticket_repository.get_latest_support_ticket_or_none(
+            user_telegram_id=message.from_user.id,
+        )
+    )
+    if support_ticket is not None:
+        check_support_ticket_create_rate_limit(
+            last_ticket_created_at=support_ticket.created_at,
+        )
+
     with session_factory() as session:
         rules = get_rules(session)
     rules = rules.value if rules is not None else 'Rules'

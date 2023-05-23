@@ -24,6 +24,7 @@ class SupportTicketRepository(BaseRepository):
             issue=support_ticket.issue,
             answer=support_ticket.answer,
             status=support_ticket.status,
+            created_at=support_ticket.created_at,
         )
 
     def get_by_user_telegram_id(
@@ -48,6 +49,7 @@ class SupportTicketRepository(BaseRepository):
                 issue=support_ticket.issue,
                 answer=support_ticket.answer,
                 status=support_ticket.status,
+                created_at=support_ticket.created_at,
             ) for support_ticket, telegram_id in result
         ]
 
@@ -78,6 +80,7 @@ class SupportTicketRepository(BaseRepository):
             issue=support_ticket.issue,
             answer=support_ticket.answer,
             status=support_ticket.status,
+            created_at=support_ticket.created_at,
         )
 
     def get_all_open(self) -> list[models.SupportTicket]:
@@ -98,6 +101,7 @@ class SupportTicketRepository(BaseRepository):
                 issue=support_ticket.issue,
                 answer=support_ticket.answer,
                 status=support_ticket.status,
+                created_at=support_ticket.created_at,
             ) for support_ticket, telegram_id in result
         ]
 
@@ -119,6 +123,7 @@ class SupportTicketRepository(BaseRepository):
                 issue=support_ticket.issue,
                 answer=support_ticket.answer,
                 status=support_ticket.status,
+                created_at=support_ticket.created_at,
             ) for support_ticket, telegram_id in result
         ]
 
@@ -163,3 +168,29 @@ class SupportTicketRepository(BaseRepository):
             with session.begin():
                 result = session.execute(statement)
         return bool(result.rowcount)
+
+    def get_latest_support_ticket_or_none(
+            self,
+            *,
+            user_telegram_id: int,
+    ) -> models.SupportTicket | None:
+        statement = (
+            select(SupportTicket)
+            .join(User, SupportTicket.user_id == User.id)
+            .where(User.telegram_id == user_telegram_id)
+            .order_by(SupportTicket.created_at.desc())
+            .limit(1)
+        )
+        with self._session_factory() as session:
+            support_ticket = session.scalar(statement)
+        if support_ticket is not None:
+            return models.SupportTicket(
+                id=support_ticket.id,
+                user_id=support_ticket.user_id,
+                user_telegram_id=user_telegram_id,
+                subject=support_ticket.subject,
+                issue=support_ticket.issue,
+                answer=support_ticket.answer,
+                status=support_ticket.status,
+                created_at=support_ticket.created_at,
+            )

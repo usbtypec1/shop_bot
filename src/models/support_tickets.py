@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 
 from services.db_api.schemas import SupportTicketStatus
@@ -17,6 +18,7 @@ class SupportTicket:
     issue: str
     answer: str | None
     status: SupportTicketStatus
+    created_at: datetime.datetime
 
     @property
     def id_display(self) -> int:
