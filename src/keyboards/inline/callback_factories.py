@@ -214,9 +214,12 @@ class MailingCallbackFactory(CallbackData):
         super().__init__('mailing', 'markup')
 
 
-class ShopInformationFactory(CallbackData):
+class ShopInfoUpdateCallbackData(CallbackData):
     def __init__(self):
-        super().__init__('shop_information', 'object', 'action')
+        super().__init__(
+            'shop-info-update',
+            'key',
+        )
 
 
 class UserCallbackFactory(CallbackData):

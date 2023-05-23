@@ -16,6 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from services.db_api import base
+from services.db_api.base import Base
 
 
 class BaseModel(base.Base):
@@ -206,8 +207,16 @@ class SupportTicketReply(BaseModel):
     text = Column(Text, nullable=False)
 
 
-class ShopInformation(BaseModel):
+class ShopInfoField(enum.Enum):
+    RULES = '📗 Rules'
+    FAQ = 'ℹ️ FAQ'
+    GREETINGS = '👋 Greetings'
+    RETURN = '✋ Return'
+    SUPPORT_RULES = '📗 Support Rules'
+
+
+class ShopInformation(Base):
     __tablename__ = 'shop_information'
 
-    key = Column(String)
-    value = Column(String)
+    key = Column(Enum(ShopInfoField), primary_key=True)
+    value = Column(Text, nullable=False)
