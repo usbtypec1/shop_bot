@@ -3,6 +3,7 @@ from sqlalchemy import select, delete, update
 import models
 from repositories.database.base import BaseRepository
 from services.db_api.schemas import SupportTicket, SupportTicketStatus, User
+from services.time_utils import Period
 
 
 class SupportTicketRepository(BaseRepository):
@@ -194,3 +195,42 @@ class SupportTicketRepository(BaseRepository):
                 status=support_ticket.status,
                 created_at=support_ticket.created_at,
             )
+
+    def get_support_tickets_by_filter(
+            self,
+            *,
+            status: models.SupportTicketStatus,
+            period: Period | None = None,
+            user_telegram_id: int | None = None,
+            username: str | None = None,
+    ) -> list[SupportTicket]:
+        statement = (
+            select(SupportTicket, User.telegram_id)
+            .join(User, SupportTicket.user_id == User.id)
+            .where(SupportTicket.status == status)
+        )
+        if username is not None:
+            statement = statement.where(User.username == username)
+        if user_telegram_id is not None:
+            statement = statement.where(User.telegram_id == user_telegram_id)
+        if period is not None:
+            statement = statement.where(
+                SupportTicket.created_at.between(
+                    period.start,
+                    period.end,
+                ),
+            )
+        with self._session_factory() as session:
+            result = session.execute(statement).all()
+        return [
+            models.SupportTicket(
+                id=support_ticket.id,
+                user_id=support_ticket.user_id,
+                user_telegram_id=telegram_id,
+                subject=support_ticket.subject,
+                issue=support_ticket.issue,
+                answer=support_ticket.answer,
+                status=support_ticket.status,
+                created_at=support_ticket.created_at,
+            ) for support_ticket, telegram_id in result
+        ]

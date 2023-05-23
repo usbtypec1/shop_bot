@@ -1,4 +1,4 @@
-from . import menu, list, detail, delete, update
+from . import menu, list, detail, delete, update, search
 
 __all__ = (
     'list',
@@ -6,4 +6,5 @@ __all__ = (
     'update',
     'delete',
     'menu',
+    'search',
 )

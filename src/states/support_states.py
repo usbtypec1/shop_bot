@@ -1,6 +1,12 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
+class SupportTicketSearchStates(StatesGroup):
+    user_id = State()
+    date_range = State()
+    status = State()
+
+
 class SupportTicketCreateStates(StatesGroup):
     confirm_rules = State()
     subject = State()
