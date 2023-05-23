@@ -1,13 +1,25 @@
-from aiogram.dispatcher.filters import state
+from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
-class AddSupportSubject(state.StatesGroup):
-    waiting_subject = state.State()
+class SupportTicketSearchStates(StatesGroup):
+    user_id = State()
+    date_range = State()
+    status = State()
 
 
-class AddSupportRequest(state.StatesGroup):
-    waiting_issue = state.State()
+class SupportTicketCreateStates(StatesGroup):
+    confirm_rules = State()
+    subject = State()
+    issue = State()
 
 
-class AnswerSupportRequest(state.StatesGroup):
-    waiting_answer = state.State()
+class SupportTicketDeleteStatus(StatesGroup):
+    confirm = State()
+
+
+class AdminSupportTicketUpdateStates(StatesGroup):
+    answer = State()
+
+
+class SupportTicketReplyCreateStates(SupportTicketDeleteStatus):
+    text = State()

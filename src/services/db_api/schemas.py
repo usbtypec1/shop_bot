@@ -1,21 +1,30 @@
-import pathlib
-from typing import Optional
+import enum
 
-import sqlalchemy
-from sqlalchemy import orm, sql
+from sqlalchemy import (
+    sql,
+    Column,
+    Integer,
+    TIMESTAMP,
+    BigInteger,
+    String,
+    Float,
+    Boolean,
+    ForeignKey,
+    Text,
+    Enum,
+)
+from sqlalchemy.orm import relationship
 
 from services.db_api import base
+from services.db_api.base import Base
 
 
 class BaseModel(base.Base):
     __abstract__ = True
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, nullable=False, unique=True,
-                           primary_key=True, autoincrement=True)
-    created_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP,
-                                   server_default=sql.func.now())
-    updated_at = sqlalchemy.Column(sqlalchemy.TIMESTAMP,
-                                   onupdate=sql.func.current_timestamp())
+    id = Column(Integer, primary_key=True)
+    created_at = Column(TIMESTAMP, server_default=sql.func.now())
+    updated_at = Column(TIMESTAMP, onupdate=sql.func.current_timestamp())
 
     def __repr__(self):
         return f"{type(self).__name__}(id={self.id})"
@@ -23,50 +32,73 @@ class BaseModel(base.Base):
 
 class User(BaseModel):
     __tablename__ = 'user'
-    telegram_id = sqlalchemy.Column(sqlalchemy.BigInteger(), nullable=False,
-                                    unique=True)
-    username = sqlalchemy.Column(sqlalchemy.String(32))
-    balance = sqlalchemy.Column(sqlalchemy.Float(), default=0)
-    is_banned = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+
+    telegram_id = Column(BigInteger, nullable=False, unique=True)
+    username = Column(String(32), nullable=True)
+    balance = Column(Float, default=0)
+    is_banned = Column(Boolean, default=False)
 
 
 class Category(BaseModel):
     __tablename__ = 'category'
-    name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
-    subcategory = orm.relationship('Subcategory', backref='category',
-                                   cascade="all, delete")
 
-    product = orm.relationship('Product', backref='category',
-                               cascade="all, delete")
+    name = Column(String(255), nullable=False)
+    icon = Column(String(255), nullable=True)
+    priority = Column(Integer, nullable=False)
+    max_displayed_stock_count = Column(Integer, nullable=False)
+    is_hidden = Column(Boolean, nullable=False)
+    can_be_seen = Column(Boolean, nullable=False)
+    subcategory = relationship(
+        'Subcategory',
+        backref='category',
+        cascade="all, delete",
+    )
+    product = relationship(
+        'Product',
+        backref='category',
+        cascade="all, delete",
+    )
 
 
 class Subcategory(BaseModel):
     __tablename__ = 'subcategory'
-    name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
-    category_id = sqlalchemy.Column(
-        sqlalchemy.Integer,
-        sqlalchemy.ForeignKey('category.id', ondelete='CASCADE'), nullable=False
+
+    name = Column(String(255), nullable=False)
+    icon = Column(String(255), nullable=True)
+    priority = Column(Integer, nullable=False)
+    max_displayed_stock_count = Column(Integer, nullable=False)
+    is_hidden = Column(Boolean, nullable=False)
+    can_be_seen = Column(Boolean, nullable=False)
+    category_id = Column(
+        Integer,
+        ForeignKey('category.id', ondelete='CASCADE'),
+        nullable=False,
     )
-    product = orm.relationship('Product', backref='subcategory',
-                               cascade="all, delete")
+    product = relationship(
+        'Product',
+        backref='subcategory',
+        cascade="all, delete",
+    )
 
 
 class Product(BaseModel):
     __tablename__ = 'product'
-    category_id = sqlalchemy.Column(
-        sqlalchemy.Integer,
-        sqlalchemy.ForeignKey('category.id', ondelete='CASCADE'), nullable=False
+
+    category_id = Column(
+        Integer,
+        ForeignKey('category.id', ondelete='CASCADE'),
+        nullable=False,
     )
-    subcategory_id = sqlalchemy.Column(
-        sqlalchemy.Integer,
-        sqlalchemy.ForeignKey('subcategory.id', ondelete='CASCADE')
+    subcategory_id = Column(
+        Integer,
+        ForeignKey('subcategory.id', ondelete='CASCADE'),
     )
-    name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
-    description = sqlalchemy.Column(sqlalchemy.Text, nullable=False)
-    picture = sqlalchemy.Column(sqlalchemy.String(255))
-    price = sqlalchemy.Column(sqlalchemy.Float, nullable=False)
-    quantity = sqlalchemy.Column(sqlalchemy.Integer, default=0)
-    product_unit = orm.relationship('ProductUnit', backref='product')
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=False)
+    picture = Column(String(255))
+    price = Column(Float, nullable=False)
+    quantity = Column(Integer, default=0)
+    product_unit = relationship('ProductUnit', backref='product')
 
     def __repr__(self):
         return (
@@ -114,61 +146,77 @@ class Product(BaseModel):
 
 class ProductUnit(BaseModel):
     __tablename__ = 'product_unit'
-    product_id = sqlalchemy.Column(
-        sqlalchemy.Integer,
-        sqlalchemy.ForeignKey('product.id'), nullable=False
-    )
-    content = sqlalchemy.Column(sqlalchemy.String, nullable=False)
-    type = sqlalchemy.Column(sqlalchemy.String, default='text')
-    sale_id = sqlalchemy.Column(sqlalchemy.Integer,
-                                sqlalchemy.ForeignKey('sale.id'))
+    product_id = Column(Integer, ForeignKey('product.id'), nullable=False)
+    content = Column(String, nullable=False)
+    type = Column(String, default='text')
+    sale_id = Column(Integer, ForeignKey('sale.id'))
 
 
 class Sale(BaseModel):
     __tablename__ = 'sale'
-    user_id = sqlalchemy.Column(sqlalchemy.Integer,
-                                sqlalchemy.ForeignKey('user.id'),
-                                nullable=False)
-    product_id = sqlalchemy.Column(sqlalchemy.Integer,
-                                   sqlalchemy.ForeignKey('product.id'),
-                                   nullable=False)
-    username = sqlalchemy.Column(sqlalchemy.String(255))
-    amount = sqlalchemy.Column(sqlalchemy.Float(), nullable=False)
-    quantity = sqlalchemy.Column(sqlalchemy.Integer(), nullable=False)
-    payment_type = sqlalchemy.Column(sqlalchemy.String(255), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    product_id = Column(Integer, ForeignKey('product.id'), nullable=False)
+    username = Column(String(255))
+    amount = Column(Float(), nullable=False)
+    quantity = Column(Integer(), nullable=False)
+    payment_type = Column(String(255), nullable=False)
 
-    product_unit = orm.relationship('ProductUnit', lazy=False, backref='sale',
-                                    cascade='all, delete')
-
-
-class SupportSubject(BaseModel):
-    __tablename__ = 'support_subject'
-    name = sqlalchemy.Column(sqlalchemy.String(255), nullable=False,
-                             unique=True)
-
-
-class SupportRequest(BaseModel):
-    __tablename__ = 'support_request'
-
-    user_id = sqlalchemy.Column(sqlalchemy.Integer,
-                                sqlalchemy.ForeignKey('user.telegram_id'),
-                                nullable=False)
-    subject_id = sqlalchemy.Column(sqlalchemy.Integer,
-                                   sqlalchemy.ForeignKey('support_subject.id'))
-    username = sqlalchemy.Column(sqlalchemy.String())
-    is_open = sqlalchemy.Column(sqlalchemy.Boolean(), default=True)
-    issue = sqlalchemy.Column(sqlalchemy.Text(), nullable=False)
-    answer = sqlalchemy.Column(sqlalchemy.Text())
-
-    subject = orm.relationship(
-        'SupportSubject', lazy=False, backref='support_request',
+    product_unit = relationship(
+        'ProductUnit',
+        lazy=False,
+        backref='sale',
         cascade='all, delete',
     )
-    user = orm.relationship('User', backref='support_request', lazy=False)
 
 
-class ShopInformation(BaseModel):
+class SupportTicketStatus(enum.Enum):
+    OPEN = 'Open'
+    PENDING = 'Pending'
+    ON_HOLD = 'On Hold'
+    CLOSED = 'Closed'
+
+
+class SupportTicket(BaseModel):
+    __tablename__ = 'support_tickets'
+
+    user_id = Column(Integer, ForeignKey('user.telegram_id'), nullable=False)
+    subject = Column(String(64), nullable=False)
+    issue = Column(Text, nullable=False)
+    answer = Column(Text, nullable=True)
+    status = Column(
+        Enum(SupportTicketStatus),
+        default=SupportTicketStatus.OPEN,
+        nullable=False,
+    )
+
+
+class SupportTicketReplySource(enum.Enum):
+    USER = 'User'
+    ADMIN = 'Admin'
+
+
+class SupportTicketReply(BaseModel):
+    __tablename__ = 'support_ticket_replies'
+
+    support_ticket_id = Column(
+        Integer,
+        ForeignKey('support_tickets.id'),
+        nullable=False,
+    )
+    source = Column(Enum(SupportTicketReplySource), nullable=False)
+    text = Column(Text, nullable=False)
+
+
+class ShopInfoField(enum.Enum):
+    RULES = '📗 Rules'
+    FAQ = 'ℹ️ FAQ'
+    GREETINGS = '👋 Greetings'
+    RETURN = '✋ Return'
+    SUPPORT_RULES = '📗 Support Rules'
+
+
+class ShopInformation(Base):
     __tablename__ = 'shop_information'
 
-    key = sqlalchemy.Column(sqlalchemy.String())
-    value = sqlalchemy.Column(sqlalchemy.String())
+    key = Column(Enum(ShopInfoField), primary_key=True)
+    value = Column(Text, nullable=False)

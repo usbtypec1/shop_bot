@@ -2,8 +2,14 @@ import decimal
 from typing import Iterable
 
 from sqlalchemy import (
-    orm, exists, select, func, delete, literal_column,
-    literal, update
+    orm,
+    exists,
+    select,
+    func,
+    delete,
+    literal_column,
+    literal,
+    update,
 )
 
 from services.db_api import schemas
@@ -16,50 +22,39 @@ def add_user(session: orm.Session, telegram_id: int, username: str) -> None:
     session.merge(user)
 
 
-def add_category(session: orm.Session, name: str) -> schemas.Category:
-    category = schemas.Category(name=name)
-    session.add(category)
-    session.flush()
-    session.refresh(category)
-    return category
+def shift_category_priorities(session: orm.Session, priority: int) -> None:
+    statement = (
+        update(schemas.Category)
+        .where(schemas.Category.priority >= priority)
+        .values(priority=schemas.Category.priority + 1)
+    )
+    session.execute(statement)
 
 
-def add_subcategory(
+def add_category(
+        *,
         session: orm.Session,
         name: str,
-        category_id: int,
-) -> schemas.Subcategory:
-    subcategory = schemas.Subcategory(name=name, category_id=category_id)
-    session.add(subcategory)
-    session.flush()
-    session.refresh(subcategory)
-    return subcategory
-
-
-def add_categories(session: orm.Session, categories: list[str]) -> None:
-    for category_name in categories:
-        add_category(session, category_name)
-
-
-def add_subcategories(
-        session: orm.Session,
-        subcategories: list[str],
-        category_id: int,
-) -> None:
-    for category_name in subcategories:
-        add_subcategory(session, category_name, category_id)
-
-
-def edit_category(
-        session: orm.Session,
-        category_id: int,
-        new_name: str,
-) -> None:
-    session.execute(
-        update(schemas.Category)
-        .where(schemas.Category.id == category_id)
-        .values(name=new_name)
+        priority: int,
+        max_displayed_stocks_count: int,
+        is_hidden: bool,
+        can_be_seen: bool,
+        icon: str | None = None,
+) -> schemas.Category:
+    category = schemas.Category(
+        name=name,
+        priority=priority,
+        max_displayed_stock_count=max_displayed_stocks_count,
+        is_hidden=is_hidden,
+        can_be_seen=can_be_seen,
+        icon=icon,
     )
+    with session.begin():
+        shift_category_priorities(session, priority)
+        session.add(category)
+        session.flush()
+        session.refresh(category)
+    return category
 
 
 def edit_subcategory(
@@ -146,8 +141,8 @@ def add_support_request(
         username: str,
         subject_id: int,
         issue: str,
-) -> schemas.SupportRequest:
-    support_request = schemas.SupportRequest(
+) -> schemas.SupportTicket:
+    support_request = schemas.SupportTicket(
         user_id=user_id, username=username,
         subject_id=subject_id, issue=issue
     )
@@ -158,7 +153,7 @@ def add_support_request(
 
 
 def add_support_subject(session: orm.Session, subject_name: str) -> None:
-    support_subject = schemas.SupportSubject(name=subject_name)
+    support_subject = schemas.SupportTicketSubject(name=subject_name)
     if not check_is_support_subject_exists(session, subject_name):
         session.merge(support_subject)
 
@@ -252,19 +247,13 @@ def get_category_items(
         offset: int | None = None,
 ) -> list[tuple[int, str, str]]:
     statement = select(
-        schemas.Subcategory.id,
-        literal_column("subcategory.name"),
-        literal('subcategory')) \
-        .filter_by(category_id=category_id
-                   )
-    statement = statement.union(select(
         schemas.Product.id,
         literal_column('product.name') + ' | $' +
         literal_column('product.price') + ' | ' +
         literal_column('product.quantity') + ' pc(s)',
         literal('product')).filter_by(
         category_id=category_id, subcategory_id=None
-    ))
+    )
     if limit is not None:
         statement = statement.limit(limit)
         if offset is not None:
@@ -361,49 +350,49 @@ def get_sales_by_user_id(
 def get_support_request(
         session: orm.Session,
         support_request_id: int,
-) -> schemas.SupportRequest:
-    return session.get(schemas.SupportRequest, support_request_id)
+) -> schemas.SupportTicket:
+    return session.get(schemas.SupportTicket, support_request_id)
 
 
 def get_user_support_requests(
         session: orm.Session,
         user_id: int,
-) -> list[schemas.SupportRequest]:
-    statement = select(schemas.SupportRequest).filter_by(
+) -> list[schemas.SupportTicket]:
+    statement = select(schemas.SupportTicket).filter_by(
         user_id=user_id)
     return session.scalars(statement).all()
 
 
 def get_all_support_subjects(
         session: orm.Session,
-) -> list[schemas.SupportSubject]:
-    return session.scalars(select(schemas.SupportSubject)).all()
+):
+    return session.scalars(select(schemas)).all()
 
 
 def get_support_subject(
         session: orm.Session,
         subject_id: int = None,
         name: str = None,
-) -> schemas.SupportSubject | None:
+):
     if subject_id is not None:
-        return session.get(schemas.SupportRequest, subject_id)
+        return session.get(schemas.SupportTicket, subject_id)
     elif name is not None:
         return session.scalar(
-            select(schemas.SupportSubject).filter_by(name=name))
+            select(schemas.SupportTicketSubject).filter_by(name=name))
 
 
 def get_open_support_requests(
         session: orm.Session,
-) -> list[schemas.SupportRequest]:
-    statement = select(schemas.SupportRequest).filter_by(
+) -> list[schemas.SupportTicket]:
+    statement = select(schemas.SupportTicket).filter_by(
         is_open=True)
     return session.scalars(statement).all()
 
 
 def get_closed_support_requests(
         session: orm.Session,
-) -> list[schemas.SupportRequest]:
-    statement = select(schemas.SupportRequest).filter_by(
+) -> list[schemas.SupportTicket]:
+    statement = select(schemas.SupportTicket).filter_by(
         is_open=False)
     return session.scalars(statement).all()
 
@@ -492,8 +481,8 @@ def close_support_request(
         session: orm.Session,
         request_id: int,
         answer: str = None,
-) -> schemas.SupportRequest:
-    support_request = session.get(schemas.SupportRequest, request_id)
+) -> schemas.SupportTicket:
+    support_request = session.get(schemas.SupportTicket, request_id)
     if support_request is not None:
         support_request.is_open = False
         support_request.answer = answer
@@ -662,7 +651,7 @@ def delete_all_product_units(session: orm.Session, product_id: int) -> None:
 
 def delete_support_request(session: orm.Session,
                            support_request_id: int) -> None:
-    session.execute(delete(schemas.SupportRequest).filter_by(
+    session.execute(delete(schemas.SupportTicket).filter_by(
         id=support_request_id))
 
 
@@ -692,7 +681,7 @@ def count_user_purchases(session: orm.Session, user_id: int) -> int:
 
 def count_open_support_requests(session: orm.Session) -> int:
     statement = select(
-        func.count(schemas.SupportRequest.id)).filter_by(
+        func.count(schemas.SupportTicket.id)).filter_by(
         is_open=True)
     return session.scalar(statement)
 
@@ -733,5 +722,5 @@ def check_is_user_banned(session: orm.Session, telegram_id: int) -> bool:
 def check_is_support_subject_exists(session: orm.Session,
                                     subject_name: str) -> bool:
     statement = exists(
-        select(schemas.SupportSubject).filter_by(name=subject_name))
+        select(schemas.SupportTicketSubject).filter_by(name=subject_name))
     return session.scalar(statement.select())

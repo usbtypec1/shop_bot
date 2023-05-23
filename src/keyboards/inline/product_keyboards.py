@@ -1,5 +1,8 @@
+from collections.abc import Iterable
+
 import aiogram.types
 
+import models
 from keyboards.buttons import product_buttons, common_buttons, navigation_buttons
 from keyboards.inline import callback_factories
 from services.db_api import schemas
@@ -9,18 +12,34 @@ class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):
     def __init__(self, categories: list[schemas.Category]):
         super().__init__(row_width=1)
         for category in categories:
-            self.add(product_buttons.CategoryButton(category.id, category.name))
+            if category.is_hidden:
+                continue
+            self.row(product_buttons.CategoryButton(category.id, category.name))
         self.add(common_buttons.CloseButton())
 
 
 class CategoryItemsKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, subcategories: list[tuple[int, str, str]], category_id: int):
+    def __init__(
+            self,
+            *,
+            subcategories: Iterable[models.Subcategory],
+            products: list[tuple[int, str, str]],
+            category_id: int,
+    ):
         super().__init__(row_width=1)
-        for item_id, item_name, item_type in subcategories:
-            if item_type == 'subcategory':
-                self.add(product_buttons.SubcategoryButton(item_id, item_name, category_id))
-            elif item_type == 'product':
-                self.add(product_buttons.ProductButton(item_id, item_name, category_id))
+
+        for subcategory in subcategories:
+            if subcategory.is_hidden:
+                continue
+            self.row(product_buttons.SubcategoryButton(
+                subcategory_id=subcategory.id,
+                subcategory_name=subcategory.name,
+                category_id=category_id,
+            )
+        )
+
+        for item_id, item_name, _ in products:
+            self.row(product_buttons.ProductButton(item_id, item_name, category_id))
         self.add(navigation_buttons.InlineBackButton(
             callback_query=callback_factories.ProductCallbackFactory().new(
                 action='buy', category_id='', subcategory_id='', product_id=''

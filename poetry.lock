@@ -286,6 +286,20 @@ requests = ">=2.14.0"
 six = ">=1.9"
 
 [[package]]
+name = "emoji"
+version = "2.2.0"
+description = "Emoji for Python"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "emoji-2.2.0.tar.gz", hash = "sha256:a2986c21e4aba6b9870df40ef487a17be863cb7778dcf1c01e25917b7cd210bb"},
+]
+
+[package.extras]
+dev = ["coverage", "coveralls", "pytest"]
+
+[[package]]
 name = "frozenlist"
 version = "1.3.1"
 description = "A list-like structure which implements collections.abc.MutableSequence"
@@ -990,4 +1004,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "15e5d39c70227ce609390f00dea7efe977cb777b9a7962d68f124783d2d083c9"
+content-hash = "2ccd7a517305acec4b88abd1c1118b67d1e41fb222cb9e2e067d8d60569c8324"
