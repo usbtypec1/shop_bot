@@ -2,11 +2,16 @@ import abc
 
 import aiogram
 import aiogram.utils.exceptions
+import structlog
+from aiogram.utils.exceptions import TelegramAPIError
 
 import config
 from config import AppSettings
 from loader import bot
 from database import schemas
+
+
+logger = structlog.get_logger('app')
 
 
 class BaseNotification(abc.ABC):
@@ -48,7 +53,13 @@ class NewPurchaseNotification(BaseNotification):
         media_groups = []
         admins_id = AppSettings().admins_id
         for admin_id in admins_id:
-            await bot.send_message(admin_id, text)
+            try:
+                await bot.send_message(admin_id, text)
+            except TelegramAPIError:
+                logger.warning(
+                    'Could not send message: new purchase',
+                    telegram_id=admin_id,
+                )
         for i, unit in enumerate(unit for unit in self.__product_units if unit.type == 'document'):
             if i % 10 == 0:
                 media_groups.append(aiogram.types.MediaGroup())
