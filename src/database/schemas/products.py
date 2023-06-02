@@ -24,6 +24,7 @@ class Product(BaseModel):
     price = Column(Float, nullable=False)
     quantity = Column(Integer, default=0)
     product_unit = relationship('ProductUnit', backref='product')
+    cart_product = relationship('CartProduct', back_populates='product')
 
     def __repr__(self):
         return (

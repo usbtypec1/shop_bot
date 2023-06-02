@@ -1,3 +1,4 @@
+from .cart import *
 from .categories import *
 from .products import *
 from .sales import *
