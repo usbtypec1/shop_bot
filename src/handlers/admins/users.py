@@ -168,7 +168,7 @@ async def delete_user(query: aiogram.types.CallbackQuery, callback_data: dict[st
         user_id = int(callback_data['id'])
         user = queries.get_user(session, user_id)
         if callback_data['is_confirmed'] == 'yes':
-            queries.delete_user(session, user_id)
+            user_repository.delete_by_id(user_id)
             total_balance = user_repository.get_total_balance()
             page, page_size = int(callback_data['page']), 10
             success_message = await responses.users.SuccessUserRemovalResponse(query, user)

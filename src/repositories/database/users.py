@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 
 import exceptions
 import models
@@ -41,6 +41,13 @@ class UserRepository(BaseRepository):
             balance=user.balance,
             is_banned=user.is_banned,
         )
+
+    def delete_by_id(self, user_id: int) -> bool:
+        statement = delete(User).where(User.id == user_id)
+        with self._session_factory() as session:
+            with session.begin():
+                result = session.execute(statement)
+        return bool(result.rowcount)
 
     def get_total_balance(self) -> float:
         statement = select(func.sum(User.balance))

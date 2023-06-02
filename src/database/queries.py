@@ -1,5 +1,4 @@
 import decimal
-from typing import Iterable
 
 from sqlalchemy import (
     orm,
@@ -357,10 +356,6 @@ def reset_product_quantity(
     if product is not None:
         product.quantity = 0
     return product
-
-
-def delete_user(session: orm.Session, user_id: int) -> None:
-    session.execute(delete(schemas.User).filter_by(id=user_id))
 
 
 def delete_product(session: orm.Session, product_id: int) -> None:
