@@ -14,11 +14,6 @@ from sqlalchemy import (
 from database import schemas
 
 
-def add_user(session: orm.Session, telegram_id: int, username: str) -> None:
-    user = schemas.User(telegram_id=telegram_id, username=username)
-    session.merge(user)
-
-
 def add_product(
         session: orm.Session,
         name: str,
@@ -132,13 +127,8 @@ def get_user(session: orm.Session, user_id: int = None,
     return session.scalars(statement).first()
 
 
-
 def get_all_categories(session: orm.Session) -> list[schemas.Category]:
     return session.scalars(select(schemas.Category)).all()
-
-
-
-
 
 
 def get_category_items(
