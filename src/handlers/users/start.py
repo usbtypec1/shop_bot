@@ -2,25 +2,28 @@ import aiogram.types
 from aiogram import types
 from aiogram.dispatcher import filters
 
+import database
 import responses.main_menu
 import responses.start
+from database import queries, session_factory
 from loader import dp
+from repositories.database.users import UserRepository
 from services import notifications
-import database
-from database import queries
 
 
 @dp.message_handler(filters.Text('✅ Accept'))
 async def accept_rules(message: aiogram.types.Message):
-    with database.create_session() as session:
-        queries.add_user(
-            session, message.from_user.id,
-            message.from_user.username.lower()
-            if message.from_user.username is not None else None
-        )
-        await responses.start.NewUserResponse(message)
-        await responses.main_menu.UserMainMenuResponse(message)
-        await notifications.NewUserNotification(message.from_user.id, message.from_user.username).send()
+    user_repository = UserRepository(session_factory)
+    user_repository.create(
+        telegram_id=message.from_user.id,
+        username=message.from_user.username,
+    )
+    await responses.start.NewUserResponse(message)
+    await responses.main_menu.UserMainMenuResponse(message)
+    await notifications.NewUserNotification(
+        user_id=message.from_user.id,
+        username=message.from_user.username,
+    ).send()
 
 
 @dp.message_handler(filters.CommandStart())
