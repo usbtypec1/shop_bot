@@ -1,15 +1,15 @@
 import asyncio
 import logging
 
-import structlog
 import aiogram
+import structlog
 from aiogram import executor
 
 import config
 import handlers
 import middlewares
 import tasks
-from services import db_api
+from database.setup import init_tables
 from services import notifications
 
 logger = structlog.get_logger('app')
@@ -28,8 +28,8 @@ async def on_startup(dispatcher):
     config.PRODUCT_UNITS_PATH.mkdir(parents=True, exist_ok=True)
     config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
     tasks.setup_tasks()
-    db_api.setup_database()
-    middlewares.setup_middlewares(dispatcher)
+    init_tables()
+    dispatcher.setup_middleware(middlewares.BannedUserMiddleware())
     await set_default_commands(dispatcher)
 
 
@@ -54,10 +54,10 @@ def setup_logging():
 if __name__ == "__main__":
     setup_logging()
     try:
-        executor.start_polling(handlers.dp, on_startup=on_startup, skip_updates=True)
+        executor.start_polling(handlers.dp, on_startup=on_startup,
+                               skip_updates=True)
     except RuntimeError as e:
         logger.critical("Error during bot starting!")
         asyncio.run(
             asyncio.run(notifications.ErrorNotification(e).send())
         )
-

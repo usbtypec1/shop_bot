@@ -4,8 +4,8 @@ import responses.profile
 from loader import dp
 from aiogram import filters
 
-from services import db_api
-from services.db_api import queries
+import database
+from database import queries
 import exceptions
 
 
@@ -23,9 +23,9 @@ import exceptions
 #             queries.get_purchases(session, user.id, limit=10)
 #         )
 
- @dp.message_handler(filters.Text('📱 Profile'))
+@dp.message_handler(filters.Text('📱 Profile'))
 async def profile(message: aiogram.types.Message):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         user = queries.get_user(session, telegram_id=message.from_user.id)
         if user is None:
             raise exceptions.UserNotInDatabase

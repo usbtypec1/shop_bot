@@ -5,7 +5,7 @@ from emoji import is_emoji
 from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.category_states import CategoryUpdateStates
 from views import answer_view, CategoryDetailView
 

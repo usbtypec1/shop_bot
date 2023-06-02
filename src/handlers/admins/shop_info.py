@@ -7,7 +7,7 @@ from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import ShopInfoUpdateCallbackData
 from loader import dp
 from repositories.database import ShopInfoRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.shop_info_states import ShopInfoUpdateStates
 from views import ShopInfoMenuView, answer_view, ShopInfoDetailView
 

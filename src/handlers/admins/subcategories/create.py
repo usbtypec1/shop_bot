@@ -14,7 +14,7 @@ from keyboards.inline.callback_factories import CategoryCallbackFactory
 from loader import dp
 from repositories.database import SubcategoryRepository, CategoryRepository
 from responses.category_management import CategoryMenuResponse
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.category_states import SubcategoryCreateStates
 
 logger = structlog.get_logger('app')

@@ -12,7 +12,7 @@ from keyboards.inline import (
     payments_keyboards,
 )
 from responses import base
-from services.db_api import schemas
+from database import schemas
 from services.files import answer_media_with_text, answer_medias
 
 

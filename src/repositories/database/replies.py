@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 import models
 from repositories.database.base import BaseRepository
-from services.db_api.schemas import SupportTicketReply
+from database.schemas import SupportTicketReply
 
 __all__ = ('SupportTicketReplyRepository',)
 

@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, ContentType, Message
 from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.category_states import CategoryUpdateStates
 from views import CategoryDetailView, answer_view
 

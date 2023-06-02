@@ -11,6 +11,11 @@
 - Ticket creation rate limit.
 - Replies system.
 
+### Changed:
+
+- Prepare for features related to sales, shopping cart management.
+- Refactor database layer.
+
 ## 2023-05-21
 
 ### Added:

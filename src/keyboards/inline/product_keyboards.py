@@ -5,7 +5,7 @@ import aiogram.types
 import models
 from keyboards.buttons import product_buttons, common_buttons, navigation_buttons
 from keyboards.inline import callback_factories
-from services.db_api import schemas
+from database import schemas
 
 
 class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):

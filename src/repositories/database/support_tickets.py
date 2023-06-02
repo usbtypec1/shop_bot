@@ -2,7 +2,7 @@ from sqlalchemy import select, delete, update
 
 import models
 from repositories.database.base import BaseRepository
-from services.db_api.schemas import SupportTicket, SupportTicketStatus, User
+from database.schemas import SupportTicket, SupportTicketStatus, User
 from services.time_utils import Period
 
 

@@ -3,7 +3,7 @@ from aiogram.types import CallbackQuery
 from keyboards.inline.callback_factories import CategoryUpdateCallbackData
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from views import CategoryDetailView, edit_message_by_view
 
 

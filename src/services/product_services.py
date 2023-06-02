@@ -9,8 +9,8 @@ import structlog
 from sqlalchemy import orm
 
 import config
-from services import db_api
-from services.db_api import queries
+import database
+from database import queries
 from services.files import batch_move_files, batch_delete_files
 
 logger = structlog.get_logger('app')
@@ -52,7 +52,7 @@ class ProductLifeCycle:
             self,
             session: orm.Session = None,
     ) -> Self:
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             product = queries.add_product(
                 session=session,
@@ -76,7 +76,7 @@ class ProductLifeCycle:
         return self
 
     def delete(self, session: orm.Session = None) -> Self:
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             queries.delete_product(session, self.__product_id)
             if self.__product_picture_filenames:
@@ -93,7 +93,7 @@ class ProductLifeCycle:
             self,
             session: orm.Session = None,
     ) -> Self:
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             queries.reset_product_quantity(session, self.__product_id)
             queries.delete_not_sold_product_units(session, self.__product_id)
@@ -106,7 +106,7 @@ class ProductLifeCycle:
             self,
             session: orm.Session = None,
     ) -> Self:
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             product = queries.get_product(session, self.__product_id)
             self.__product_name = product.name
@@ -227,7 +227,7 @@ class ProductUnitLifeCycle:
             self,
             session: orm.Session = None,
     ) -> Self:
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             product_unit = queries.add_product_unit(
                 session, self.__product_id,
@@ -242,7 +242,7 @@ class ProductUnitLifeCycle:
             self,
             session: orm.Session = None,
     ) -> Self:
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             queries.delete_product_unit(session, self.__product_unit_id)
         if (self.__product_unit_type == 'document' and
@@ -254,7 +254,7 @@ class ProductUnitLifeCycle:
         return self
 
     def load_from_db(self, session: orm.Session = None):
-        with db_api.create_session() if session is None else session.begin_nested() as nested_session:
+        with database.create_session() if session is None else session.begin_nested() as nested_session:
             session = session or nested_session
             product_unit = queries.get_product_unit(
                 session=session,

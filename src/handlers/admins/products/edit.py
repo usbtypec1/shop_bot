@@ -23,8 +23,8 @@ from responses.product_management import (
     ProductResponse,
     IncorrectPriceResponse,
 )
-from services import db_api
-from services.db_api import queries
+import database
+from database import queries
 from services.files import answer_medias, batch_move_files, batch_delete_files
 from states import product_states
 
@@ -59,7 +59,7 @@ async def edit_product_title(
         state_data['subcategory_id'],
     )
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         queries.edit_product_name(session, product_id, message.text)
         product = queries.get_product(session, product_id)
         await SuccessProductChangeResponse(message)
@@ -96,7 +96,7 @@ async def edit_product_description(
     product_id, subcategory_id = int(state_data['product_id']), state_data[
         'subcategory_id']
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         queries.edit_product_description(session, product_id, message.text)
         product = queries.get_product(session, product_id)
         await SuccessProductChangeResponse(message)
@@ -114,7 +114,7 @@ async def edit_product_picture(
         query: aiogram.types.CallbackQuery,
         callback_data: dict[str, str],
 ):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product = queries.get_product(session, int(callback_data['product_id']))
         if product.media_file_names:
             await answer_medias(
@@ -163,7 +163,7 @@ async def process_edit_picture_text(
             if data['subcategory_id'] != '' else None
         )
 
-        with db_api.create_session() as session:
+        with database.create_session() as session:
             product = queries.get_product(session, product_id)
             if not product.picture:
                 await message.answer("❌ No picture found to delete.")
@@ -183,7 +183,7 @@ async def process_edit_picture_text(
 
     # Add the desired responses after deleting the
     # product picture or when there is no picture to delete
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product = queries.get_product(session, product_id)
         await SuccessProductChangeResponse(message)
         await ProductResponse(
@@ -215,7 +215,7 @@ async def complete_product_media_edit(
     )
     file_names = '|'.join(file_names)
 
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product = queries.get_product(session, product_id)
         batch_delete_files(
             base_path=config.PRODUCT_PICTURE_PATH,
@@ -309,7 +309,7 @@ async def edit_product_price(
     )
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
 
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         queries.edit_product_price(session, product_id, float(message.text))
         product = queries.get_product(session, product_id)
         await SuccessProductChangeResponse(message)

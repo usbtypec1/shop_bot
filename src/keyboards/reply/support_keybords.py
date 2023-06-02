@@ -1,7 +1,7 @@
 import aiogram.types
 
 from keyboards.buttons import support_buttons, common_buttons
-from services.db_api import schemas
+from database import schemas
 
 
 class SupportRequestsKeyboard(aiogram.types.InlineKeyboardMarkup):

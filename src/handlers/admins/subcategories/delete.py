@@ -5,7 +5,7 @@ from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import SubcategoryDeleteCallbackData
 from loader import dp
 from repositories.database import SubcategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.category_states import SubcategoryDeleteStates
 from views import SubcategoryAskDeleteConfirmationView, edit_message_by_view
 

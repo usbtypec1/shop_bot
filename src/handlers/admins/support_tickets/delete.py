@@ -6,7 +6,7 @@ from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import SupportTicketDeleteCallbackData
 from loader import dp
 from repositories.database.support_tickets import SupportTicketRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.support_states import SupportTicketDeleteStatus
 from views import SupportTicketAskDeleteConfirmationView, edit_message_by_view
 

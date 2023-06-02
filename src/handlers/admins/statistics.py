@@ -5,8 +5,8 @@ import responses.statistics
 from common import models
 from filters import is_admin
 from loader import dp
-from services import db_api
-from services.db_api import queries
+import database
+from database import queries
 
 
 @dp.message_handler(filters.Text('📊 Statistics'), is_admin.IsUserAdmin())
@@ -16,7 +16,7 @@ async def statistics(message: aiogram.types.Message):
 
 @dp.message_handler(filters.Text('📊 General'), is_admin.IsUserAdmin())
 async def general_statistics(message: aiogram.types.Message):
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         buyers = []
         for telegram_id, username, quantity, amount in queries.get_buyers(session):
             buyer: models.Buyer = {

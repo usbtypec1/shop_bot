@@ -10,7 +10,7 @@ from keyboards.inline.callback_factories import (
     TopUpUserBalanceCallbackFactory
 )
 from responses.base import BaseResponse
-from services.db_api import schemas
+from database import schemas
 from services.time_utils import get_now_datetime
 
 

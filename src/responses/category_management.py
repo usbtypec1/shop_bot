@@ -8,7 +8,7 @@ from keyboards.inline.category_management_keyboards import (
     CategoriesKeyboard,
 )
 from responses.base import BaseResponse
-from services.db_api import schemas
+from database import schemas
 
 
 class CategoriesResponse(BaseResponse):

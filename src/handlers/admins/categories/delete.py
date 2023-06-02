@@ -6,7 +6,7 @@ from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import CategoryDeleteCallbackData
 from loader import dp
 from repositories.database import CategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from states.category_states import CategoryDeleteStates
 from views import edit_message_by_view, CategoryAskDeleteConfirmationView
 

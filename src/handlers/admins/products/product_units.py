@@ -9,9 +9,9 @@ import responses.product_management
 from filters import is_admin
 from keyboards.inline import callback_factories
 from loader import dp
-from services import db_api
+import database
 from services import product_services
-from services.db_api import queries
+from database import queries
 from states import product_states
 
 
@@ -30,7 +30,7 @@ async def complete_units_loading(message: aiogram.types.Message, state: dispatch
     product_id = data['product_id']
     units = data['units']
     await state.finish()
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         for unit in units:
             unit.create_product_unit(session)
         queries.edit_product_quantity(session, product_id, len(units))
@@ -79,7 +79,7 @@ async def product_units(query: aiogram.types.CallbackQuery, callback_data: dict[
     product_id = int(callback_data['product_id'])
     subcategory_id = callback_data['subcategory_id']
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         units = queries.get_not_sold_product_units(session, product_id)
         await responses.product_management.ProductUnitsResponse(
             query, int(callback_data['category_id']), product_id,
@@ -93,7 +93,7 @@ async def product_unit_menu(query: aiogram.types.CallbackQuery, callback_data: d
     unit_id = int(callback_data['id'])
     subcategory_id = callback_data['subcategory_id']
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         unit = queries.get_product_unit(session, unit_id)
         await responses.product_management.ProductUnitResponse(
             query, int(callback_data['product_id']), unit,
@@ -117,7 +117,7 @@ async def edit_product_unit(message: aiogram.types.Message, state: dispatcher.FS
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
     unit_id = int(data['id'])
     await state.finish()
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product_unit = queries.get_product_unit(session, unit_id)
         filename = product_unit.content if product_unit.type == 'document' else str(uuid.uuid4())
         if len(message.photo) > 0:
@@ -140,7 +140,7 @@ async def edit_product_unit(message: aiogram.types.Message, state: dispatcher.FS
     product_unit_id = int(data['id'])
     subcategory_id = data['subcategory_id']
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product_unit = queries.get_product_unit(session, product_unit_id)
         if product_unit.type == 'document':
             if (config.PRODUCT_UNITS_PATH / product_unit.content).exists():
@@ -158,7 +158,7 @@ async def delete_product_unit(query: aiogram.types.CallbackQuery, callback_data:
     subcategory_id = callback_data['subcategory_id']
     subcategory_id = int(subcategory_id) if subcategory_id != '' else None
     product_unit_life_cycle = product_services.ProductUnitLifeCycle(product_unit_id=int(callback_data['id']))
-    with db_api.create_session() as session:
+    with database.create_session() as session:
         product_unit_life_cycle.delete_product_unit(session)
         queries.edit_product_quantity(session, product_id, -1)
         units = queries.get_not_sold_product_units(session, product_id)

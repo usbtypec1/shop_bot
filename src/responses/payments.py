@@ -3,7 +3,7 @@ import aiogram.types
 import config
 from keyboards.inline import payments_keyboards
 from responses import base
-from services.db_api import schemas
+from database import schemas
 
 
 class CoinbasePaymentLinkResponse(base.BaseResponse):
@@ -57,7 +57,8 @@ class NotEnoughBalanceResponse(base.BaseResponse):
 
 class PurchaseInformationResponse(base.BaseResponse):
     def __init__(self, query: aiogram.types.CallbackQuery, sale_id: int, product_name: str,
-                 quantity: int, amount: float, product_units: list[schemas.ProductUnit]):
+                 quantity: int, amount: float, product_units: list[
+                schemas.ProductUnit]):
         self.__query = query
         self.__sale_id = sale_id
         self.__product_name = product_name

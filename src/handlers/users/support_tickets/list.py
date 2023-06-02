@@ -4,7 +4,7 @@ from aiogram.types import Message
 from loader import dp
 from repositories.database.support_tickets import SupportTicketRepository
 from repositories.database.users import UserRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from views import SupportTicketListView, answer_view
 
 

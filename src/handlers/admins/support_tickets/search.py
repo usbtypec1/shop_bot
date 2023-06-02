@@ -14,7 +14,7 @@ from exceptions import InvalidSupportDateRangeError
 from filters.is_admin import IsUserAdmin
 from loader import dp
 from repositories.database.support_tickets import SupportTicketRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from services.validators import validate_date_range
 from states.support_states import SupportTicketSearchStates
 from views import AdminSupportTicketListView, answer_view

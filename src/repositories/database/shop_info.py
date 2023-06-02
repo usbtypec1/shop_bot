@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.sqlite import insert
 
 from repositories.database.base import BaseRepository
-from services.db_api.schemas import ShopInformation
+from database.schemas import ShopInformation
 
 
 class ShopInfoRepository(BaseRepository):

@@ -13,7 +13,7 @@ from keyboards.inline.callback_factories import (
     CategoryUpdateCallbackData,
     SubcategoryListCallbackData
 )
-from services.db_api import schemas
+from database import schemas
 
 
 class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):

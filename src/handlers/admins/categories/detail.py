@@ -4,7 +4,7 @@ from filters.is_admin import IsUserAdmin
 from keyboards.inline.callback_factories import CategoryDetailCallbackData
 from loader import dp
 from repositories.database import CategoryRepository, SubcategoryRepository
-from services.db_api.session import session_factory
+from database.session import session_factory
 from views import edit_message_by_view, CategoryDetailView
 
 
