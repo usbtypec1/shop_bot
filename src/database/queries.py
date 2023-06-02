@@ -415,11 +415,6 @@ def get_user_orders_amount(session: orm.Session, user_id: int):
         statement.filter(schemas.Sale.user_id == user_id)) or 0
 
 
-def get_total_balance(session: orm.Session) -> float:
-    return session.scalar(
-        select(func.sum(schemas.User.balance)))
-
-
 ## to get the user's balance in src/handlers/users/profile.py
 def get_user_balance(session: orm.Session, user_id: int) -> float:
     return session.query(schemas.User.balance).filter(

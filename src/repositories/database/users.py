@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 import exceptions
 import models
@@ -41,3 +41,9 @@ class UserRepository(BaseRepository):
             balance=user.balance,
             is_banned=user.is_banned,
         )
+
+    def get_total_balance(self) -> float:
+        statement = select(func.sum(User.balance))
+        with self._session_factory() as session:
+            result = session.execute(statement).first()
+        return result[0]

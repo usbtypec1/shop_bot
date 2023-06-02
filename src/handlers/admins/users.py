@@ -9,14 +9,17 @@ from keyboards.inline import callback_factories
 from keyboards.inline import common_keybords
 from loader import dp, bot
 import database
-from database import queries
+from database import queries, session_factory
+from repositories.database.users import UserRepository
 from states import users_states
 
 
 @dp.message_handler(filters.Text('🙍‍♂ Users'), is_admin.IsUserAdmin())
 async def users(message: aiogram.types.Message):
+    user_repository = UserRepository(session_factory)
     with database.create_session() as session:
-        total_balance, page_size = queries.get_total_balance(session), 10
+        total_balance = user_repository.get_total_balance()
+        page_size = 10
         await responses.users.UsersResponse(
             message, queries.get_users(session, page_size + 1), total_balance,
             page_size=page_size
@@ -27,8 +30,9 @@ async def users(message: aiogram.types.Message):
     callback_factories.UserCallbackFactory().filter(filter='', id='', action=''), is_admin.IsUserAdmin()
 )
 async def users(query: aiogram.types.CallbackQuery, callback_data: dict):
+    user_repository = UserRepository(session_factory)
+    total_balance = user_repository.get_total_balance()
     with database.create_session() as session:
-        total_balance = queries.get_total_balance(session)
         page, page_size = int(callback_data['page']), 10
         await responses.users.UsersResponse(
             query, queries.get_users(session, page_size + 1, page * page_size),
@@ -159,12 +163,13 @@ async def delete_user(query: aiogram.types.CallbackQuery, callback_data: dict[st
     callback_factories.UserCallbackFactory().filter(action='delete'), is_admin.IsUserAdmin()
 )
 async def delete_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
+    user_repository = UserRepository(session_factory)
     with database.create_session() as session:
         user_id = int(callback_data['id'])
         user = queries.get_user(session, user_id)
         if callback_data['is_confirmed'] == 'yes':
             queries.delete_user(session, user_id)
-            total_balance = queries.get_total_balance(session)
+            total_balance = user_repository.get_total_balance()
             page, page_size = int(callback_data['page']), 10
             success_message = await responses.users.SuccessUserRemovalResponse(query, user)
             await responses.users.UsersResponse(
