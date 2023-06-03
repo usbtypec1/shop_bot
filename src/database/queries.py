@@ -13,32 +13,6 @@ from sqlalchemy import (
 from database import schemas
 
 
-def add_product(
-        session: orm.Session,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        pictures: Iterable[str],
-        category_id: int,
-        subcategory_id: int = None,
-) -> schemas.Product:
-    # Concatenate pictures list to string
-    # so we can store multiple media files in string column in DB
-    picture = '|'.join(pictures) or None
-
-    product = schemas.Product(
-        category_id=category_id,
-        subcategory_id=subcategory_id,
-        name=name, description=description,
-        picture=picture, price=price, quantity=quantity
-    )
-    session.add(product)
-    session.flush()
-    session.refresh(product)
-    return product
-
-
 def add_product_unit(
         session: orm.Session,
         product_id: int,
@@ -236,20 +210,6 @@ def get_user_support_requests(
     return session.scalars(statement).all()
 
 
-def ban_user(session: orm.Session, user_id: int) -> schemas.User | None:
-    user = get_user(session, user_id)
-    if user is not None:
-        user.is_banned = True
-        return user
-
-
-def unban_user(session: orm.Session, user_id: int) -> schemas.User | None:
-    user = get_user(session, user_id)
-    if user is not None:
-        user.is_banned = False
-        return user
-
-
 def top_up_balance(
         session: orm.Session,
         user_id: int,
@@ -373,11 +333,6 @@ def delete_not_sold_product_units(session: orm.Session,
     statement = delete(schemas.ProductUnit).filter_by(
         product_id=product_id, sale_id=None)
     session.execute(statement)
-
-
-def count_users(session: orm.Session) -> int:
-    return session.scalar(
-        select(func.count(schemas.User.id)))
 
 
 def count_user_orders(session: orm.Session, user_id: int) -> int:
