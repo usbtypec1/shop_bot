@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Boolean
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 
 from database.schemas.base import BaseModel
@@ -7,7 +7,7 @@ __all__ = ('Category',)
 
 
 class Category(BaseModel):
-    __tablename__ = 'category'
+    __tablename__ = 'categories'
 
     name = Column(String(255), nullable=False)
     icon = Column(String(255), nullable=True)
@@ -15,10 +15,16 @@ class Category(BaseModel):
     max_displayed_stock_count = Column(Integer, nullable=False)
     is_hidden = Column(Boolean, nullable=False)
     can_be_seen = Column(Boolean, nullable=False)
-    subcategory = relationship(
-        'Subcategory',
-        backref='category',
-        cascade="all, delete",
+    parent_id = Column(
+        Integer,
+        ForeignKey('categories.id'),
+        nullable=True,
+    )
+
+    parent = relationship(
+        'Category',
+        back_populates='parent',
+        cascade='all, delete',
     )
     product = relationship(
         'Product',
