@@ -116,13 +116,17 @@ async def ban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str: 
 @dp.callback_query_handler(
     callback_factories.UserCallbackFactory().filter(action='ban'), is_admin.IsUserAdmin()
 )
-async def ban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
+async def ban_user(
+        query: aiogram.types.CallbackQuery,
+        callback_data: dict[str, str],
+        user_repository: UserRepository,
+):
+    user_id = int(callback_data['id'])
+    if callback_data['is_confirmed'] == 'yes':
+        user_repository.ban_by_id(user_id)
+    user = user_repository.get_by_id(user_id)
+
     with database.create_session() as session:
-        user_id = int(callback_data['id'])
-        if callback_data['is_confirmed'] == 'yes':
-            user = queries.ban_user(session, user_id)
-        else:
-            user = queries.get_user(session, user_id)
         number_of_orders = queries.count_user_orders(session, user.id)
         await responses.users.UserResponse(query, user, number_of_orders, callback_data)
 
@@ -139,13 +143,17 @@ async def unban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str
 @dp.callback_query_handler(
     callback_factories.UserCallbackFactory().filter(action='unban'), is_admin.IsUserAdmin()
 )
-async def unban_user(query: aiogram.types.CallbackQuery, callback_data: dict[str, str]):
+async def unban_user(
+        query: aiogram.types.CallbackQuery,
+        callback_data: dict[str, str],
+        user_repository: UserRepository,
+):
+    user_id = int(callback_data['id'])
+    if callback_data['is_confirmed'] == 'yes':
+        user_repository.unban_by_id(user_id)
+    user = user_repository.get_by_id(user_id)
+
     with database.create_session() as session:
-        user_id = int(callback_data['id'])
-        if callback_data['is_confirmed'] == 'yes':
-            user = queries.unban_user(session, user_id)
-        else:
-            user = queries.get_user(session, user_id)
         number_of_orders = queries.count_user_orders(session, user.id)
         await responses.users.UserResponse(query, user, number_of_orders, callback_data)
 
