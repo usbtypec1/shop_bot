@@ -21,6 +21,7 @@ class UserRepository(BaseRepository):
             username=result.username,
             balance=result.balance,
             is_banned=result.is_banned,
+            created_at=result.created_at,
         )
 
     def get_by_telegram_id(self, telegram: int) -> models.User:
@@ -35,6 +36,7 @@ class UserRepository(BaseRepository):
             username=result.username,
             balance=result.balance,
             is_banned=result.is_banned,
+            created_at=result.created_at,
         )
 
     def create(
@@ -53,6 +55,7 @@ class UserRepository(BaseRepository):
             username=user.username,
             balance=user.balance,
             is_banned=user.is_banned,
+            created_at=user.created_at,
         )
 
     def delete_by_id(self, user_id: int) -> bool:

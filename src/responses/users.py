@@ -1,5 +1,6 @@
 from aiogram.types import Message, CallbackQuery, ParseMode
 
+import models
 from keyboards.inline import (
     users_keyboard,
     common_keybords,
@@ -59,7 +60,7 @@ class UserResponse(BaseResponse):
     def __init__(
             self,
             query: CallbackQuery,
-            user: schemas.User,
+            user: models.User,
             number_of_orders: int,
             callback_data: dict[str, str] | None = None,
     ):
