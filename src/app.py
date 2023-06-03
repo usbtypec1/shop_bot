@@ -9,7 +9,9 @@ import config
 import handlers
 import middlewares
 import tasks
+from database import session_factory
 from database.setup import init_tables
+from repositories.database.users import UserRepository
 from services import notifications
 
 logger = structlog.get_logger('app')
@@ -30,6 +32,11 @@ async def on_startup(dispatcher):
     tasks.setup_tasks()
     init_tables()
     dispatcher.setup_middleware(middlewares.BannedUserMiddleware())
+    dispatcher.setup_middleware(
+        middlewares.DependencyInjectMiddleware(
+            user_repository=UserRepository(session_factory),
+        ),
+    )
     await set_default_commands(dispatcher)
 
 
@@ -51,13 +58,21 @@ def setup_logging():
     )
 
 
-if __name__ == "__main__":
+def main():
     setup_logging()
+
     try:
-        executor.start_polling(handlers.dp, on_startup=on_startup,
-                               skip_updates=True)
+        executor.start_polling(
+            dispatcher=handlers.dp,
+            on_startup=on_startup,
+            skip_updates=True,
+        )
     except RuntimeError as e:
         logger.critical("Error during bot starting!")
         asyncio.run(
             asyncio.run(notifications.ErrorNotification(e).send())
         )
+
+
+if __name__ == "__main__":
+    main()
