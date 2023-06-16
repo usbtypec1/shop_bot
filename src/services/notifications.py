@@ -3,13 +3,13 @@ import abc
 import aiogram
 import aiogram.utils.exceptions
 import structlog
+from aiogram import Bot
 from aiogram.utils.exceptions import TelegramAPIError
 
 import config
 from config import AppSettings
-from loader import bot
 from database import schemas
-
+from support_tickets.models import SupportTicket
 
 logger = structlog.get_logger('app')
 
@@ -21,9 +21,10 @@ class BaseNotification(abc.ABC):
 
 
 class NewUserNotification(BaseNotification):
-    def __init__(self, user_id: int, username: str | None):
+    def __init__(self, bot: Bot, user_id: int, username: str | None):
         self.__user_id = user_id
         self.__username = username
+        self.__bot = bot
 
     async def send(self):
         text = (
@@ -35,18 +36,20 @@ class NewUserNotification(BaseNotification):
         )
         for user_id in AppSettings().admins_id:
             try:
-                await bot.send_message(user_id, text)
-            except (aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                await self.__bot.send_message(user_id, text)
+            except (
+            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
                 continue
 
 
 class NewPurchaseNotification(BaseNotification):
-    def __init__(self, sale: schemas.Sale, payment_method: str,
+    def __init__(self, bot: Bot, sale: schemas.Sale, payment_method: str,
                  product_name: str, product_units: list[schemas.ProductUnit]):
         self.__sale = sale
         self.__product_units = product_units
         self.__product_name = product_name
         self.__payment_method = payment_method
+        self.__bot = bot
 
     async def send(self):
         text = self.__get_text()
@@ -54,13 +57,14 @@ class NewPurchaseNotification(BaseNotification):
         admins_id = AppSettings().admins_id
         for admin_id in admins_id:
             try:
-                await bot.send_message(admin_id, text)
+                await self.__bot.send_message(admin_id, text)
             except TelegramAPIError:
                 logger.warning(
                     'Could not send message: new purchase',
                     telegram_id=admin_id,
                 )
-        for i, unit in enumerate(unit for unit in self.__product_units if unit.type == 'document'):
+        for i, unit in enumerate(unit for unit in self.__product_units if
+                                 unit.type == 'document'):
             if i % 10 == 0:
                 media_groups.append(aiogram.types.MediaGroup())
             path = config.PRODUCT_UNITS_PATH / unit.content
@@ -68,8 +72,9 @@ class NewPurchaseNotification(BaseNotification):
         for admin_id in admins_id:
             try:
                 for media_group in media_groups:
-                    await bot.send_media_group(admin_id, media_group)
-            except (aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                    await self.__bot.send_media_group(admin_id, media_group)
+            except (
+            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
                 continue
 
     def __get_text(self):
@@ -77,7 +82,8 @@ class NewPurchaseNotification(BaseNotification):
                 '🛒 New purchase\n'
                 '➖➖➖➖➖➖➖➖➖➖\n'
                 f'🆔 Order Number: {self.__sale.id}\n' +
-                (f'🙍‍♂ Customer: @{self.__sale.username}\n' if self.__sale.username is not None else '') +
+                (
+                    f'🙍‍♂ Customer: @{self.__sale.username}\n' if self.__sale.username is not None else '') +
                 f'#️⃣ User ID: {self.__sale.user_id}\n'
                 '➖➖➖➖➖➖➖➖➖➖\n'
                 f'📙 Product Name: {self.__product_name}\n'
@@ -95,25 +101,28 @@ class NewPurchaseNotification(BaseNotification):
 
 
 class BalanceRefillNotification(BaseNotification):
-    def __init__(self, amount: float, user: schemas.User):
+    def __init__(self, bot: Bot, amount: float, user: schemas.User):
         self.__amount = amount
         self.__user = user
+        self.__bot = bot
 
     async def send(self, *args):
         for admin_id in AppSettings().admins_id:
             try:
-                await bot.send_message(
+                await self.__bot.send_message(
                     admin_id,
                     f'✅ Balance was topped up by {self.__amount} by User: '
                     f'{"@" + self.__user.username if self.__user.username else self.__user.id}'
                 )
-            except (aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+            except (
+            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
                 continue
 
 
 class NewSupportRequestNotification(BaseNotification):
-    def __init__(self, support_request: schemas.SupportTicket):
+    def __init__(self, bot: Bot, support_request: SupportTicket):
         self.__support_request = support_request
+        self.__bot = bot
 
     async def send(self):
         text = (
@@ -121,24 +130,27 @@ class NewSupportRequestNotification(BaseNotification):
                 '➖➖➖➖➖➖➖➖➖➖\n'
                 f'🆔 Request number: {self.__support_request.id}\n'
                 f'🙍‍♂ User: ' +
-                (f'@{self.__support_request.username}\n' if self.__support_request.username is not None else
-                 f'{self.__support_request.user_id}\n') +
+                (
+                    f'@{self.__support_request.username}\n' if self.__support_request.username is not None else
+                    f'{self.__support_request.user_id}\n') +
                 '➖➖➖➖➖➖➖➖➖➖\n'
-                f'📗 Request subject: {self.__support_request.subject.name}\n'
+                f'📗 Request subject: {self.__support_request.subject}\n'
                 '📋 Description:\n\n'
                 f'{self.__support_request.issue}'
         )
         for user_id in AppSettings().admins_id:
             try:
-                await bot.send_message(user_id, text)
-            except (aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                await self.__bot.send_message(user_id, text)
+            except (
+            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
                 continue
 
 
 class AnsweredSupportRequestNotification(BaseNotification):
-    def __init__(self, request_id: int, answer: str):
+    def __init__(self, bot: Bot, request_id: int, answer: str):
         self.__request_id = request_id
         self.__answer = answer
+        self.__bot = bot
 
     async def send(self, user_id: int):
         text = (
@@ -147,12 +159,13 @@ class AnsweredSupportRequestNotification(BaseNotification):
                 f'🆔 Request number: {self.__request_id}\n'
                 '📕 Answer:\n\n' + self.__answer
         )
-        await bot.send_message(user_id, text)
+        await self.__bot.send_message(user_id, text)
 
 
 class ErrorNotification(BaseNotification):
-    def __init__(self, error_message: Exception):
+    def __init__(self, bot: Bot, error_message: Exception):
         self.__error_message = error_message
+        self.__bot = bot
 
     async def send(self):
         text = (
@@ -162,6 +175,7 @@ class ErrorNotification(BaseNotification):
         )
         for user_id in AppSettings().admins_id:
             try:
-                await bot.send_message(user_id, text)
-            except (aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                await self.__bot.send_message(user_id, text)
+            except (
+            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
                 continue

@@ -1,12 +1,13 @@
 import aiogram.types
 
+import products.callback_data
 from keyboards.inline import callback_factories
 
 
 class CategoryButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, category_id: int, category_name: str):
         super().__init__(
-            text=category_name, callback_data=callback_factories.ProductCallbackFactory().new(
+            text=category_name, callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id='', product_id='', action='buy'
             )
         )
@@ -15,7 +16,7 @@ class CategoryButton(aiogram.types.InlineKeyboardButton):
 class SubcategoryButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, subcategory_id: int, subcategory_name: str, category_id: int):
         super().__init__(
-            text=subcategory_name, callback_data=callback_factories.ProductCallbackFactory().new(
+            text=subcategory_name, callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id, product_id='', action='buy'
             )
         )
@@ -24,7 +25,7 @@ class SubcategoryButton(aiogram.types.InlineKeyboardButton):
 class ProductButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, product_id: int, product_name: str, category_id: int, subcategory_id: int = None):
         super().__init__(
-            text=product_name, callback_data=callback_factories.ProductCallbackFactory().new(
+            text=product_name, callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='buy'
             )
@@ -70,6 +71,6 @@ class AnotherQuantityButton(aiogram.types.InlineKeyboardButton):
 
 class BackToCategoriesButton(aiogram.types.InlineKeyboardButton):
     def __init__(self):
-        super().__init__('⬅️ Back to categories', callback_data=callback_factories.ProductCallbackFactory().new(
+        super().__init__('⬅️ Back to categories', callback_data=products.callback_data.ProductCallbackFactory().new(
             action='buy', category_id='', subcategory_id='', product_id=''
         ))

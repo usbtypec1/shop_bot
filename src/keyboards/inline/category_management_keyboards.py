@@ -9,9 +9,9 @@ from keyboards.buttons import (
     navigation_buttons,
 )
 from keyboards.inline import callback_factories
-from keyboards.inline.callback_factories import (
-    CategoryUpdateCallbackData,
-    SubcategoryListCallbackData
+from categories.callback_data import (
+    SubcategoryListCallbackData,
+    CategoryUpdateCallbackData
 )
 from database import schemas
 

@@ -1,9 +1,11 @@
 from sqlalchemy import Column, Integer, TIMESTAMP, func
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 __all__ = ('Base', 'BaseModel',)
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class BaseModel(Base):

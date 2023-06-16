@@ -1,9 +1,43 @@
-from sqlalchemy import String, Column, Text, Integer, ForeignKey, Float
+import enum
+
+from sqlalchemy import (
+    String, Column, Text, Integer, ForeignKey, Float, Enum,
+    Boolean
+)
 from sqlalchemy.orm import relationship
 
-from database.schemas.base import BaseModel
+from database.schemas.base import BaseModel, Base
 
-__all__ = ('Product', 'ProductUnit')
+__all__ = (
+    'Product',
+    'ProductUnit',
+    'ProductPermittedGateway',
+    'PaymentMethod',
+)
+
+
+class PaymentMethod(enum.Enum):
+    COINBASE = 'Coinbase'
+    FROM_ADMIN = 'From Admin'
+    BALANCE = 'Balance'
+
+
+class ProductPermittedGateway(Base):
+    __tablename__ = 'product_permitted_gateways'
+
+    product_id = Column(
+        Integer,
+        ForeignKey('product.id'),
+        nullable=False,
+        primary_key=True,
+    )
+    payment_method = Column(
+        Enum(PaymentMethod),
+        nullable=False,
+        primary_key=True,
+    )
+
+    product = relationship('Product', back_populates='permitted_gateways')
 
 
 class Product(BaseModel):
@@ -11,18 +45,35 @@ class Product(BaseModel):
 
     category_id = Column(
         Integer,
-        ForeignKey('category.id', ondelete='CASCADE'),
+        ForeignKey('categories.id', ondelete='CASCADE'),
         nullable=False,
-    )
-    subcategory_id = Column(
-        Integer,
-        ForeignKey('subcategory.id', ondelete='CASCADE'),
     )
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     picture = Column(String(255))
     price = Column(Float, nullable=False)
     quantity = Column(Integer, default=0)
+    min_order_quantity = Column(Integer, nullable=True)
+    max_order_quantity = Column(Integer, nullable=True)
+    max_replacement_time_in_minutes = Column(
+        Integer,
+        default=15,
+        nullable=False,
+    )
+    max_displayed_stock_count = Column(Integer, nullable=False)
+    is_duplicated_stock_entries_allowed = Column(Boolean, nullable=False)
+    is_hidden = Column(Boolean, nullable=False)
+    can_be_purchased = Column(Boolean, nullable=False)
+
+    permitted_gateways = relationship(
+        'ProductPermittedGateway',
+        back_populates='product',
+    )
+    category = relationship(
+        'Category',
+        back_populates='products',
+        cascade='all, delete',
+    )
     product_unit = relationship('ProductUnit', backref='product')
     cart_product = relationship('CartProduct', back_populates='product')
 
@@ -30,44 +81,11 @@ class Product(BaseModel):
         return (
             f'{self.id=} '
             f'{self.category_id=} '
-            f'{self.subcategory_id=} '
             f'{self.name=} '
             f'{self.description=} '
             f'{self.picture=} '
             f'{self.quantity=}'
         )
-
-    @property
-    def media_file_names(self) -> list[str]:
-        return [] if self.picture is None else self.picture.split('|')
-
-    @property
-    def photo_and_video_file_names(self) -> list[str]:
-        """Media file names (except GIFs) with relative order."""
-        return [
-            file_name for file_name in self.media_file_names
-            if file_name.endswith('.jpg')
-               or (
-                       file_name.endswith('.mp4')
-                       and not file_name.endswith('.gif.mp4')
-               )
-        ]
-
-    @property
-    def photo_file_names(self) -> list[str]:
-        return [file_name for file_name in self.media_file_names
-                if file_name.endswith('.jpg')]
-
-    @property
-    def video_file_names(self) -> list[str]:
-        return [file_name for file_name in self.media_file_names
-                if file_name.endswith('.mp4')
-                and not file_name.endswith('.gif.mp4')]
-
-    @property
-    def animation_file_names(self) -> list[str] | None:
-        return [file_name for file_name in self.media_file_names
-                if file_name.endswith('.gif.mp4')]
 
 
 class ProductUnit(BaseModel):

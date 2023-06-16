@@ -1,7 +1,7 @@
 import aiogram.utils.callback_data
 
 from keyboards.buttons import payments_buttons
-from repositories import payments_apis_repository
+from payments.services import PaymentsAPIsRepository
 
 
 class PaymentMethodsKeyboard(aiogram.types.InlineKeyboardMarkup):
@@ -16,7 +16,7 @@ class PaymentMethodsKeyboard(aiogram.types.InlineKeyboardMarkup):
             'coinbase': payments_buttons.CoinBaseButton(callback_data, callback_factory),
             'crypto_payments': payments_buttons.CryptoPaymentButton(callback_data, crypto_payments, callback_factory)
         }
-        apis_repository = payments_apis_repository.PaymentsAPIsRepository(crypto_payments)
+        apis_repository = PaymentsAPIsRepository(crypto_payments)
         for name, api in apis_repository.get_valid_apis():
             self.add(buttons[name])
         if is_balance:

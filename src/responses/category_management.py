@@ -2,13 +2,13 @@ from collections.abc import Iterable
 
 from aiogram.types import CallbackQuery, Message
 
-import models
+from categories.models import Category
+from database import schemas
 from keyboards.inline.category_management_keyboards import (
     CategoryMenuKeyboard,
     CategoriesKeyboard,
 )
 from responses.base import BaseResponse
-from database import schemas
 
 
 class CategoriesResponse(BaseResponse):
@@ -39,8 +39,8 @@ class CategoryMenuResponse(BaseResponse):
     def __init__(
             self,
             update: CallbackQuery | Message,
-            category: models.Category,
-            subcategories: list[models.Subcategory],
+            category: Category,
+            subcategories: list[Category],
     ):
         self.__update = update
         self.__subcategories = subcategories

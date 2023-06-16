@@ -1,15 +1,19 @@
 from collections.abc import Iterable
 
-import aiogram.types
+from aiogram.types import InlineKeyboardMarkup
 
-import models
-from keyboards.buttons import product_buttons, common_buttons, navigation_buttons
-from keyboards.inline import callback_factories
+import products.callback_data
+from categories.models import Category
 from database import schemas
+from keyboards.buttons import (
+    product_buttons,
+    common_buttons,
+    navigation_buttons,
+)
 
 
-class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):
-    def __init__(self, categories: list[schemas.Category]):
+class CategoriesKeyboard(InlineKeyboardMarkup):
+    def __init__(self, categories: Iterable[Category]):
         super().__init__(row_width=1)
         for category in categories:
             if category.is_hidden:
@@ -18,11 +22,11 @@ class CategoriesKeyboard(aiogram.types.InlineKeyboardMarkup):
         self.add(common_buttons.CloseButton())
 
 
-class CategoryItemsKeyboard(aiogram.types.InlineKeyboardMarkup):
+class CategoryItemsKeyboard(InlineKeyboardMarkup):
     def __init__(
             self,
             *,
-            subcategories: Iterable[models.Subcategory],
+            subcategories: Iterable[Category],
             products: list[tuple[int, str, str]],
             category_id: int,
     ):
@@ -41,14 +45,14 @@ class CategoryItemsKeyboard(aiogram.types.InlineKeyboardMarkup):
         for item_id, item_name, _ in products:
             self.row(product_buttons.ProductButton(item_id, item_name, category_id))
         self.add(navigation_buttons.InlineBackButton(
-            callback_query=callback_factories.ProductCallbackFactory().new(
+            callback_query=products.callback_data.ProductCallbackFactory().new(
                 action='buy', category_id='', subcategory_id='', product_id=''
             ))
         )
         self.add(common_buttons.CloseButton())
 
 
-class SubcategoryProductsKeyboard(aiogram.types.InlineKeyboardMarkup):
+class SubcategoryProductsKeyboard(InlineKeyboardMarkup):
     def __init__(self, products: list[schemas.Product], category_id: int, subcategory_id: int):
         super().__init__(row_width=1)
         for product in products:
@@ -60,14 +64,14 @@ class SubcategoryProductsKeyboard(aiogram.types.InlineKeyboardMarkup):
             # product_name = f'{product.name} | ${product.price:.2f}' if product.price % 1 else f'{product.name} | ${product.price:.0f}.'
             self.add(product_buttons.ProductButton(product.id, product_name, category_id, subcategory_id))
         self.add(navigation_buttons.InlineBackButton(
-            callback_query=callback_factories.ProductCallbackFactory().new(
+            callback_query=products.callback_data.ProductCallbackFactory().new(
                 action='buy', category_id=category_id, subcategory_id='', product_id=''
             ))
         )
         self.add(common_buttons.CloseButton())
 
 
-class ProductKeyboard(aiogram.types.InlineKeyboardMarkup):
+class ProductKeyboard(InlineKeyboardMarkup):
     def __init__(self, product_id: int, available_quantity: int, category_id: int,
                  subcategory_id: int = None, is_available=True):
         super().__init__(row_width=1)
@@ -75,7 +79,7 @@ class ProductKeyboard(aiogram.types.InlineKeyboardMarkup):
             self.add(product_buttons.BuyProductButton(product_id, available_quantity))
         self.row(
             navigation_buttons.InlineBackButton(
-                callback_factories.ProductCallbackFactory().new(
+                products.callback_data.ProductCallbackFactory().new(
                     action='buy', category_id=category_id, subcategory_id=subcategory_id or '', product_id='')
             ),
             product_buttons.BackToCategoriesButton()
@@ -83,7 +87,7 @@ class ProductKeyboard(aiogram.types.InlineKeyboardMarkup):
         self.add(common_buttons.CloseButton())
 
 
-# class ProductQuantityKeyboard(aiogram.types.InlineKeyboardMarkup):
+# class ProductQuantityKeyboard(InlineKeyboardMarkup):
 #     def __init__(self, product_id: int, available_quantity: int):
 #         super().__init__(row_width=5)
 #         self.add(
@@ -92,7 +96,7 @@ class ProductKeyboard(aiogram.types.InlineKeyboardMarkup):
 #         )
 #         self.row(product_buttons.AnotherQuantityButton(product_id, available_quantity))
 
-# class ProductQuantityKeyboard(aiogram.types.InlineKeyboardMarkup):
+# class ProductQuantityKeyboard(InlineKeyboardMarkup):
 #     def __init__(self, product_id: int, available_quantity: int, max_buttons: int = 5):
 #         super().__init__(row_width=5)
 
@@ -103,7 +107,7 @@ class ProductKeyboard(aiogram.types.InlineKeyboardMarkup):
 #         )
 #         self.row(product_buttons.AnotherQuantityButton(product_id, available_quantity))
 
-class ProductQuantityKeyboard(aiogram.types.InlineKeyboardMarkup):
+class ProductQuantityKeyboard(InlineKeyboardMarkup):
     def __init__(self, product_id: int, available_quantity: int, max_buttons: int = 5):
         super().__init__(row_width=5)
 
