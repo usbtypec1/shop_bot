@@ -1,3 +1,4 @@
+import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
@@ -9,6 +10,8 @@ from common.filters import AdminFilter
 from keyboards.inline import callback_factories
 from mailing.states import ChangeCoinbaseData
 from services.payments_apis import coinbase_api
+
+logger = structlog.get_logger('app')
 
 
 async def payments_management(message: Message) -> None:
@@ -72,3 +75,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         AdminFilter(),
         state=ChangeCoinbaseData.waiting_api_key,
     )
+    logger.debug('Registered payments handlers')

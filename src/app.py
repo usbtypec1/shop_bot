@@ -83,6 +83,7 @@ def main():
 
     scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
 
+    setup_logging()
     # tasks.setup_tasks(scheduler)
 
     init_tables()

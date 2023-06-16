@@ -1,3 +1,4 @@
+import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
@@ -11,6 +12,8 @@ from mailing.exceptions import SendMailError
 from mailing.states import MailingStates
 from mailing.views import MailingView, MailingFinishView
 from users.views import AdminMenuView
+
+logger = structlog.get_logger('app')
 
 
 async def on_show_newsletter_menu(message: Message) -> None:
@@ -72,3 +75,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         content_types=ContentType.ANY,
         state=MailingStates.waiting_newsletter,
     )
+    logger.debug('Registered mailing handlers')

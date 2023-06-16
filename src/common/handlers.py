@@ -1,5 +1,6 @@
 import shutil
 
+import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text, Command
@@ -9,6 +10,8 @@ import config
 from common.filters import AdminFilter
 from common.views import answer_view
 from users.views import AdminMenuView, UserMenuView
+
+logger = structlog.get_logger('app')
 
 
 async def cancel(
@@ -81,3 +84,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         Text('⬅️ Back'),
         state='*',
     )
+    logger.debug('Registered common handlers')

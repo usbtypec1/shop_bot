@@ -1,3 +1,4 @@
+import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
@@ -15,6 +16,8 @@ from shop_info.views import (
     ShopInfoDetailView,
     ShopManagementView,
 )
+
+logger = structlog.get_logger('app')
 
 
 async def shop_management(message: Message):
@@ -88,3 +91,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         content_types=ContentType.TEXT,
         state=ShopInfoUpdateStates.value,
     )
+    logger.debug('Registered shop info handlers')

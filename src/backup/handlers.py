@@ -1,3 +1,4 @@
+import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text, IDFilter
@@ -8,11 +9,15 @@ import config
 from backup import tasks
 from backup.states import BackupStates
 from backup.views import (
-    BackupView, BackupPeriodView, SendingBackupPeriodView,
-    SuccessBackupSettingView
+    BackupView,
+    BackupPeriodView,
+    SendingBackupPeriodView,
+    SuccessBackupSettingView,
 )
 from common.filters import AdminFilter
 from common.views import answer_view
+
+logger = structlog.get_logger('app')
 
 
 async def backup(message: Message):
@@ -130,3 +135,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         AdminFilter(),
         state=BackupStates.waiting_for_sending_backup_period,
     )
+    logger.debug('Registered backup handlers')
