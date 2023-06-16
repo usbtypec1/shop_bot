@@ -1,14 +1,26 @@
 from aiogram.utils.callback_data import CallbackData
 
 __all__ = (
+    'CategoryCreateCallbackData',
     'CategoryDeleteCallbackData',
     'CategoryDetailCallbackData',
     'CategoryUpdateCallbackData',
     'SubcategoryListCallbackData',
-    'SubcategoryUpdateCallbackData',
-    'SubcategoryDeleteCallbackData',
-    'SubcategoryDetailCallbackData',
 )
+
+
+class CategoryCreateCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('category-create', 'parent_id')
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data=callback_data)
+        parent_id = (
+            int(callback_data['parent_id'])
+            if callback_data['parent_id'].isdigit() else None
+        )
+        return {'parent_id': parent_id}
 
 
 class CategoryDeleteCallbackData(CallbackData):
@@ -19,39 +31,6 @@ class CategoryDeleteCallbackData(CallbackData):
     def parse(self, callback_data: str) -> dict:
         callback_data = super().parse(callback_data=callback_data)
         return {'category_id': int(callback_data['category_id'])}
-
-
-class SubcategoryDeleteCallbackData(CallbackData):
-
-    def __init__(self):
-        super().__init__('subcategory-delete', 'subcategory_id')
-
-    def parse(self, callback_data: str) -> dict:
-        callback_data = super().parse(callback_data=callback_data)
-        return {'subcategory_id': int(callback_data['subcategory_id'])}
-
-
-class SubcategoryUpdateCallbackData(CallbackData):
-
-    def __init__(self):
-        super().__init__('subcategory-update', 'subcategory_id', 'field')
-
-    def parse(self, callback_data: str) -> dict:
-        callback_data = super().parse(callback_data=callback_data)
-        return {
-            'subcategory_id': int(callback_data['subcategory_id']),
-            'field': callback_data['field'],
-        }
-
-
-class SubcategoryDetailCallbackData(CallbackData):
-
-    def __init__(self):
-        super().__init__('subcategory-detail', 'subcategory_id')
-
-    def parse(self, callback_data: str) -> dict:
-        callback_data = super().parse(callback_data=callback_data)
-        return {'subcategory_id': int(callback_data['subcategory_id'])}
 
 
 class CategoryDetailCallbackData(CallbackData):

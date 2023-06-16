@@ -10,13 +10,13 @@ from aiogram.types import (
 )
 from emoji import is_emoji
 
+from categories.callback_data import CategoryCreateCallbackData
 from categories.repositories import CategoryRepository
 from categories.states import CategoryCreateStates
-from categories.views import CategoryListView
+from categories.views import CategoryListView, CategoryDetailView
 from common.filters import AdminFilter
 from common.views import answer_view
 from database.session import session_factory
-from keyboards.inline.callback_factories import CategoriesCallbackFactory
 
 __all__ = ('register_handlers',)
 
@@ -24,9 +24,13 @@ logger = structlog.get_logger('app')
 
 
 async def on_start_category_creation_flow(
-        callback_query: CallbackQuery
+        callback_query: CallbackQuery,
+        callback_data: dict,
+        state: FSMContext,
 ) -> None:
+    parent_id: int | None = callback_data['parent_id']
     await CategoryCreateStates.name.set()
+    await state.update_data(parent_id=parent_id)
     await callback_query.message.answer('✏️ Enter the title')
     logger.debug('Create category: start creation flow')
 
@@ -133,6 +137,8 @@ async def on_can_be_seen_option_choice(
         can_be_seen=can_be_seen,
     )
 
+    parent_id: int | None = state_data['parent_id']
+
     category_repository = CategoryRepository(session_factory)
     category_repository.create(
         name=state_data['name'],
@@ -141,17 +147,30 @@ async def on_can_be_seen_option_choice(
         max_displayed_stock_count=state_data['max_displayed_stocks_count'],
         is_hidden=state_data['is_hidden'],
         can_be_seen=can_be_seen,
+        parent_id=parent_id,
     )
-    categories = category_repository.get_categories()
-    view = CategoryListView(categories)
-    await callback_query.message.answer('✅ New category has been created')
+
+    if parent_id is None:
+        categories = category_repository.get_categories()
+        view = CategoryListView(categories)
+    else:
+        parent_category = category_repository.get_by_id(parent_id)
+        subcategories = category_repository.get_subcategories(parent_id)
+        view = CategoryDetailView(
+            category=parent_category,
+            subcategories=subcategories,
+        )
+
+    await callback_query.message.answer(
+        '✅ New category/subcategory has been created',
+    )
     await answer_view(message=callback_query.message, view=view)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         on_start_category_creation_flow,
-        CategoriesCallbackFactory().filter(action='add'),
+        CategoryCreateCallbackData().filter(),
         AdminFilter(),
         state='*',
     )

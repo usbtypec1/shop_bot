@@ -14,7 +14,7 @@ logger = structlog.get_logger('app')
 
 class CategoryRepository(BaseRepository):
 
-    def get_categories(self) -> list[Category]:
+    def get_categories(self) -> list[category_models.Category]:
         statement = (
             select(Category)
             .where(Category.parent_id.is_(None))
@@ -31,7 +31,7 @@ class CategoryRepository(BaseRepository):
             )
 
         return [
-            Category(
+            category_models.Category(
                 id=category.id,
                 name=category.name,
                 icon=category.icon,
@@ -43,7 +43,10 @@ class CategoryRepository(BaseRepository):
             ) for category in categories
         ]
 
-    def get_subcategories(self, parent_id: int) -> list[Category]:
+    def get_subcategories(
+            self,
+            parent_id: int,
+    ) -> list[category_models.Category]:
         with bound_contextvars(parent_id=parent_id):
             statement = (
                 select(Category)
@@ -62,7 +65,7 @@ class CategoryRepository(BaseRepository):
                 )
 
             return [
-                Category(
+                category_models.Category(
                     id=category.id,
                     name=category.name,
                     icon=category.icon,
@@ -74,7 +77,7 @@ class CategoryRepository(BaseRepository):
                 ) for category in subcategories
             ]
 
-    def get_by_id(self, category_id: int) -> Category:
+    def get_by_id(self, category_id: int) -> category_models.Category:
         """
         Retrieve a category object by its ID.
 
@@ -92,7 +95,7 @@ class CategoryRepository(BaseRepository):
 
             logger.debug('Category repository: retrieved category by ID')
 
-        return Category(
+        return category_models.Category(
             id=result.id,
             name=result.name,
             icon=result.icon,
@@ -153,7 +156,8 @@ class CategoryRepository(BaseRepository):
             is_hidden: bool,
             can_be_seen: bool,
             icon: str | None = None,
-    ) -> Category:
+            parent_id: int | None = None,
+    ) -> category_models.Category:
         category = Category(
             name=name,
             icon=icon,
@@ -161,6 +165,7 @@ class CategoryRepository(BaseRepository):
             is_hidden=is_hidden,
             can_be_seen=can_be_seen,
             max_displayed_stock_count=max_displayed_stock_count,
+            parent_id=parent_id,
         )
         statement = (
             select(
@@ -179,7 +184,7 @@ class CategoryRepository(BaseRepository):
                 session.add(category)
                 session.flush()
                 session.refresh(category)
-        return Category(
+        return category_models.Category(
             id=category.id,
             name=category.name,
             icon=category.icon,
