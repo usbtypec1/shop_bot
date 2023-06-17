@@ -3,11 +3,6 @@ import aiogram.types
 import products.callback_data
 
 
-class ProductManagementButton(aiogram.types.KeyboardButton):
-    def __init__(self):
-        super().__init__(text='📝 Products Management')
-
-
 class CategoryButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, category_name: str, category_id: int):
         super().__init__(
