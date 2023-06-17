@@ -1,5 +1,7 @@
 from collections.abc import Iterable
 
+from sqlalchemy import select
+
 from common.repositories import BaseRepository
 from database import schemas as database_models
 from products.models import Product
@@ -100,3 +102,30 @@ class ProductRepository(BaseRepository):
             is_hidden=product.is_hidden,
             can_be_purchased=product.can_be_purchased,
         )
+
+    def get_by_category_id(self, category_id: int) -> list[Product]:
+        statement = (
+            select(database_models.Product)
+            .where(database_models.Product.category_id == category_id)
+        )
+        with self._session_factory() as session:
+            products = session.scalars(statement)
+        return [
+            Product(
+                id=product.id,
+                category_id=product.category_id,
+                subcategory_id=product.subcategory_id,
+                name=product.name,
+                description=product.description,
+                picture=product.picture,
+                price=product.price,
+                quantity=product.quantity,
+                min_order_quantity=product.min_order_quantity,
+                max_order_quantity=product.max_order_quantity,
+                max_replacement_time_in_minutes=product.max_replacement_time_in_minutes,
+                max_displayed_stock_count=product.max_displayed_stock_count,
+                is_duplicated_stock_entries_allowed=product.is_duplicated_stock_entries_allowed,
+                is_hidden=product.is_hidden,
+                can_be_purchased=product.can_be_purchased,
+            ) for product in products
+        ]

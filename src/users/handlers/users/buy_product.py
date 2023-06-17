@@ -20,18 +20,6 @@ from services.payments_apis import coinbase_api
 from users.exceptions import UserNotInDatabase
 
 
-async def on_show_categories_to_user(
-        message: Message,
-        state: FSMContext,
-) -> None:
-    await state.finish()
-    with database.create_session() as session:
-        if not queries.check_is_user_exists(session, message.from_user.id):
-            raise UserNotInDatabase
-        category_list = queries.get_all_categories(session)
-        await responses.products.CategoriesResponses(message, category_list)
-
-
 async def categories(query: CallbackQuery):
     with database.create_session() as session:
         if not queries.check_is_user_exists(session, query.from_user.id):
@@ -287,12 +275,6 @@ async def pay_with_balance(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
-    dispatcher.register_message_handler(
-        on_show_categories_to_user,
-        Text('🛒 Products'),
-        chat_type=ChatType.PRIVATE,
-        state='*',
-    )
     dispatcher.register_callback_query_handler(
         categories,
         ProductCallbackFactory().filter(

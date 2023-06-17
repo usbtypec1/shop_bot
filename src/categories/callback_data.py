@@ -1,12 +1,23 @@
 from aiogram.utils.callback_data import CallbackData
 
 __all__ = (
+    'UserCategoryDetailCallbackData',
     'CategoryCreateCallbackData',
     'CategoryDeleteCallbackData',
     'CategoryDetailCallbackData',
     'CategoryUpdateCallbackData',
     'SubcategoryListCallbackData',
 )
+
+
+class UserCategoryDetailCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('user-category-detail', 'category_id')
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data=callback_data)
+        return {'category_id': int(callback_data['category_id'])}
 
 
 class CategoryCreateCallbackData(CallbackData):

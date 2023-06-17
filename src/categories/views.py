@@ -1,27 +1,33 @@
 from collections.abc import Iterable
+from functools import cached_property
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 
+import config
 from categories.callback_data import (
     CategoryDeleteCallbackData,
     CategoryUpdateCallbackData,
     CategoryDetailCallbackData,
     SubcategoryListCallbackData,
     CategoryCreateCallbackData,
-
+    UserCategoryDetailCallbackData,
 )
 from categories.models import Category
 from common.views import View
 from keyboards.buttons.common_buttons import CloseButton
 from keyboards.buttons.navigation_buttons import InlineBackButton
-from keyboards.inline.callback_factories import (
-    CategoriesCallbackFactory,
-)
+from keyboards.inline.callback_factories import CategoriesCallbackFactory
+from products.models import Product
 
 __all__ = (
     'CategoryDetailView',
     'CategoryListView',
     'CategoryAskDeleteConfirmationView',
+    'UserCategoryListView',
+    'UserCategoryDetailView',
 )
 
 
@@ -224,4 +230,130 @@ class CategoryAskDeleteConfirmationView(View):
                 ),
             ),
         )
+        return markup
+
+
+class UserCategoryListView(View):
+    text = '📂 All available categories'
+
+    def __init__(self, categories: Iterable[Category]):
+        self.__categories = categories
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup(row_width=1)
+
+        for category in self.__categories:
+            if category.is_hidden:
+                continue
+
+            text = (
+                category.name if category.icon is None
+                else f'{category.icon} {category.name}'
+            )
+            markup.insert(
+                InlineKeyboardButton(
+                    text=text,
+                    callback_data=UserCategoryDetailCallbackData().new(
+                        category_id=category.id,
+                    ),
+                ),
+            )
+
+        markup.row(CloseButton())
+
+        return markup
+
+
+class UserCategoryDetailView(View):
+
+    def __init__(
+            self,
+            *,
+            subcategories: Iterable[Category] | None = None,
+            products: Iterable[Product] | None = None,
+    ):
+        self.__subcategories: tuple[Category, ...] = (
+            tuple() if subcategories is None
+            else tuple(subcategories)
+        )
+        self.__products: tuple[Product, ...] = (
+            tuple() if products is None
+            else tuple(products)
+        )
+
+    @cached_property
+    def not_hidden_products(self) -> list[Product]:
+        return [
+            product for product in self.__products
+            if not product.is_hidden
+        ]
+
+    @cached_property
+    def not_hidden_subcategories(self) -> list[Category]:
+        return [
+            subcategory for subcategory in self.__subcategories
+            if not subcategory.is_hidden
+        ]
+
+    @cached_property
+    def products_and_subcategories_names(self) -> list[str]:
+        not_hidden_product_names = [
+            product.name for product in self.not_hidden_products
+        ]
+        not_hidden_subcategory_names = [
+            subcategory.name for subcategory in self.not_hidden_subcategories
+        ]
+        return not_hidden_product_names + not_hidden_subcategory_names
+
+    def get_text(self) -> str:
+        if not self.not_hidden_products and not self.not_hidden_subcategories:
+            return '😔 Oh, there is nothing here'
+
+        names = self.products_and_subcategories_names
+        # used to add extra text on specific categories, don't delete
+        if any('Regular Products' in name for name in names):
+            return config.CustomCategoryMessages().category1
+        if any('Pre-Built Codes' in name for name in names):
+            return config.CustomCategoryMessages().category2
+        if any('Our Best Services' in name for name in names):
+            return config.CustomCategoryMessages().category3
+
+        return '🛒 All available products and subcategories'
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup()
+
+        for subcategory in self.__subcategories:
+
+            if subcategory.is_hidden:
+                continue
+
+            text = (
+                subcategory.name if subcategory.icon is None
+                else f'{subcategory.icon} {subcategory.name}'
+            )
+
+            markup.row(
+                InlineKeyboardButton(
+                    text=text,
+                    callback_data=UserCategoryDetailCallbackData().new(
+                        category_id=subcategory.id,
+                    ),
+                ),
+            )
+
+        for product in self.__products:
+
+            if product.is_hidden:
+                continue
+
+            markup.row(
+                InlineKeyboardButton(
+                    text=product.name,
+                    callback_data='dev',
+                ),
+            )
+
+        markup.row(InlineKeyboardButton('🚫 Close', callback_data='close'))
+
         return markup
