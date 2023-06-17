@@ -1,7 +1,6 @@
 from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
-    Message,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
 )
@@ -24,6 +23,7 @@ __all__ = (
     'UserStatisticsMenuView',
     'UserGeneralStatisticsView',
     'UsersView',
+    'NewUserNotificationView',
 )
 
 
@@ -89,11 +89,11 @@ class AdminMenuView(View):
 
 class UserGreetingsView(View):
 
-    def __init__(self, message: Message):
-        self.__message = message
+    def __init__(self, full_name: str):
+        self.__full_name = full_name
 
     def get_text(self) -> str:
-        return f'Hello {self.__message.from_user.full_name}!'
+        return f'Hello {self.__full_name}!'
 
 
 class UserStatisticsMenuView(View):
@@ -362,3 +362,19 @@ class UserView(View):
             )
         )
         return markup
+
+
+class NewUserNotificationView(View):
+
+    def __init__(self, *, telegram_id: int, username: str | None = None):
+        self.__telegram_id = telegram_id
+        self.__username = username
+
+    def get_text(self) -> str:
+        username = self.__username or ''
+        return (
+            '📱 New user\n'
+            '➖➖➖➖➖➖➖➖➖➖\n'
+            f'🙍‍♂ Name: @{username}\n'
+            f'🆔 ID: {self.__telegram_id}'
+        )

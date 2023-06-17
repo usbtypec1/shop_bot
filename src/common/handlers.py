@@ -1,17 +1,70 @@
 import shutil
 
 import structlog
-from aiogram import Dispatcher
+from aiogram import Dispatcher, Bot
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text, Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.dispatcher.filters import Command, CommandStart
+from aiogram.dispatcher.filters import Text
+from aiogram.types import CallbackQuery
+from aiogram.types import Message
 
 import config
 from common.filters import AdminFilter
-from common.views import answer_view
-from users.views import AdminMenuView, UserMenuView
+from common.views import answer_view, send_views
+from users.exceptions import UserNotInDatabase
+from users.repositories import UserRepository
+from users.views import (
+    AdminMenuView, UserGreetingsView,
+    NewUserNotificationView
+)
+from users.views import UserMenuView, RulesView
 
 logger = structlog.get_logger('app')
+
+
+async def on_accept_rules(
+        message: Message,
+        user_repository: UserRepository,
+        bot: Bot,
+) -> None:
+    user_repository.create(
+        telegram_id=message.from_user.id,
+        username=message.from_user.username,
+    )
+    await answer_view(
+        message=message,
+        view=UserGreetingsView(message.from_user.full_name),
+    )
+    await answer_view(message=message, view=AdminMenuView())
+
+    view = NewUserNotificationView(
+        telegram_id=message.from_user.id,
+        username=message.from_user.username,
+    )
+    await send_views(
+        bot=bot,
+        chat_ids=config.AppSettings().admins_id,
+        view=view
+    )
+
+
+async def on_start(
+        message: Message,
+        state: FSMContext,
+        user_repository: UserRepository,
+) -> None:
+    await state.finish()
+    try:
+        user = user_repository.get_by_telegram_id(message.from_user.id)
+    except UserNotInDatabase:
+        await answer_view(message=message, view=RulesView())
+        return
+    view = (
+        AdminMenuView()
+        if message.from_user.id in config.AppSettings().admins_id
+        else UserMenuView()
+    )
+    await answer_view(message=message, view=view)
 
 
 async def cancel(
@@ -63,6 +116,16 @@ async def user_back(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
+    dispatcher.register_message_handler(
+        on_accept_rules,
+        Text('✅ Accept'),
+        state='*',
+    )
+    dispatcher.register_message_handler(
+        on_start,
+        CommandStart(),
+        state='*',
+    )
     dispatcher.register_message_handler(
         cancel,
         Command('cancel'),

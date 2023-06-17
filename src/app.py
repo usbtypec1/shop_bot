@@ -91,6 +91,8 @@ def main():
     dispatcher.setup_middleware(BannedUserMiddleware())
     dispatcher.setup_middleware(
         DependencyInjectMiddleware(
+            bot=bot,
+            dispatcher=dispatcher,
             user_repository=UserRepository(session_factory),
             product_repository=ProductRepository(session_factory),
             category_repository=CategoryRepository(session_factory),

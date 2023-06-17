@@ -25,8 +25,8 @@ class UserRepository(BaseRepository):
             created_at=result.created_at,
         )
 
-    def get_by_telegram_id(self, telegram: int) -> users_models.User:
-        statement = select(User).where(User.telegram_id == telegram)
+    def get_by_telegram_id(self, telegram_id: int) -> users_models.User:
+        statement = select(User).where(User.telegram_id == telegram_id)
         with self._session_factory() as session:
             result = session.scalar(statement)
         if result is None:
