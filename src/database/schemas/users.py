@@ -1,5 +1,7 @@
-from sqlalchemy import BigInteger, Column, Float, String, Boolean
-from sqlalchemy.orm import relationship
+from decimal import Decimal
+
+from sqlalchemy import BigInteger, String
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel
 
@@ -9,9 +11,9 @@ __all__ = ('User',)
 class User(BaseModel):
     __tablename__ = 'user'
 
-    telegram_id = Column(BigInteger, nullable=False, unique=True)
-    username = Column(String(32), nullable=True)
-    balance = Column(Float, default=0)
-    is_banned = Column(Boolean, default=False)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True)
+    username: Mapped[str | None] = mapped_column(String(32))
+    balance: Mapped[Decimal] = mapped_column(default=0)
+    is_banned: Mapped[bool] = mapped_column(default=False)
 
     cart_products = relationship('CartProduct', back_populates='user')

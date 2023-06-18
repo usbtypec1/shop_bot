@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Integer, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel
@@ -16,7 +16,7 @@ class Category(BaseModel):
     max_displayed_stock_count: Mapped[int]
     is_hidden: Mapped[bool]
     can_be_seen: Mapped[bool]
-    parent_id: Mapped[int] = Column(
+    parent_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey('categories.id', ondelete='CASCADE'),
         nullable=True,
@@ -28,7 +28,7 @@ class Category(BaseModel):
         cascade='all, delete',
         remote_side=[id]
     )
-    products = relationship(
+    products: Mapped[list['Product']] = relationship(
         'Product',
         back_populates='category',
         cascade="all, delete",

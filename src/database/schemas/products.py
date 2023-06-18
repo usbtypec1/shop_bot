@@ -1,14 +1,15 @@
 import enum
+from decimal import Decimal
+from uuid import UUID
 
-from sqlalchemy import (
-    String, Column, Text, Integer, ForeignKey, Float, Enum,
-    Boolean
-)
-from sqlalchemy.orm import relationship
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel, Base
 
 __all__ = (
+    'ProductMedia',
+    'MediaType',
     'Product',
     'ProductUnit',
     'ProductPermittedGateway',
@@ -25,57 +26,73 @@ class PaymentMethod(enum.Enum):
 class ProductPermittedGateway(Base):
     __tablename__ = 'product_permitted_gateways'
 
-    product_id = Column(
-        Integer,
-        ForeignKey('product.id'),
-        nullable=False,
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey('products.id'),
         primary_key=True,
     )
-    payment_method = Column(
-        Enum(PaymentMethod),
-        nullable=False,
-        primary_key=True,
-    )
+    payment_method: Mapped[PaymentMethod] = mapped_column(primary_key=True)
 
     product = relationship('Product', back_populates='permitted_gateways')
 
 
+class MediaType(enum.IntEnum):
+    PHOTO = 1
+    VIDEO = 2
+    ANIMATION = 3
+
+
+class ProductMedia(Base):
+    __tablename__ = 'product_media'
+
+    uuid: Mapped[UUID] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey('products.id', ondelete='CASCADE'),
+    )
+    type: Mapped[MediaType]
+
+    product = relationship('Product', back_populates='media')
+
+
 class Product(BaseModel):
-    __tablename__ = 'product'
+    __tablename__ = 'products'
 
-    category_id = Column(
-        Integer,
+    category_id: Mapped[int] = mapped_column(
         ForeignKey('categories.id', ondelete='CASCADE'),
-        nullable=False,
     )
-    name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=False)
-    picture = Column(String(255))
-    price = Column(Float, nullable=False)
-    quantity = Column(Integer, default=0)
-    min_order_quantity = Column(Integer, nullable=True)
-    max_order_quantity = Column(Integer, nullable=True)
-    max_replacement_time_in_minutes = Column(
-        Integer,
-        default=15,
-        nullable=False,
-    )
-    max_displayed_stock_count = Column(Integer, nullable=False)
-    is_duplicated_stock_entries_allowed = Column(Boolean, nullable=False)
-    is_hidden = Column(Boolean, nullable=False)
-    can_be_purchased = Column(Boolean, nullable=False)
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str]
+    picture: Mapped[str] = mapped_column(String(255))
+    price: Mapped[Decimal]
+    quantity: Mapped[int] = mapped_column(default=0)
+    min_order_quantity: Mapped[int | None]
+    max_order_quantity: Mapped[int | None]
+    max_replacement_time_in_minutes: Mapped[int] = mapped_column(default=15)
+    max_displayed_stock_count: Mapped[int | None]
+    is_duplicated_stock_entries_allowed: Mapped[bool]
+    is_hidden: Mapped[bool]
+    can_be_purchased: Mapped[bool]
 
-    permitted_gateways = relationship(
+    permitted_gateways: Mapped[list[ProductPermittedGateway]] = relationship(
         'ProductPermittedGateway',
         back_populates='product',
     )
-    category = relationship(
+    category: Mapped['Category'] = relationship(
         'Category',
         back_populates='products',
         cascade='all, delete',
     )
-    product_unit = relationship('ProductUnit', backref='product')
-    cart_product = relationship('CartProduct', back_populates='product')
+    units: Mapped['ProductUnit'] = relationship(
+        'ProductUnit',
+        back_populates='product',
+    )
+    cart_products: Mapped[list['CartProduct']] = relationship(
+        'CartProduct',
+        back_populates='product',
+    )
+    media: Mapped[list[ProductMedia]] = relationship(
+        'ProductMedia',
+        back_populates='product',
+    )
 
     def __repr__(self):
         return (
@@ -89,8 +106,10 @@ class Product(BaseModel):
 
 
 class ProductUnit(BaseModel):
-    __tablename__ = 'product_unit'
-    product_id = Column(Integer, ForeignKey('product.id'), nullable=False)
-    content = Column(String, nullable=False)
-    type = Column(String, default='text')
-    sale_id = Column(Integer, ForeignKey('sale.id'))
+    __tablename__ = 'product_units'
+    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
+    content: Mapped[str]
+    type: Mapped[str]
+    sale_id: Mapped[int] = mapped_column(ForeignKey('sale.id'))
+
+    product: Mapped[Product] = relationship('Product', back_populates='units')

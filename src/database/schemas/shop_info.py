@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, Enum, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 from database.schemas.base import Base
 
@@ -21,5 +21,5 @@ class ShopInfoField(enum.Enum):
 class ShopInformation(Base):
     __tablename__ = 'shop_information'
 
-    key = Column(Enum(ShopInfoField), primary_key=True)
-    value = Column(Text, nullable=False)
+    key: Mapped[ShopInfoField] = mapped_column(primary_key=True)
+    value: Mapped[str]
