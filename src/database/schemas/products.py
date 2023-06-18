@@ -61,7 +61,6 @@ class Product(BaseModel):
     )
     name: Mapped[str] = mapped_column(String(255))
     description: Mapped[str]
-    picture: Mapped[str] = mapped_column(String(255))
     price: Mapped[Decimal]
     quantity: Mapped[int] = mapped_column(default=0)
     min_order_quantity: Mapped[int | None]
