@@ -11,9 +11,7 @@ from aiogram.types import CallbackQuery, ContentType, Message
 import config
 from common.filters import AdminFilter
 from common.views import answer_view
-from loader import dp
 from products.callback_data import ProductCallbackFactory
-from products.states import AddProductStates
 from responses.product_management import (
     SuccessUnitAddingResponse,
     AddProductDescriptionResponse,

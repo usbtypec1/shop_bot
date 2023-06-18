@@ -1,22 +1,42 @@
 from dataclasses import dataclass
 from typing import NewType
+from uuid import UUID
+
+from database.schemas.products import PaymentMethod, MediaType
 
 __all__ = (
     'Product',
     'MediaFileName',
+    'PaymentMethod',
+    'MediaType',
+    'ProductMedia',
 )
 
 MediaFileName = NewType('MediaFileName', str)
 
 
 @dataclass(frozen=True, slots=True)
+class ProductMedia:
+    uuid: UUID
+    type: MediaType
+
+    @property
+    def file_name(self) -> str:
+        media_type_to_file_extension = {
+            MediaType.PHOTO: 'jpg',
+            MediaType.VIDEO: 'mp4',
+            MediaType.ANIMATION: 'gif.mp4'
+        }
+        file_extension = media_type_to_file_extension[self.type]
+        return f'{str(self.uuid)}.{file_extension}'
+
+
+@dataclass(frozen=True, slots=True)
 class Product:
     id: int
     category_id: int
-    subcategory_id: int
     name: str
     description: str
-    picture: str
     price: float
     quantity: int
     min_order_quantity: int
@@ -26,35 +46,19 @@ class Product:
     is_duplicated_stock_entries_allowed: bool
     is_hidden: bool
     can_be_purchased: bool
+    media: list[ProductMedia]
+    permitted_gateways: list[PaymentMethod]
 
     @property
-    def media_file_names(self) -> list[str]:
-        return [] if self.picture is None else self.picture.split('|')
-
-    @property
-    def photo_and_video_file_names(self) -> list[str]:
-        """Media file names (except GIFs) with relative order."""
+    def photos_and_videos(self) -> list[ProductMedia]:
         return [
-            file_name for file_name in self.media_file_names
-            if file_name.endswith('.jpg')
-               or (
-                       file_name.endswith('.mp4')
-                       and not file_name.endswith('.gif.mp4')
-               )
+            media for media in self.media
+            if media.type in (MediaType.PHOTO, MediaType.VIDEO)
         ]
 
     @property
-    def photo_file_names(self) -> list[str]:
-        return [file_name for file_name in self.media_file_names
-                if file_name.endswith('.jpg')]
-
-    @property
-    def video_file_names(self) -> list[str]:
-        return [file_name for file_name in self.media_file_names
-                if file_name.endswith('.mp4')
-                and not file_name.endswith('.gif.mp4')]
-
-    @property
-    def animation_file_names(self) -> list[str] | None:
-        return [file_name for file_name in self.media_file_names
-                if file_name.endswith('.gif.mp4')]
+    def animations(self) -> list[ProductMedia]:
+        return [
+            media for media in self.media
+            if media.type == MediaType.ANIMATION
+        ]

@@ -1,8 +1,12 @@
-from .management import dp
-from .add import dp
-from .edit import dp
-from .delete import dp
-from .product_units import dp
+from aiogram import Dispatcher
+
+from . import list, detail, create, update
+
+__all__ = ('register_handlers',)
 
 
-__all__ = ('dp',)
+def register_handlers(dispatcher: Dispatcher) -> None:
+    list.register_handlers(dispatcher)
+    detail.register_handlers(dispatcher)
+    create.register_handlers(dispatcher)
+    update.register_handlers(dispatcher)

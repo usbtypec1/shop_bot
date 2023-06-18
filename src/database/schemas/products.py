@@ -27,7 +27,7 @@ class ProductPermittedGateway(Base):
     __tablename__ = 'product_permitted_gateways'
 
     product_id: Mapped[int] = mapped_column(
-        ForeignKey('products.id'),
+        ForeignKey('products.id', ondelete='CASCADE'),
         primary_key=True,
     )
     payment_method: Mapped[PaymentMethod] = mapped_column(primary_key=True)
@@ -65,7 +65,7 @@ class Product(BaseModel):
     quantity: Mapped[int] = mapped_column(default=0)
     min_order_quantity: Mapped[int | None]
     max_order_quantity: Mapped[int | None]
-    max_replacement_time_in_minutes: Mapped[int] = mapped_column(default=15)
+    max_replacement_time_in_minutes: Mapped[int]
     max_displayed_stock_count: Mapped[int | None]
     is_duplicated_stock_entries_allowed: Mapped[bool]
     is_hidden: Mapped[bool]
