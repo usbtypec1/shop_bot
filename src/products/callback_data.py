@@ -3,6 +3,7 @@ from aiogram.utils.callback_data import CallbackData
 from products.models import PaymentMethod
 
 __all__ = (
+    'AdminProductDeleteCallbackData',
     'AdminProductUpdateCallbackData',
     'AdminProductPermittedGatewayChoiceCallbackData',
     'AdminProductCreateCallbackData',
@@ -11,6 +12,12 @@ __all__ = (
     'ProductCallbackFactory',
     'ProductUnitCallbackFactory',
 )
+
+
+class AdminProductDeleteCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('admin-product-delete', 'product_id')
 
 
 class AdminProductUpdateCallbackData(CallbackData):

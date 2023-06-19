@@ -1,12 +1,17 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 __all__ = (
+    'ProductDeleteStates',
     'ProductCreateStates',
     'ProductUpdateStates',
     'EditProductUnitStates',
     'EnterProductQuantityStates',
     'AddProductUnitStates',
 )
+
+
+class ProductDeleteStates(StatesGroup):
+    confirm = State()
 
 
 class ProductCreateStates(StatesGroup):
