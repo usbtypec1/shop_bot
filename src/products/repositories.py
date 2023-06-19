@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from decimal import Decimal
 
+import structlog
 from sqlalchemy import select, delete, update
 from sqlalchemy.orm import joinedload
 
@@ -10,6 +11,8 @@ from products.exceptions import ProductDoesNotExistError
 from products.models import Product, PaymentMethod, ProductMedia
 
 __all__ = ('ProductRepository',)
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger('app')
 
 
 class ProductRepository(BaseRepository):
@@ -305,3 +308,28 @@ class ProductRepository(BaseRepository):
             product_id=product_id,
             values_to_update={'can_be_purchased': can_be_purchased},
         )
+
+    def delete_by_id(self, product_id: int) -> None:
+        statement_to_delete_product = (
+            delete(database_models.Product)
+            .where(database_models.Product.id == product_id)
+        )
+        statement_to_delete_product_media = (
+            delete(database_models.ProductMedia)
+            .where(database_models.ProductMedia.product_id == product_id)
+        )
+        statement_to_delete_product_permitted_gateways = (
+            delete(database_models.ProductPermittedGateway)
+            .where(
+                database_models.ProductPermittedGateway.product_id == product_id
+            )
+        )
+        logger.debug(
+            'Product repository: delete product by ID',
+            product_id=product_id,
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement_to_delete_product)
+                session.execute(statement_to_delete_product_media)
+                session.execute(statement_to_delete_product_permitted_gateways)
