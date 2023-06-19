@@ -19,7 +19,7 @@ from products.callback_data import (
 )
 from products.models import PaymentMethod
 from products.repositories import ProductRepository
-from products.services import parse_media_types
+from products.services import parse_media_types, batch_move_files
 from products.states import ProductCreateStates
 from products.views import (
     AdminAskForProductMediaView,
@@ -345,6 +345,11 @@ async def on_product_create_finish(
         price=price,
         category_id=category_id,
     )
+    batch_move_files(
+        base_path=config.PENDING_DIR_PATH / str(callback_query.from_user.id),
+        file_names=[product_media.file_name for product_media in product.media],
+        destination_path=config.PRODUCT_PICTURE_PATH,
+    )
     print(product)
 
 
@@ -390,7 +395,11 @@ async def on_product_advanced_settings_create_finish(
         can_be_purchased=can_be_purchased,
         permitted_gateways=permitted_gateways,
     )
-    print(product)
+    batch_move_files(
+        base_path=config.PENDING_DIR_PATH / str(callback_query.from_user.id),
+        file_names=[product_media.file_name for product_media in product.media],
+        destination_path=config.PRODUCT_PICTURE_PATH,
+    )
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
@@ -488,7 +497,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     )
     dispatcher.register_callback_query_handler(
         on_product_create_finish,
-        Text('permitted-gateways-choose-finish'),
+        Text('product-create-finish'),
         AdminFilter(),
         state=ProductCreateStates.price,
     )
