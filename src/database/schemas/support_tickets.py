@@ -1,13 +1,7 @@
 import enum
 
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    ForeignKey,
-    Text,
-    Enum,
-)
+from sqlalchemy import String, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
 from database.schemas.base import BaseModel
 
@@ -29,14 +23,12 @@ class SupportTicketStatus(enum.Enum):
 class SupportTicket(BaseModel):
     __tablename__ = 'support_tickets'
 
-    user_id = Column(Integer, ForeignKey('user.telegram_id'), nullable=False)
-    subject = Column(String(64), nullable=False)
-    issue = Column(Text, nullable=False)
-    answer = Column(Text, nullable=True)
-    status = Column(
-        Enum(SupportTicketStatus),
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.telegram_id'))
+    subject: Mapped[str] = mapped_column(String(64))
+    issue: Mapped[str]
+    answer: Mapped[str | None]
+    status: Mapped[SupportTicketStatus] = mapped_column(
         default=SupportTicketStatus.OPEN,
-        nullable=False,
     )
 
 
@@ -48,10 +40,8 @@ class SupportTicketReplySource(enum.Enum):
 class SupportTicketReply(BaseModel):
     __tablename__ = 'support_ticket_replies'
 
-    support_ticket_id = Column(
-        Integer,
-        ForeignKey('support_tickets.id'),
-        nullable=False,
+    support_ticket_id: Mapped[int] = mapped_column(
+        ForeignKey('support_tickets.id', ondelete='CASCADE'),
     )
-    source = Column(Enum(SupportTicketReplySource), nullable=False)
-    text = Column(Text, nullable=False)
+    source: Mapped[SupportTicketReplySource]
+    text: Mapped[str]

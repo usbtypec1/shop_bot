@@ -1,5 +1,6 @@
 from aiogram.types import Message, CallbackQuery, ParseMode
 
+from database import schemas
 from keyboards.inline import (
     users_keyboard,
     common_keybords,
@@ -10,56 +11,15 @@ from keyboards.inline.callback_factories import (
     TopUpUserBalanceCallbackFactory
 )
 from responses.base import BaseResponse
-from database import schemas
 from services.time_utils import get_now_datetime
-
-
-class UsersResponse(BaseResponse):
-    def __init__(
-            self,
-            update: CallbackQuery | Message,
-            users: list[schemas.User],
-            total_balance: float,
-            users_filter: str = '',
-            page: int = 0,
-            page_size: int = 10,
-            callback_data: dict[str, str] | None = None,
-    ):
-        self.__update = update
-        self.__keyboard = users_keyboard.UsersKeyboard(
-            users=users,
-            page=page,
-            page_size=page_size,
-            users_filter=users_filter,
-            callback_data=callback_data,
-        )
-        self.__users_quantity = len(users)
-        self.__total_balance = total_balance
-        self.__page = page
-        self.__page_size = page_size
-
-    async def _send_response(self):
-        total_balance = self.__total_balance or 0.0
-        text = (
-            f"Total Users: {self.__users_quantity}\n"
-            f"Total Balances in User's profiles: ${total_balance}"
-        )
-        match self.__update:
-            case CallbackQuery():
-                await self.__update.answer()
-                await self.__update.message.edit_text(
-                    text=text,
-                    reply_markup=self.__keyboard,
-                )
-            case Message():
-                await self.__update.answer(text, reply_markup=self.__keyboard)
+from users.models import User
 
 
 class UserResponse(BaseResponse):
     def __init__(
             self,
             query: CallbackQuery,
-            user: schemas.User,
+            user: User,
             number_of_orders: int,
             callback_data: dict[str, str] | None = None,
     ):
@@ -81,25 +41,6 @@ class UserResponse(BaseResponse):
             user_id=user.id,
             is_user_banned=user.is_banned,
             callback_data=callback_data,
-        )
-
-    async def _send_response(self):
-        username = self.__user.username or ''
-        banned_status = 'banned' if self.__user.is_banned else 'not banned'
-        registered_at = f'{self.__user.created_at:%m/%d/%Y}'
-        text = (
-                f'<b>User ID</b>: {self.__user.telegram_id}\n'
-                f'<b>Username</b>: @{username}\n'
-                f'<b>Registration Date</b>: {registered_at}\n'
-                f'<b>Number of orders</b>: {self.__number_of_orders}\n'
-                f'<b>Balance</b>: ${self.__user.balance}\n\n'
-                f'<b>Status</b>: {banned_status}'
-        )
-        await self.__query.answer()
-        await self.__query.message.edit_text(
-            text=text,
-            reply_markup=self.__keyboard,
-            parse_mode=ParseMode.HTML,
         )
 
 

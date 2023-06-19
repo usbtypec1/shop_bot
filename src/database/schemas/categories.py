@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, Integer, Boolean
-from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel
 
@@ -7,21 +7,29 @@ __all__ = ('Category',)
 
 
 class Category(BaseModel):
-    __tablename__ = 'category'
+    __tablename__ = 'categories'
 
-    name = Column(String(255), nullable=False)
-    icon = Column(String(255), nullable=True)
-    priority = Column(Integer, nullable=False)
-    max_displayed_stock_count = Column(Integer, nullable=False)
-    is_hidden = Column(Boolean, nullable=False)
-    can_be_seen = Column(Boolean, nullable=False)
-    subcategory = relationship(
-        'Subcategory',
-        backref='category',
-        cascade="all, delete",
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str]
+    icon: Mapped[str | None]
+    priority: Mapped[int]
+    max_displayed_stock_count: Mapped[int]
+    is_hidden: Mapped[bool]
+    can_be_seen: Mapped[bool]
+    parent_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey('categories.id', ondelete='CASCADE'),
+        nullable=True,
     )
-    product = relationship(
+
+    parent: Mapped['Category'] = relationship(
+        'Category',
+        backref='children',
+        cascade='all, delete',
+        remote_side=[id]
+    )
+    products: Mapped[list['Product']] = relationship(
         'Product',
-        backref='category',
+        back_populates='category',
         cascade="all, delete",
     )

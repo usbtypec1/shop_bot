@@ -1,42 +1,39 @@
 import aiogram.types
 
-from keyboards.inline import callback_factories
-
-
-class ProductManagementButton(aiogram.types.KeyboardButton):
-    def __init__(self):
-        super().__init__(text='📝 Products Management')
-
-
-class CategoryManagementButton(aiogram.types.KeyboardButton):
-    def __init__(self):
-        super().__init__(text='📁 Categories Control')
+import products.callback_data
 
 
 class CategoryButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, category_name: str, category_id: int):
         super().__init__(
-            text=category_name, callback_data=callback_factories.ProductCallbackFactory().new(
-                category_id=category_id, subcategory_id='', product_id='', action='manage'
+            text=category_name,
+            callback_data=products.callback_data.ProductCallbackFactory().new(
+                category_id=category_id, subcategory_id='', product_id='',
+                action='manage'
             )
         )
 
 
 class SubcategoryButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, category_id: int, subcategory_id: int, subcategory_name: str):
+    def __init__(self, category_id: int, subcategory_id: int,
+                 subcategory_name: str):
         super().__init__(
-            text=subcategory_name, callback_data=callback_factories.ProductCallbackFactory().new(
-                category_id=category_id, subcategory_id=subcategory_id, product_id='', action='manage'
+            text=subcategory_name,
+            callback_data=products.callback_data.ProductCallbackFactory().new(
+                category_id=category_id, subcategory_id=subcategory_id,
+                product_id='', action='manage'
             )
         )
 
 
 class AddProductButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, category_id: int = None, subcategory_id: int = None):
-        super().__init__('📓 Add Products', callback_data=callback_factories.ProductCallbackFactory().new(
-            category_id=category_id or '', subcategory_id=subcategory_id or '',
-            product_id='', action='add'
-        ))
+        super().__init__('📓 Add Products',
+                         callback_data=products.callback_data.ProductCallbackFactory().new(
+                             category_id=category_id or '',
+                             subcategory_id=subcategory_id or '',
+                             product_id='', action='add'
+                         ))
 
 
 class CompleteProductAddingKeyboard(aiogram.types.KeyboardButton):
@@ -49,16 +46,19 @@ class ProductButton(aiogram.types.InlineKeyboardButton):
                  product_text: str):
         super().__init__(
             text=product_text,
-            callback_data=callback_factories.ProductCallbackFactory().new(
-                category_id=category_id, subcategory_id='', product_id=product_id, action='manage'
+            callback_data=products.callback_data.ProductCallbackFactory().new(
+                category_id=category_id, subcategory_id='',
+                product_id=product_id, action='manage'
             )
         )
 
 
 class EditProductTitleButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='📙 Change Product Title', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='📙 Change Product Title',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='edit_title'
             )
@@ -66,9 +66,11 @@ class EditProductTitleButton(aiogram.types.InlineKeyboardButton):
 
 
 class EditProductDescriptionButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='📝 Edit Description', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='📝 Edit Description',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='edit_description'
             )
@@ -76,9 +78,11 @@ class EditProductDescriptionButton(aiogram.types.InlineKeyboardButton):
 
 
 class EditProductPictureButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='🖼 Change Product Image', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='🖼 Change Product Image',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='edit_picture'
             )
@@ -86,9 +90,11 @@ class EditProductPictureButton(aiogram.types.InlineKeyboardButton):
 
 
 class EditProductPrice(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='💵 Change Price', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='💵 Change Price',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='edit_price'
             )
@@ -96,9 +102,11 @@ class EditProductPrice(aiogram.types.InlineKeyboardButton):
 
 
 class ProductUnitsManagementButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='📦 Manage Stock', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='📦 Manage Stock',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='units'
             )
@@ -106,9 +114,11 @@ class ProductUnitsManagementButton(aiogram.types.InlineKeyboardButton):
 
 
 class AddProductUnitsButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='➕ Add More Stock', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='➕ Add More Stock',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='add_units'
             )
@@ -116,9 +126,11 @@ class AddProductUnitsButton(aiogram.types.InlineKeyboardButton):
 
 
 class DeleteAllProductUnits(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='❌🗑 Remove All Stock', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='❌🗑 Remove All Stock',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='delete_units'
             )
@@ -126,9 +138,11 @@ class DeleteAllProductUnits(aiogram.types.InlineKeyboardButton):
 
 
 class DeleteProductButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_id: int, category_id: int, subcategory_id: int = None):
+    def __init__(self, product_id: int, category_id: int,
+                 subcategory_id: int = None):
         super().__init__(
-            text='❌🗑 Remove This Product', callback_data=callback_factories.ProductCallbackFactory().new(
+            text='❌🗑 Remove This Product',
+            callback_data=products.callback_data.ProductCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, action='delete'
             )
@@ -139,7 +153,8 @@ class ProductUnitButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, content: str, category_id: int, product_id: int,
                  product_unit_id: int, subcategory_id: int = None):
         super().__init__(
-            text=content, callback_data=callback_factories.ProductUnitCallbackFactory().new(
+            text=content,
+            callback_data=products.callback_data.ProductUnitCallbackFactory().new(
                 category_id=category_id, subcategory_id=subcategory_id or '',
                 product_id=product_id, id=product_unit_id, action='manage',
             )
@@ -147,21 +162,27 @@ class ProductUnitButton(aiogram.types.InlineKeyboardButton):
 
 
 class EditProductUnitButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_unit_id: int, category_id: int, subcategory_id: int, product_id: int):
+    def __init__(self, product_unit_id: int, category_id: int,
+                 subcategory_id: int, product_id: int):
         super().__init__(
-            text='📝 Edit', callback_data=callback_factories.ProductUnitCallbackFactory().new(
+            text='📝 Edit',
+            callback_data=products.callback_data.ProductUnitCallbackFactory().new(
                 id=product_unit_id, category_id=category_id,
-                subcategory_id=subcategory_id or '', product_id=product_id, action='edit'
+                subcategory_id=subcategory_id or '', product_id=product_id,
+                action='edit'
             )
         )
 
 
 class DeleteProductUnitButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, product_unit_id: int, category_id: int, subcategory_id: int, product_id: int):
+    def __init__(self, product_unit_id: int, category_id: int,
+                 subcategory_id: int, product_id: int):
         super().__init__(
-            text='🗑 Delete', callback_data=callback_factories.ProductUnitCallbackFactory().new(
+            text='🗑 Delete',
+            callback_data=products.callback_data.ProductUnitCallbackFactory().new(
                 id=product_unit_id, category_id=category_id,
-                subcategory_id=subcategory_id or '', product_id=product_id, action='delete'
+                subcategory_id=subcategory_id or '', product_id=product_id,
+                action='delete'
             )
         )
 
@@ -170,7 +191,8 @@ class BackToCategoriesButtons(aiogram.types.InlineKeyboardButton):
     def __init__(self):
         super().__init__(
             '⬅️ Back to category',
-            callback_data=callback_factories.ProductCallbackFactory().new(
-                category_id='', subcategory_id='', product_id='', action='manage'
+            callback_data=products.callback_data.ProductCallbackFactory().new(
+                category_id='', subcategory_id='', product_id='',
+                action='manage'
             )
         )

@@ -1,16 +1,17 @@
 import collections
 import os
 import pathlib
-import typing
+from typing import Literal
 
 import dotenv
-import pydantic
 import toml
-from typing import List
+from pydantic import BaseSettings, Field
 
-#ROOT_DIR = pathlib.Path(os.path.abspath('__file__'))
-ROOT_DIR = pathlib.Path(os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..')))
-#ROOT_DIR = '/root/shop_bot'
+# ROOT_DIR = pathlib.Path(os.path.abspath('__file__'))
+ROOT_DIR = pathlib.Path(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+)
+# ROOT_DIR = '/root/shop_bot'
 print(pathlib.Path(ROOT_DIR))
 DATA_PATH = ROOT_DIR / 'data'
 BACKUP_PATH = ROOT_DIR / 'backups'
@@ -30,10 +31,10 @@ def set_env_var(key: str, value: str) -> None:
 
 
 class TOMLSettings(collections.UserDict):
-    #SETTINGS_PATH = pathlib.Path(os.curdir) / 'settings.toml'
-    SETTINGS_PATH = ROOT_DIR / 'src' / 'settings.toml' 
-    #SETTINGS_PATH = SRC_PATH + '/settings.toml'
-    __slots__ = ()
+    # SETTINGS_PATH = pathlib.Path(os.curdir) / 'settings.toml'
+    SETTINGS_PATH = ROOT_DIR / 'src' / 'settings.toml'
+
+    # SETTINGS_PATH = SRC_PATH + '/settings.toml'
 
     def __init__(self):
         super().__init__()
@@ -45,65 +46,64 @@ class TOMLSettings(collections.UserDict):
         toml.dump(self, settings_file)
 
 
-class AppSettings(pydantic.BaseSettings):
-    __slots__ = ()
-    bot_token: str = pydantic.Field(..., env='BOT_TOKEN')
-    admins_id: List[int] = pydantic.Field([], env='ADMINS_ID')
-    debug: bool = pydantic.Field(env='DEBUG', default=False)
+class AppSettings(BaseSettings):
+    bot_token: str = Field(env='BOT_TOKEN')
+    admins_id: list[int] = Field(env='ADMINS_ID', default_factory=list)
+    debug: bool = Field(env='DEBUG', default=False)
 
 
-class PaymentsSettings(pydantic.BaseSettings):
-    __slots__ = ()
+class PaymentsSettings(BaseSettings):
     crypto_payments: str = TOMLSettings()['payments']['crypto_payments']
 
 
-class QIWISettings(pydantic.BaseSettings):
-    __slots__ = ()
-    payment_method: typing.Literal['nickname', 'number'] = TOMLSettings()['payments']['qiwi']['payment_method']
+class QIWISettings(BaseSettings):
+    payment_method: Literal['nickname', 'number'] = (
+        TOMLSettings()['payments']['qiwi']['payment_method']
+    )
     is_enabled: bool = TOMLSettings()['payments']['qiwi']['is_enabled']
-    number: str = pydantic.Field(None, env='QIWI_NUMBER')
-    nickname: str = pydantic.Field(None, env='QIWI_NICKNAME')
-    token: str = pydantic.Field(None, env='QIWI_TOKEN')
+    number: str = Field(None, env='QIWI_NUMBER')
+    nickname: str = Field(None, env='QIWI_NICKNAME')
+    token: str = Field(None, env='QIWI_TOKEN')
 
 
-class YooMoneySettings(pydantic.BaseSettings):
+class YooMoneySettings(BaseSettings):
     __slots__ = ()
-    number: str = pydantic.Field(None, env='YOOMONEY_NUMBER')
+    number: str = Field(None, env='YOOMONEY_NUMBER')
     is_enabled: bool = TOMLSettings()['payments']['yoomoney']['is_enabled']
-    token: str = pydantic.Field(None, env='YOOMONEY_TOKEN')
+    token: str = Field(None, env='YOOMONEY_TOKEN')
 
 
-class MinerlockSettings(pydantic.BaseSettings):
+class MinerlockSettings(BaseSettings):
     __slots__ = ()
     is_enabled: bool = TOMLSettings()['payments']['minerlock']['is_enabled']
-    api_id: int = pydantic.Field(None, env='MINERLOCK_API_ID')
-    api_key: str = pydantic.Field(None, env='MINERLOCK_API_KEY')
+    api_id: int = Field(None, env='MINERLOCK_API_ID')
+    api_key: str = Field(None, env='MINERLOCK_API_KEY')
 
 
-class CoinpaymentsSettings(pydantic.BaseSettings):
+class CoinpaymentsSettings(BaseSettings):
     __slots__ = ()
     is_enabled: bool = TOMLSettings()['payments']['coinpayments']['is_enabled']
-    public_key: str = pydantic.Field(None, env='COINPAYMENTS_PUBLIC_KEY')
-    secret_key: str = pydantic.Field(None, env='COINPAYMENTS_SECRET_KEY')
+    public_key: str = Field(None, env='COINPAYMENTS_PUBLIC_KEY')
+    secret_key: str = Field(None, env='COINPAYMENTS_SECRET_KEY')
 
 
-class CoinbaseSettings(pydantic.BaseSettings):
+class CoinbaseSettings(BaseSettings):
     __slots__ = ()
     is_enabled: bool = TOMLSettings()['payments']['coinbase']['is_enabled']
-    api_key: str = pydantic.Field(None, env='COINBASE_API_KEY')
+    api_key: str = Field(None, env='COINBASE_API_KEY')
 
 
-class BackupSettings(pydantic.BaseSettings):
+class BackupSettings(BaseSettings):
     __slots__ = ()
     backup_period: str = TOMLSettings()['backup']['backup_period']
-    sending_backup_period: str = TOMLSettings()['backup']['sending_backup_period']
-    admin_id: int = pydantic.Field(None, env='ADMIN_ID_FOR_BACKUP_SENDING')
+    sending_backup_period: str = TOMLSettings()['backup'][
+        'sending_backup_period']
+    admin_id: int = Field(None, env='ADMIN_ID_FOR_BACKUP_SENDING')
 
-#### used for extra text on certain categories, do NOT remove
 
-class CustomCategoryMessages(pydantic.BaseSettings):
+# used for extra text on certain categories, do NOT remove
+class CustomCategoryMessages(BaseSettings):
     __slots__ = ()
-    category1: str = pydantic.Field(None, env='CATEGORY1')
-    category2: str = pydantic.Field(None, env='CATEGORY2')
-    category3: str = pydantic.Field(None, env='CATEGORY3')
-    
+    category1: str = Field(None, env='CATEGORY1')
+    category2: str = Field(None, env='CATEGORY2')
+    category3: str = Field(None, env='CATEGORY3')

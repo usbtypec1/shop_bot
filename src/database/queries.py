@@ -1,5 +1,4 @@
 import decimal
-from typing import Iterable
 
 from sqlalchemy import (
     orm,
@@ -12,37 +11,6 @@ from sqlalchemy import (
 )
 
 from database import schemas
-
-
-def add_user(session: orm.Session, telegram_id: int, username: str) -> None:
-    user = schemas.User(telegram_id=telegram_id, username=username)
-    session.merge(user)
-
-
-def add_product(
-        session: orm.Session,
-        name: str,
-        description: str,
-        price: float,
-        quantity: int,
-        pictures: Iterable[str],
-        category_id: int,
-        subcategory_id: int = None,
-) -> schemas.Product:
-    # Concatenate pictures list to string
-    # so we can store multiple media files in string column in DB
-    picture = '|'.join(pictures) or None
-
-    product = schemas.Product(
-        category_id=category_id,
-        subcategory_id=subcategory_id,
-        name=name, description=description,
-        picture=picture, price=price, quantity=quantity
-    )
-    session.add(product)
-    session.flush()
-    session.refresh(product)
-    return product
 
 
 def add_product_unit(
@@ -132,13 +100,8 @@ def get_user(session: orm.Session, user_id: int = None,
     return session.scalars(statement).first()
 
 
-
 def get_all_categories(session: orm.Session) -> list[schemas.Category]:
     return session.scalars(select(schemas.Category)).all()
-
-
-
-
 
 
 def get_category_items(
@@ -245,20 +208,6 @@ def get_user_support_requests(
     statement = select(schemas.SupportTicket).filter_by(
         user_id=user_id)
     return session.scalars(statement).all()
-
-
-def ban_user(session: orm.Session, user_id: int) -> schemas.User | None:
-    user = get_user(session, user_id)
-    if user is not None:
-        user.is_banned = True
-        return user
-
-
-def unban_user(session: orm.Session, user_id: int) -> schemas.User | None:
-    user = get_user(session, user_id)
-    if user is not None:
-        user.is_banned = False
-        return user
 
 
 def top_up_balance(
@@ -369,10 +318,6 @@ def reset_product_quantity(
     return product
 
 
-def delete_user(session: orm.Session, user_id: int) -> None:
-    session.execute(delete(schemas.User).filter_by(id=user_id))
-
-
 def delete_product(session: orm.Session, product_id: int) -> None:
     session.execute(delete(schemas.Product).filter_by(id=product_id))
 
@@ -388,11 +333,6 @@ def delete_not_sold_product_units(session: orm.Session,
     statement = delete(schemas.ProductUnit).filter_by(
         product_id=product_id, sale_id=None)
     session.execute(statement)
-
-
-def count_users(session: orm.Session) -> int:
-    return session.scalar(
-        select(func.count(schemas.User.id)))
 
 
 def count_user_orders(session: orm.Session, user_id: int) -> int:
@@ -423,11 +363,6 @@ def get_user_orders_amount(session: orm.Session, user_id: int):
     statement = select(func.sum(schemas.Sale.amount))
     return session.scalar(
         statement.filter(schemas.Sale.user_id == user_id)) or 0
-
-
-def get_total_balance(session: orm.Session) -> float:
-    return session.scalar(
-        select(func.sum(schemas.User.balance)))
 
 
 ## to get the user's balance in src/handlers/users/profile.py

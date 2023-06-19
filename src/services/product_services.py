@@ -3,10 +3,10 @@ import pathlib
 import shutil
 import uuid
 from collections.abc import Iterable
-from typing_extensions import Self
 
 import structlog
 from sqlalchemy import orm
+from typing_extensions import Self
 
 import config
 import database

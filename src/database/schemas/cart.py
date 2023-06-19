@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel
 
@@ -9,9 +9,21 @@ __all__ = ('CartProduct',)
 class CartProduct(BaseModel):
     __tablename__ = 'cart_products'
 
-    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
-    product_id = Column(Integer, ForeignKey('product.id'), primary_key=True)
-    quantity = Column(Integer, nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey('user.id', ondelete='CASCADE'),
+        primary_key=True,
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey('products.id'),
+        primary_key=True,
+    )
+    quantity: Mapped[int]
 
-    product = relationship('Product', back_populates='cart_product')
-    user = relationship('User', back_populates='cart_products')
+    product: Mapped['Product'] = relationship(
+        'Product',
+        back_populates='cart_products',
+    )
+    user: Mapped['User'] = relationship(
+        'User',
+        back_populates='cart_products',
+    )

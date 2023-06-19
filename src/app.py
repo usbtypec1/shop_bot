@@ -1,35 +1,58 @@
 import asyncio
 import logging
 
-import aiogram
 import structlog
-from aiogram import executor
+import tzlocal
+from aiogram import Bot, Dispatcher, executor
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import ParseMode, BotCommand
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+import backup.handlers
+import categories
+import categories.handlers
+import common.handlers
 import config
-import handlers
-import middlewares
-import tasks
+import mailing.handlers
+import payments.handlers
+import products.handlers
+import shop_info.handlers
+import support_tickets.handlers
+import users.handlers
+from categories.repositories import CategoryRepository
+from common.middlewares import DependencyInjectMiddleware
+from database import session_factory
 from database.setup import init_tables
+from products.repositories import ProductRepository
 from services import notifications
+from users.middlewares import BannedUserMiddleware
+from users.repositories import UserRepository
 
 logger = structlog.get_logger('app')
 
 
-async def set_default_commands(dispatcher: aiogram.Dispatcher):
+def register_handlers(dispatcher: Dispatcher) -> None:
+    backup.handlers.register_handlers(dispatcher)
+    categories.handlers.register_handlers(dispatcher)
+    common.handlers.register_handlers(dispatcher)
+    mailing.handlers.register_handlers(dispatcher)
+    payments.handlers.register_handlers(dispatcher)
+    products.handlers.register_handlers(dispatcher)
+    shop_info.handlers.register_handlers(dispatcher)
+    support_tickets.handlers.register_handlers(dispatcher)
+    users.handlers.register_handlers(dispatcher)
+
+
+async def set_default_commands(dispatcher: Dispatcher):
     await dispatcher.bot.set_my_commands(
         [
-            aiogram.types.BotCommand("start", "Start bot"),
-            aiogram.types.BotCommand('cancel', 'Cancel Command'),
+            BotCommand("start", "Start bot"),
+            BotCommand('cancel', 'Cancel Command'),
         ]
     )
 
 
 async def on_startup(dispatcher):
-    config.PRODUCT_UNITS_PATH.mkdir(parents=True, exist_ok=True)
-    config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
-    tasks.setup_tasks()
-    init_tables()
-    dispatcher.setup_middleware(middlewares.BannedUserMiddleware())
     await set_default_commands(dispatcher)
 
 
@@ -51,13 +74,47 @@ def setup_logging():
     )
 
 
-if __name__ == "__main__":
+def main():
+    bot = Bot(config.AppSettings().bot_token, parse_mode=ParseMode.HTML)
+    dispatcher = Dispatcher(bot, storage=MemoryStorage())
+
+    config.PRODUCT_UNITS_PATH.mkdir(parents=True, exist_ok=True)
+    config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
+
+    scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
+
     setup_logging()
+    # tasks.setup_tasks(scheduler)
+
+    init_tables()
+
+    dispatcher.setup_middleware(BannedUserMiddleware())
+    dispatcher.setup_middleware(
+        DependencyInjectMiddleware(
+            bot=bot,
+            dispatcher=dispatcher,
+            user_repository=UserRepository(session_factory),
+            product_repository=ProductRepository(session_factory),
+            category_repository=CategoryRepository(session_factory),
+        ),
+    )
+
+    register_handlers(dispatcher)
+
+    setup_logging()
+
     try:
-        executor.start_polling(handlers.dp, on_startup=on_startup,
-                               skip_updates=True)
+        executor.start_polling(
+            dispatcher=dispatcher,
+            on_startup=on_startup,
+            skip_updates=True,
+        )
     except RuntimeError as e:
         logger.critical("Error during bot starting!")
         asyncio.run(
             asyncio.run(notifications.ErrorNotification(e).send())
         )
+
+
+if __name__ == "__main__":
+    main()

@@ -8,6 +8,7 @@ import config
 import keyboards.reply.product_management_keyboards
 from keyboards.inline import product_management_keyboards
 from keyboards.reply import shop_management_keyboards
+from products.models import Product
 from responses import base
 from database import schemas
 from services.files import answer_medias, answer_media_with_text
@@ -214,7 +215,7 @@ class ProductResponse(base.BaseResponse):
     def __init__(
             self,
             update: aiogram.types.CallbackQuery | aiogram.types.Message,
-            product: schemas.Product,
+            product: Product,
             category_id: int,
             subcategory_id: int | None = None,
     ):

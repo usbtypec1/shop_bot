@@ -4,7 +4,8 @@ from collections.abc import Iterable
 import aiogram.types
 
 import config
-import models
+from categories.models import Category
+from database import schemas
 from keyboards.buttons import navigation_buttons
 from keyboards.inline import (
     product_keyboards,
@@ -12,8 +13,6 @@ from keyboards.inline import (
     payments_keyboards,
 )
 from responses import base
-from database import schemas
-from services.files import answer_media_with_text, answer_medias
 
 
 class CategoriesResponses(base.BaseResponse):
@@ -42,10 +41,13 @@ class CategoriesResponses(base.BaseResponse):
 
 
 class CategoryItemsResponse(base.BaseResponse):
-    def __init__(self,
-                 update: aiogram.types.Message | aiogram.types.CallbackQuery,
-                 subcategories: Iterable[models.Subcategory],
-                 products: list[tuple[int, str, str]], category_id: int):
+    def __init__(
+            self,
+            update: aiogram.types.Message | aiogram.types.CallbackQuery,
+            subcategories: Iterable[Category],
+            products: list[tuple[int, str, str]],
+            category_id: int,
+    ):
         self.__update = update
         self.__items = products
         self.__keyboard = product_keyboards.CategoryItemsKeyboard(

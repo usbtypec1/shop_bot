@@ -1,40 +1,9 @@
-import datetime
-
 import aiogram
 
 from keyboards.inline import callback_factories
+import aiogram
 
-
-class UserButton(aiogram.types.InlineKeyboardButton):
-    def __init__(
-            self,
-            user_id: int,
-            user_tg_id: int,
-            balance: float,
-            registration_date:
-            datetime.date,
-            username: str = None,
-            **callback_data,
-    ):
-        callback_data.pop('@')
-        callback_data['action'] = 'manage'
-        callback_data['id'] = user_id
-        super().__init__(
-            text=f'#{user_tg_id} | {username + " | " if username is not None else ""}'
-                 f'${balance} | {registration_date:%m/%d/%Y}',
-            callback_data=callback_factories.UserCallbackFactory().new(
-                **callback_data)
-        )
-
-
-class SearchUsersButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, **callback_data):
-        callback_data.pop('@')
-        callback_data['action'] = 'search'
-        super().__init__('🔎 Search Users',
-                         callback_data=callback_factories.UserCallbackFactory().new(
-                             **callback_data
-                         ))
+from keyboards.inline import callback_factories
 
 
 class BanUserButton(aiogram.types.InlineKeyboardButton):
@@ -84,9 +53,6 @@ class EditBalanceButton(aiogram.types.InlineKeyboardButton):
 
 class DeleteUserButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, user_id: int, **callback_data):
-        callback_data.pop('@')
-        callback_data['action'] = 'delete'
-        callback_data['id'] = str(user_id)
         super().__init__(
             text='🫥 Delete User',
             callback_data=callback_factories.UserCallbackFactory().new(

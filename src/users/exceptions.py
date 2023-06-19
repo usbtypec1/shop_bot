@@ -1,0 +1,2 @@
+class UserNotInDatabase(Exception):
+    pass

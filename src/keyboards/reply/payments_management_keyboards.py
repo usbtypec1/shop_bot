@@ -1,7 +1,7 @@
 import aiogram.types
 
 from keyboards.buttons import payments_buttons, navigation_buttons
-from repositories import payments_apis_repository
+from payments.services import PaymentsAPIsRepository
 
 
 class PaymentsKeyboard(aiogram.types.ReplyKeyboardMarkup):
@@ -14,7 +14,7 @@ class PaymentsKeyboard(aiogram.types.ReplyKeyboardMarkup):
             'coinpayments': payments_buttons.ManageCoinPaymentsButton(),
             'coinbase': payments_buttons.ManageCoinbaseButton(),
         }
-        apis_repository = payments_apis_repository.PaymentsAPIsRepository()
+        apis_repository = PaymentsAPIsRepository()
         for name, api in apis_repository.get_enabled_apis():
             self.add(buttons[name])
         self.row(navigation_buttons.BackButton())
