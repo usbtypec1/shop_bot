@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 
 from common.repositories import BaseRepository
 from database import schemas as database_models
+from products.exceptions import ProductDoesNotExistError
 from products.models import Product, PaymentMethod, ProductMedia
 
 __all__ = ('ProductRepository',)
@@ -96,6 +97,8 @@ class ProductRepository(BaseRepository):
         )
         with self._session_factory() as session:
             product = session.scalar(statement)
+        if product is None:
+            raise ProductDoesNotExistError
         permitted_gateways = [
             permitted_gateway.payment_method
             for permitted_gateway in product.permitted_gateways
@@ -162,8 +165,8 @@ class ProductRepository(BaseRepository):
             media: Iterable[ProductMedia],
     ) -> None:
         delete_statement = (
-            delete(database_models.Product)
-            .where(database_models.Product.id == product_id)
+            delete(database_models.ProductMedia)
+            .where(database_models.ProductMedia.product_id == product_id)
         )
         media_to_insert = [
             database_models.ProductMedia(

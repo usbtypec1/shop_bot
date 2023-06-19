@@ -22,7 +22,7 @@ from products.repositories import ProductRepository
 from products.services import parse_media_types
 from products.states import ProductCreateStates
 from products.views import (
-    AdminProductCreateAskForMediaView,
+    AdminAskForProductMediaView,
     AdminProductPermittedGatewaysView
 )
 
@@ -53,7 +53,7 @@ async def on_product_description_input(
 ) -> None:
     await state.update_data(description=message.text)
     await ProductCreateStates.media.set()
-    view = AdminProductCreateAskForMediaView()
+    view = AdminAskForProductMediaView()
     await answer_view(message=message, view=view)
 
 

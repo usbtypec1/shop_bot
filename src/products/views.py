@@ -17,11 +17,11 @@ __all__ = (
     'AdminProductPermittedGatewaysView',
     'AdminProductListView',
     'AdminProductDetailView',
-    'AdminProductCreateAskForMediaView',
+    'AdminAskForProductMediaView',
 )
 
 
-class AdminProductCreateAskForMediaView(View):
+class AdminAskForProductMediaView(View):
     text = (
         '📷/📹/🎥 You can include multiple images and videos'
         ' for each product, but only one GIF file.'
