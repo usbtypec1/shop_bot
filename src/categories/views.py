@@ -20,6 +20,7 @@ from common.views import View
 from keyboards.buttons.common_buttons import CloseButton
 from keyboards.buttons.navigation_buttons import InlineBackButton
 from keyboards.inline.callback_factories import CategoriesCallbackFactory
+from products.callback_data import UserProductDetailCallbackData
 from products.models import Product
 
 __all__ = (
@@ -350,7 +351,9 @@ class UserCategoryDetailView(View):
             markup.row(
                 InlineKeyboardButton(
                     text=product.name,
-                    callback_data='dev',
+                    callback_data=UserProductDetailCallbackData().new(
+                        product_id=product.id,
+                    ),
                 ),
             )
 

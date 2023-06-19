@@ -22,6 +22,7 @@ class UserProductDetailCallbackData(CallbackData):
         super().__init__('user-product-detail', 'product_id')
 
     def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data)
         return {'product_id': int(callback_data['product_id'])}
 
 
