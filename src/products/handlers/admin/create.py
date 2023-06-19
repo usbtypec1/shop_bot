@@ -19,11 +19,15 @@ from products.callback_data import (
 )
 from products.models import PaymentMethod
 from products.repositories import ProductRepository
-from products.services import parse_media_types, batch_move_files
+from products.services import (
+    parse_media_types, batch_move_files,
+    answer_view_with_media
+)
 from products.states import ProductCreateStates
 from products.views import (
     AdminAskForProductMediaView,
-    AdminProductPermittedGatewaysView, AdminProductDetailView
+    AdminProductPermittedGatewaysView,
+    AdminProductDetailView,
 )
 
 
@@ -351,7 +355,12 @@ async def on_product_create_finish(
         destination_path=config.PRODUCT_PICTURE_PATH,
     )
     view = AdminProductDetailView(product)
-    await answer_view(message=callback_query.message, view=view)
+    await answer_view_with_media(
+        message=callback_query.message,
+        base_path=config.PRODUCT_PICTURE_PATH,
+        product=product,
+        view=view,
+    )
 
 
 async def on_product_advanced_settings_create_finish(
@@ -402,7 +411,12 @@ async def on_product_advanced_settings_create_finish(
         destination_path=config.PRODUCT_PICTURE_PATH,
     )
     view = AdminProductDetailView(product)
-    await answer_view(message=callback_query.message, view=view)
+    await answer_view_with_media(
+        message=callback_query.message,
+        base_path=config.PRODUCT_PICTURE_PATH,
+        product=product,
+        view=view,
+    )
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:

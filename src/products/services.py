@@ -14,17 +14,19 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     ReplyKeyboardMarkup,
 )
+from aiogram.utils.exceptions import TelegramAPIError
 
-from common.views import View
+from common.views import View, answer_view
 from products.models import Product, ProductMedia, MediaType
 
-logger = structlog.get_logger('app')
-
 __all__ = (
+    'batch_move_files',
     'answer_view_with_media',
     'file_extension_to_media_type',
     'parse_media_types',
 )
+
+logger: structlog.stdlib.BoundLogger = structlog.get_logger('app')
 
 
 def build_file_paths(
@@ -41,27 +43,50 @@ async def answer_view_with_media(
         base_path: pathlib.Path,
         product: Product,
         view: View,
-) -> None:
-    if not product.media:
-        raise ValueError('No media')
+) -> Message:
+    if len(product.media) > 10:
+        raise ValueError('Too many media files (10 maximum)')
 
-    media_type_to_answer_method = {
-        MediaType.PHOTO: message.answer_photo,
-        MediaType.VIDEO: message.answer_video,
-        MediaType.ANIMATION: message.answer_animation,
+    for animation in product.animations:
+        file_path = base_path / animation.file_name
+        try:
+            with file_path.open('rb') as file_io:
+                await message.answer_animation(file_io)
+        except OSError:
+            logger.error('File does not exist', file_path=file_path)
+        except TelegramAPIError:
+            logger.exception(
+                'Could not send mediafile',
+                media_type=animation.type.name,
+            )
+
+    media_type_to_input_media = {
+        MediaType.PHOTO: InputMediaPhoto,
+        MediaType.VIDEO: InputMediaVideo,
     }
 
-    if len(product.media) == 1:
-        product_media = product.media[0]
-        answer = media_type_to_answer_method[product_media.type]
-        file_path = base_path / product_media.file_name
-        with open(file_path, 'rb') as file:
-            await answer(
-                file,
-                caption=view.get_text(),
-                reply_markup=view.get_reply_markup(),
-            )
-        return
+    with contextlib.ExitStack() as exit_stack:
+        input_medias: list[InputMedia] = []
+        for photo_or_video in product.photos_and_videos:
+
+            file_path = base_path / photo_or_video.file_name
+            try:
+                file_io = exit_stack.enter_context(file_path.open('rb'))
+            except FileNotFoundError:
+                logger.error('File does not exist', file_path=file_path)
+                continue
+
+            input_media = media_type_to_input_media[photo_or_video.type]
+            input_medias.append(input_media(file_io))
+
+        media_group = MediaGroup(input_medias)
+
+        try:
+            await message.answer_media_group(media_group)
+        except TelegramAPIError:
+            logger.error('Could not send media group')
+
+    return await answer_view(message=message, view=view)
 
 
 async def answer_media_with_text(

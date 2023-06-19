@@ -11,7 +11,7 @@ from common.filters import AdminFilter
 from common.views import edit_message_by_view, answer_view
 from products.callback_data import AdminProductUpdateCallbackData
 from products.repositories import ProductRepository
-from products.services import parse_media_types
+from products.services import parse_media_types, batch_move_files
 from products.states import ProductUpdateStates
 from products.views import AdminAskForProductMediaView, AdminProductDetailView
 
@@ -71,6 +71,11 @@ async def on_media_upload_finish(
     product_repository.update_media(
         product_id=product_id,
         media=parse_media_types(media),
+    )
+    batch_move_files(
+        base_path=config.PENDING_DIR_PATH / str(callback_query.from_user.id),
+        file_names=media,
+        destination_path=config.PRODUCT_PICTURE_PATH,
     )
     product = product_repository.get_by_id(product_id)
     view = AdminProductDetailView(product)
