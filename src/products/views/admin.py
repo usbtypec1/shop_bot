@@ -59,7 +59,7 @@ class AdminAskForProductMediaView(View):
         '\n\nIf you want to add multiple images and/or videos,'
         ' kindly press the "Complete" button once you have'
         ' finished sending all of them.'
-        '\n\nYou must send media files one by one ❗️',
+        '\n\nYou must send media files one by one ❗️'
     )
     reply_markup = InlineKeyboardMarkup(
         inline_keyboard=[
