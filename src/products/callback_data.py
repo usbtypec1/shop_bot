@@ -3,6 +3,8 @@ from aiogram.utils.callback_data import CallbackData
 from products.models import PaymentMethod
 
 __all__ = (
+    'UserProductDetailCallbackData',
+    'UserProductListCallbackData',
     'AdminProductDeleteCallbackData',
     'AdminProductUpdateCallbackData',
     'AdminProductPermittedGatewayChoiceCallbackData',
@@ -12,6 +14,29 @@ __all__ = (
     'ProductCallbackFactory',
     'ProductUnitCallbackFactory',
 )
+
+
+class UserProductDetailCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('user-product-detail', 'product_id')
+
+    def parse(self, callback_data: str) -> dict:
+        return {'product_id': int(callback_data['product_id'])}
+
+
+class UserProductListCallbackData(CallbackData):
+
+    def __init__(self):
+        super().__init__('user-product-list', 'parent_id')
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data = super().parse(callback_data)
+        if callback_data['parent_id'] == 'None':
+            parent_id = None
+        else:
+            parent_id = int(callback_data['parent_id'])
+        return {'parent_id': parent_id}
 
 
 class AdminProductDeleteCallbackData(CallbackData):

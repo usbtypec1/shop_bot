@@ -23,7 +23,7 @@ from products.services import parse_media_types, batch_move_files
 from products.states import ProductCreateStates
 from products.views import (
     AdminAskForProductMediaView,
-    AdminProductPermittedGatewaysView
+    AdminProductPermittedGatewaysView, AdminProductDetailView
 )
 
 
@@ -350,7 +350,8 @@ async def on_product_create_finish(
         file_names=[product_media.file_name for product_media in product.media],
         destination_path=config.PRODUCT_PICTURE_PATH,
     )
-    print(product)
+    view = AdminProductDetailView(product)
+    await answer_view(message=callback_query.message, view=view)
 
 
 async def on_product_advanced_settings_create_finish(
@@ -400,6 +401,8 @@ async def on_product_advanced_settings_create_finish(
         file_names=[product_media.file_name for product_media in product.media],
         destination_path=config.PRODUCT_PICTURE_PATH,
     )
+    view = AdminProductDetailView(product)
+    await answer_view(message=callback_query.message, view=view)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:

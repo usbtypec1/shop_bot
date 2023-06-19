@@ -22,15 +22,14 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import (
-    CallbackQuery, InlineKeyboardMarkup,
-    InlineKeyboardButton
-)
+from aiogram.types import CallbackQuery
 
 from common.filters import AdminFilter
+from common.views import edit_message_by_view
 from products.callback_data import AdminProductDeleteCallbackData
 from products.repositories import ProductRepository
 from products.states import ProductDeleteStates
+from products.views import AdminProductDeleteView
 
 
 async def on_ask_product_delete_confirmation(
@@ -41,24 +40,8 @@ async def on_ask_product_delete_confirmation(
     product_id: int = callback_data['product_id']
     await ProductDeleteStates.confirm.set()
     await state.update_data(product_id=product_id)
-    markup = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text='❌ Delete',
-                    callback_data='delete-confirm'
-                ),
-                InlineKeyboardButton(
-                    text='⬅️ Back',
-                    callback_data='delete-reject',
-                ),
-            ],
-        ],
-    )
-    await callback_query.message.edit_text(
-        text='❗️ Are you sure you want to delete this product?',
-        reply_markup=markup,
-    )
+    view = AdminProductDeleteView(product_id=product_id)
+    await edit_message_by_view(message=callback_query.message, view=view)
 
 
 async def on_product_delete_confirm(

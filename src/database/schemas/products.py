@@ -32,7 +32,11 @@ class ProductPermittedGateway(Base):
     )
     payment_method: Mapped[PaymentMethod] = mapped_column(primary_key=True)
 
-    product = relationship('Product', back_populates='permitted_gateways')
+    product = relationship(
+        'Product',
+        back_populates='permitted_gateways',
+        cascade='all, delete'
+    )
 
 
 class MediaType(enum.IntEnum):
@@ -50,7 +54,11 @@ class ProductMedia(Base):
     )
     type: Mapped[MediaType]
 
-    product = relationship('Product', back_populates='media')
+    product = relationship(
+        'Product',
+        back_populates='media',
+        cascade='all, delete',
+    )
 
 
 class Product(BaseModel):

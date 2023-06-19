@@ -13,7 +13,6 @@ from keyboards.inline import (
     payments_keyboards,
 )
 from responses import base
-from services.files import answer_media_with_text, answer_medias
 
 
 class CategoriesResponses(base.BaseResponse):

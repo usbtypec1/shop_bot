@@ -18,6 +18,12 @@ async def on_show_category_detail(
 ) -> None:
     await state.finish()
     category_id: int = callback_data['category_id']
+    category = category_repository.get_by_id(category_id)
+
+    if not category.can_be_seen:
+        await callback_query.answer('Coming soon...', show_alert=True)
+        return
+
     subcategories = category_repository.get_subcategories(category_id)
     products = product_repository.get_by_category_id(category_id)
     view = UserCategoryDetailView(
