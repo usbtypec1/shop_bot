@@ -19,6 +19,7 @@ import products.handlers
 import shop_info.handlers
 import support_tickets.handlers
 import users.handlers
+from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
 from common.middlewares import DependencyInjectMiddleware
 from database import session_factory
@@ -97,6 +98,7 @@ def main():
             user_repository=UserRepository(session_factory),
             product_repository=ProductRepository(session_factory),
             category_repository=CategoryRepository(session_factory),
+            cart_repository=CartRepository(session_factory),
         ),
     )
 
