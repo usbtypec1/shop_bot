@@ -428,3 +428,9 @@ class CategoryRepository(BaseRepository):
                     'Category repository: could not update can be seen status'
                 )
         return is_updated
+
+    def get_subcategory_ids(self, parent_id: int) -> list[int]:
+        statement = select(Category.id).where(Category.parent_id == parent_id)
+        with self._session_factory() as session:
+            result = session.execute(statement).all()
+        return [row[0] for row in result]

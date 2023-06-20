@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from decimal import Decimal
 
 import structlog
-from sqlalchemy import select, delete, update
+from sqlalchemy import select, delete, update, func
 from sqlalchemy.orm import joinedload
 
 from common.repositories import BaseRepository
@@ -333,3 +333,12 @@ class ProductRepository(BaseRepository):
                 session.execute(statement_to_delete_product)
                 session.execute(statement_to_delete_product_media)
                 session.execute(statement_to_delete_product_permitted_gateways)
+
+    def count_products(self, category_ids: Iterable[int]) -> int:
+        statement = (
+            select(func.count())
+            .where(database_models.Product.category_id.in_(category_ids))
+        )
+        with self._session_factory() as session:
+            result = session.execute(statement).first()
+        return result[0]
