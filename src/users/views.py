@@ -73,6 +73,7 @@ class AdminMenuView(View):
             ],
             [
                 KeyboardButton('🏪 Shop Information'),
+                KeyboardButton('🛒 Cart'),
                 KeyboardButton('💲 Balance'),
             ],
             [
