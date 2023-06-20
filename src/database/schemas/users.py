@@ -15,5 +15,6 @@ class User(BaseModel):
     username: Mapped[str | None] = mapped_column(String(32))
     balance: Mapped[Decimal] = mapped_column(default=0)
     is_banned: Mapped[bool] = mapped_column(default=False)
+    max_cart_cost: Mapped[Decimal | None]
 
     cart_products = relationship('CartProduct', back_populates='user')
