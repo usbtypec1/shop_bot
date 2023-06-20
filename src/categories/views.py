@@ -211,11 +211,31 @@ class CategoryDetailView(View, CategoryDisplayMixin):
         return markup
 
 
-class CategoryAskDeleteConfirmationView(View):
-    text = '❗️ Are you sure you want to delete this category?'
+class CategoryAskDeleteConfirmationView(CategoryDisplayMixin, View):
 
-    def __init__(self, category_id: int):
+    def __init__(
+            self,
+            *,
+            category_id: int,
+            is_subcategory: bool,
+            subcategories_count: int,
+            products_count: int,
+
+    ):
         self.__category_id = category_id
+        self.__subcategories_count = subcategories_count
+        self.__products_count = products_count
+        self._is_subcategory = is_subcategory
+
+    def get_text(self) -> str:
+        text = (
+            f'Are you sure you want to delete this'
+            f' {self.category_singular_display} with'
+        )
+        if self._is_subcategory:
+            text += f' {self.__subcategories_count} subcategories and'
+        text += f' {self.__products_count} products'
+        return text
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()
