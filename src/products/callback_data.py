@@ -3,6 +3,7 @@ from aiogram.utils.callback_data import CallbackData
 from products.models import PaymentMethod
 
 __all__ = (
+    'UserProductAddToCartCallbackData',
     'UserProductDetailCallbackData',
     'UserProductListCallbackData',
     'AdminProductDeleteCallbackData',
@@ -16,14 +17,25 @@ __all__ = (
 )
 
 
+class ParseProductIdMixin:
+
+    def parse(self, callback_data: str) -> dict:
+        callback_data: dict[str, str] = super().parse(callback_data)
+        return callback_data | {
+            'product_id': int(callback_data['product_id']),
+        }
+
+
+class UserProductAddToCartCallbackData(ParseProductIdMixin, CallbackData):
+
+    def __init__(self):
+        super().__init__('user-product-add-to-cart', 'product_id')
+
+
 class UserProductDetailCallbackData(CallbackData):
 
     def __init__(self):
         super().__init__('user-product-detail', 'product_id')
-
-    def parse(self, callback_data: str) -> dict:
-        callback_data = super().parse(callback_data)
-        return {'product_id': int(callback_data['product_id'])}
 
 
 class UserProductListCallbackData(CallbackData):
@@ -40,23 +52,20 @@ class UserProductListCallbackData(CallbackData):
         return {'parent_id': parent_id}
 
 
-class AdminProductDeleteCallbackData(CallbackData):
+class AdminProductDeleteCallbackData(ParseProductIdMixin, CallbackData):
 
     def __init__(self):
         super().__init__('admin-product-delete', 'product_id')
 
 
-class AdminProductUpdateCallbackData(CallbackData):
+class AdminProductUpdateCallbackData(ParseProductIdMixin, CallbackData):
 
     def __init__(self):
         super().__init__('admin-product-update', 'product_id', 'field')
 
     def parse(self, callback_data: str) -> dict:
         callback_data = super().parse(callback_data)
-        return {
-            'product_id': int(callback_data['product_id']),
-            'field': callback_data['field'],
-        }
+        return callback_data | {'field': callback_data['field']}
 
 
 class AdminProductPermittedGatewayChoiceCallbackData(CallbackData):
@@ -81,14 +90,10 @@ class AdminProductCreateCallbackData(CallbackData):
         return {'category_id': int(callback_data['category_id'])}
 
 
-class AdminProductDetailCallbackData(CallbackData):
+class AdminProductDetailCallbackData(ParseProductIdMixin, CallbackData):
 
     def __init__(self):
         super().__init__('admin-product-detail', 'product_id')
-
-    def parse(self, callback_data: str) -> dict:
-        callback_data = super().parse(callback_data)
-        return {'product_id': int(callback_data['product_id'])}
 
 
 class AdminProductListCallbackData(CallbackData):

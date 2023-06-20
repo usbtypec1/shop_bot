@@ -54,6 +54,7 @@ class UserMenuView(View):
             ],
             [
                 KeyboardButton('📱 Profile'),
+                KeyboardButton('🛒 Cart'),
                 KeyboardButton('👨‍💻 Support'),
             ],
         ],

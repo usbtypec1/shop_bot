@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from common.views import View
+from products.callback_data import UserProductAddToCartCallbackData
 from products.models import Product
 
 __all__ = ('UserProductDetailView',)
@@ -30,5 +31,13 @@ class UserProductDetailView(View):
                         callback_data='buy-now',
                     )
                 ],
+                [
+                    InlineKeyboardButton(
+                        text='🛒 Add to Cart',
+                        callback_data=UserProductAddToCartCallbackData().new(
+                            product_id=self.__product.id,
+                        )
+                    ),
+                ]
             ],
         )

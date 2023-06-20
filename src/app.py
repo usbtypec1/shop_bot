@@ -9,7 +9,7 @@ from aiogram.types import ParseMode, BotCommand
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import backup.handlers
-import categories
+import cart.handlers
 import categories.handlers
 import common.handlers
 import config
@@ -33,6 +33,7 @@ logger = structlog.get_logger('app')
 
 def register_handlers(dispatcher: Dispatcher) -> None:
     backup.handlers.register_handlers(dispatcher)
+    cart.handlers.register_handlers(dispatcher)
     categories.handlers.register_handlers(dispatcher)
     common.handlers.register_handlers(dispatcher)
     mailing.handlers.register_handlers(dispatcher)
