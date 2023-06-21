@@ -2,17 +2,40 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentType, Update
 
-from cart.exceptions import ProductQuantityOutOfRangeError
+from cart.exceptions import (
+    ProductQuantityOutOfRangeError,
+    NotEnoughProductQuantityError,
+)
 from cart.repositories import CartRepository
 from cart.services import validate_product_quantity_change
 from cart.states import UserShoppingCartAddToCartStates
-from cart.views import ProductQuantityOutOfRangeWarningView
+from cart.views import (
+    ProductQuantityOutOfRangeWarningView,
+    NotEnoughProductQuantityWarningView
+)
 from common.views import answer_view
 from products.callback_data import UserProductAddToCartCallbackData
 from products.repositories import ProductRepository
 from users.repositories import UserRepository
 
 __all__ = ('register_handlers',)
+
+
+async def on_not_enough_product_quantity_error(
+        update: Update,
+        exception: NotEnoughProductQuantityError,
+        product_repository: ProductRepository,
+) -> bool:
+    product = product_repository.get_by_id(product_id=exception.product_id)
+    view = NotEnoughProductQuantityWarningView(product.quantity)
+    if update.message is not None:
+        await answer_view(message=update.message, view=view)
+    else:
+        await update.callback_query.answer(
+            text=view.get_text(),
+            show_alert=True,
+        )
+    return True
 
 
 async def on_product_quantity_out_of_range_error(
@@ -78,6 +101,10 @@ async def on_product_quantity_input(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
+    dispatcher.register_errors_handler(
+        on_not_enough_product_quantity_error,
+        exception=NotEnoughProductQuantityError,
+    )
     dispatcher.register_errors_handler(
         on_product_quantity_out_of_range_error,
         exception=ProductQuantityOutOfRangeError,

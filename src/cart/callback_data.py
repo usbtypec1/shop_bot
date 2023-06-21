@@ -1,6 +1,9 @@
 from aiogram.utils.callback_data import CallbackData
 
-__all__ = ('CartProductDeleteCallbackData',)
+__all__ = (
+    'CartProductDeleteCallbackData',
+    'CartProductQuantityUpdateCallbackData',
+)
 
 
 class ParseCartProductIdMixin:

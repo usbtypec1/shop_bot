@@ -4,7 +4,8 @@ from typing import Protocol
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from cart.callback_data import (
-    CartProductDeleteCallbackData, CartProductQuantityUpdateCallbackData
+    CartProductDeleteCallbackData,
+    CartProductQuantityUpdateCallbackData,
 )
 from cart.models import CartProduct
 from common.views import View
@@ -12,6 +13,7 @@ from common.views import View
 __all__ = (
     'UserShoppingCartView',
     'ProductQuantityOutOfRangeWarningView',
+    'NotEnoughProductQuantityWarningView',
 )
 
 from products.callback_data import UserProductDetailCallbackData
@@ -138,4 +140,18 @@ class ProductQuantityOutOfRangeWarningView(View):
         raise ValueError(
             'Neither `min_order_quantity` nor `max_order_quantity`'
             ' has been specified for this product'
+        )
+
+
+class NotEnoughProductQuantityWarningView(View):
+
+    def __init__(self, quantity: int):
+        self.__quantity = quantity
+
+    def get_text(self) -> str:
+        if self.__quantity == 0:
+            return '❌  No units of the product are available in stock'
+        return (
+            '❌ Not enough quantity of the product in stock.'
+            f' Available in stock: {self.__quantity}'
         )
