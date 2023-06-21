@@ -39,10 +39,10 @@ class Product:
     description: str
     price: float
     quantity: int
-    min_order_quantity: int
-    max_order_quantity: int
+    min_order_quantity: int | None
+    max_order_quantity: int | None
     max_replacement_time_in_minutes: int
-    max_displayed_stock_count: int
+    max_displayed_stock_count: int | None
     is_duplicated_stock_entries_allowed: bool
     is_hidden: bool
     can_be_purchased: bool
