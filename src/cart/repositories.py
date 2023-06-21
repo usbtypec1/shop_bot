@@ -122,31 +122,31 @@ class CartRepository(BaseRepository):
             cart_product_quantity = self.get_quantity(cart_product_id)
 
         with self._session_factory() as session:
-            product_quantity_row = (
-                session.execute(product_quantity_statement).first()
-            )
-            if product_quantity_row is None:
-                raise ProductDoesNotExistError
-
-            product_quantity: int = product_quantity_row[0]
-
-            quantity_to_add_to_user_cart = quantity - cart_product_quantity
-            product_quantity_after_update = (
-                    product_quantity - quantity_to_add_to_user_cart
-            )
-
-            update_product_quantity_statement = (
-                update(Product)
-                .where(Product.id == product_id)
-                .values(quantity=product_quantity_after_update)
-            )
-            update_cart_product_quantity_statement = (
-                update(CartProduct)
-                .where(CartProduct.id == cart_product_id)
-                .values(quantity=quantity)
-            )
-
             with session.begin():
+                product_quantity_row = (
+                    session.execute(product_quantity_statement).first()
+                )
+                if product_quantity_row is None:
+                    raise ProductDoesNotExistError
+
+                product_quantity: int = product_quantity_row[0]
+
+                quantity_to_add_to_user_cart = quantity - cart_product_quantity
+                product_quantity_after_update = (
+                        product_quantity - quantity_to_add_to_user_cart
+                )
+
+                update_product_quantity_statement = (
+                    update(Product)
+                    .where(Product.id == product_id)
+                    .values(quantity=product_quantity_after_update)
+                )
+                update_cart_product_quantity_statement = (
+                    update(CartProduct)
+                    .where(CartProduct.id == cart_product_id)
+                    .values(quantity=quantity)
+                )
+
                 session.execute(update_product_quantity_statement)
                 session.execute(update_cart_product_quantity_statement)
 

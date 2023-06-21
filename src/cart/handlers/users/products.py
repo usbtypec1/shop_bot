@@ -22,7 +22,13 @@ async def on_product_quantity_out_of_range_error(
 ) -> bool:
     product = product_repository.get_by_id(exception.product_id)
     view = ProductQuantityOutOfRangeWarningView(product)
-    await answer_view(message=update.message, view=view)
+    if update.message is not None:
+        await answer_view(message=update.message, view=view)
+    else:
+        await update.callback_query.answer(
+            text=view.get_text(),
+            show_alert=True,
+        )
     return True
 
 

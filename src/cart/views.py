@@ -4,7 +4,7 @@ from typing import Protocol
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from cart.callback_data import (
-    CartProductDeleteCallbackData
+    CartProductDeleteCallbackData, CartProductQuantityUpdateCallbackData
 )
 from cart.models import CartProduct
 from common.views import View
@@ -13,6 +13,8 @@ __all__ = (
     'UserShoppingCartView',
     'ProductQuantityOutOfRangeWarningView',
 )
+
+from products.callback_data import UserProductDetailCallbackData
 
 
 class HasOptionalMinAndMaxOrderQuantity(Protocol):
@@ -56,11 +58,16 @@ class UserShoppingCartView(View):
             markup.row(
                 InlineKeyboardButton(
                     text=cart_product.product.name,
-                    callback_data='dev',
+                    callback_data=UserProductDetailCallbackData().new(
+                        product_id=cart_product.product.id,
+                    ),
                 ),
                 InlineKeyboardButton(
                     text='+',
-                    callback_data='dev',
+                    callback_data=CartProductQuantityUpdateCallbackData().new(
+                        cart_product_id=cart_product.id,
+                        action='increment',
+                    ),
                 ),
                 InlineKeyboardButton(
                     text=f'{cart_product.quantity}',
@@ -68,7 +75,10 @@ class UserShoppingCartView(View):
                 ),
                 InlineKeyboardButton(
                     text='-',
-                    callback_data='dev',
+                    callback_data=CartProductQuantityUpdateCallbackData().new(
+                        cart_product_id=cart_product.id,
+                        action='decrement',
+                    ),
                 ),
                 InlineKeyboardButton(
                     text='❌',
