@@ -2,7 +2,7 @@ import enum
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel, Base
@@ -101,15 +101,12 @@ class Product(BaseModel):
         back_populates='product',
     )
 
-    def __repr__(self):
-        return (
-            f'{self.id=} '
-            f'{self.category_id=} '
-            f'{self.name=} '
-            f'{self.description=} '
-            f'{self.picture=} '
-            f'{self.quantity=}'
-        )
+    __table_args__ = (
+        CheckConstraint(
+            'quantity >= 0',
+            name='check_product_quantity_non_negative'
+        ),
+    )
 
 
 class ProductUnit(BaseModel):
