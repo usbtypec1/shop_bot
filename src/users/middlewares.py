@@ -1,11 +1,30 @@
+from collections.abc import Iterable
+
 from aiogram.dispatcher.handler import CancelHandler
-from aiogram.dispatcher.middlewares import BaseMiddleware
-from aiogram.types import Update
+from aiogram.dispatcher.middlewares import (
+    BaseMiddleware,
+    LifetimeControllerMiddleware,
+)
+from aiogram.types import Update, CallbackQuery, Message
 
 import database
 from database import queries
 
-__all__ = ('BannedUserMiddleware',)
+__all__ = (
+    'AdminIdentifierMiddleware',
+    'BannedUserMiddleware',
+)
+
+
+class AdminIdentifierMiddleware(LifetimeControllerMiddleware):
+    skip_patterns = ("error", "update",)
+
+    def __init__(self, admin_telegram_ids: Iterable[int]):
+        super().__init__()
+        self.__admin_telegram_ids = set(admin_telegram_ids)
+
+    async def pre_process(self, obj: Message | CallbackQuery, data, *args):
+        data['is_admin'] = obj.from_user.id in self.__admin_telegram_ids
 
 
 class BannedUserMiddleware(BaseMiddleware):

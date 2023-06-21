@@ -26,7 +26,7 @@ from database import session_factory
 from database.setup import init_tables
 from products.repositories import ProductRepository
 from services import notifications
-from users.middlewares import BannedUserMiddleware
+from users.middlewares import BannedUserMiddleware, AdminIdentifierMiddleware
 from users.repositories import UserRepository
 
 logger = structlog.get_logger('app')
@@ -91,6 +91,11 @@ def main():
     init_tables()
 
     dispatcher.setup_middleware(BannedUserMiddleware())
+    dispatcher.setup_middleware(
+        AdminIdentifierMiddleware(
+            admin_telegram_ids=config.AppSettings().admins_id,
+        ),
+    )
     dispatcher.setup_middleware(
         DependencyInjectMiddleware(
             bot=bot,
