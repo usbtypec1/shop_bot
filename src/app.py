@@ -84,23 +84,22 @@ def main():
     config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
 
     scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
+    app_settings = config.AppSettings()
+    admin_telegram_ids = app_settings.admins_id
 
     setup_logging()
     # tasks.setup_tasks(scheduler)
 
     init_tables()
 
-    dispatcher.setup_middleware(BannedUserMiddleware())
-    dispatcher.setup_middleware(
-        AdminIdentifierMiddleware(
-            admin_telegram_ids=config.AppSettings().admins_id,
-        ),
-    )
+    user_repository = UserRepository(session_factory)
+    dispatcher.setup_middleware(BannedUserMiddleware(user_repository))
+    dispatcher.setup_middleware(AdminIdentifierMiddleware(admin_telegram_ids))
     dispatcher.setup_middleware(
         DependencyInjectMiddleware(
             bot=bot,
             dispatcher=dispatcher,
-            user_repository=UserRepository(session_factory),
+            user_repository=user_repository,
             product_repository=ProductRepository(session_factory),
             category_repository=CategoryRepository(session_factory),
             cart_repository=CartRepository(session_factory),

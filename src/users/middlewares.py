@@ -1,19 +1,21 @@
 from collections.abc import Iterable
+from typing import Protocol
 
 from aiogram.dispatcher.handler import CancelHandler
 from aiogram.dispatcher.middlewares import (
-    BaseMiddleware,
     LifetimeControllerMiddleware,
 )
-from aiogram.types import Update, CallbackQuery, Message
-
-import database
-from database import queries
+from aiogram.types import CallbackQuery, Message
 
 __all__ = (
     'AdminIdentifierMiddleware',
     'BannedUserMiddleware',
 )
+
+
+class HasIsUserBannedMethod(Protocol):
+
+    def is_banned(self, telegram_id: int) -> bool: ...
 
 
 class AdminIdentifierMiddleware(LifetimeControllerMiddleware):
@@ -27,15 +29,13 @@ class AdminIdentifierMiddleware(LifetimeControllerMiddleware):
         data['is_admin'] = obj.from_user.id in self.__admin_telegram_ids
 
 
-class BannedUserMiddleware(BaseMiddleware):
-    @staticmethod
-    async def on_pre_process_update(update: Update, *args, **kwargs):
-        user_id = None
-        if update.message:
-            user_id = update.message.from_user.id
-        elif update.callback_query:
-            user_id = update.callback_query.from_user.id
-        if user_id is not None:
-            with database.create_session() as session:
-                if queries.check_is_user_banned(session, user_id):
-                    raise CancelHandler()
+class BannedUserMiddleware(LifetimeControllerMiddleware):
+    skip_patterns = ('update', 'error')
+
+    def __init__(self, user_repository: HasIsUserBannedMethod):
+        super().__init__()
+        self.__user_repository = user_repository
+
+    async def pre_process(self, obj: Message | CallbackQuery, data, *args):
+        if self.__user_repository.is_banned(obj.from_user.id):
+            raise CancelHandler
