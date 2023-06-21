@@ -6,7 +6,7 @@ authors = []
 
 [tool.poetry.dependencies]
 python = "^3.10"
-httpx = "^0.23.0"
+httpx = "^0.24.1"
 coinbase-commerce = "^1.0.1"
 aiogram = "^2.25.1"
 pydantic = "^1.9.2"
