@@ -1,4 +1,4 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 
 from cart import models as cart_models
 from common.repositories import BaseRepository
@@ -121,3 +121,12 @@ class CartRepository(BaseRepository):
             with session.begin():
                 session.execute(update_product_quantity_statement)
                 session.execute(update_cart_product_quantity_statement)
+
+    def delete_by_id(self, cart_product_id: int) -> None:
+        statement = (
+            delete(CartProduct)
+            .where(CartProduct.id == cart_product_id)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
