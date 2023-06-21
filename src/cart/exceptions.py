@@ -1,6 +1,12 @@
 class NotEnoughProductQuantityError(Exception):
-    pass
+
+    def __init__(self, *args, product_id: int):
+        super().__init__(*args)
+        self.product_id = product_id
 
 
 class ProductQuantityOutOfRangeError(Exception):
-    pass
+
+    def __init__(self, *args, product_id: int):
+        super().__init__(*args)
+        self.product_id = product_id

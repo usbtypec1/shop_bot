@@ -11,6 +11,7 @@ __all__ = (
 
 
 class Product(Protocol):
+    id: int
     quantity: int
     max_order_quantity: int | None
     min_order_quantity: int | None
@@ -41,7 +42,7 @@ def validate_product_quantity_change(
     quantity_difference = will_be_changed_to - cart_product_quantity
 
     if product.quantity < quantity_difference:
-        raise NotEnoughProductQuantityError
+        raise NotEnoughProductQuantityError(product_id=product.id)
 
     product_quantity_after_update = product.quantity - quantity_difference
 
@@ -58,4 +59,4 @@ def validate_product_quantity_change(
     )
 
     if more_than_allowed or less_than_required:
-        raise ProductQuantityOutOfRangeError
+        raise ProductQuantityOutOfRangeError(product_id=product.id)
