@@ -79,12 +79,13 @@ async def answer_view_with_media(
             input_media = media_type_to_input_media[photo_or_video.type]
             input_medias.append(input_media(file_io))
 
-        media_group = MediaGroup(input_medias)
+        if input_medias:
+            media_group = MediaGroup(input_medias)
 
-        try:
-            await message.answer_media_group(media_group)
-        except TelegramAPIError:
-            logger.error('Could not send media group')
+            try:
+                await message.answer_media_group(media_group)
+            except TelegramAPIError:
+                logger.error('Could not send media group')
 
     return await answer_view(message=message, view=view)
 
