@@ -99,3 +99,13 @@ class UserRepository(BaseRepository):
             with session.begin():
                 result = session.execute(statement)
         return bool(result.rowcount)
+
+    def is_banned(self, telegram_id: int) -> bool:
+        statement = (
+            select(User.is_banned)
+            .where(User.telegram_id == telegram_id)
+        )
+        with self._session_factory() as session:
+            row = session.execute(statement).first()
+
+        return row is not None and row[0]
