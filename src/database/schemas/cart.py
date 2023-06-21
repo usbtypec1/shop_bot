@@ -11,11 +11,9 @@ class CartProduct(BaseModel):
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey('user.id', ondelete='CASCADE'),
-        primary_key=True,
     )
     product_id: Mapped[int] = mapped_column(
-        ForeignKey('products.id'),
-        primary_key=True,
+        ForeignKey('products.id', ondelete='CASCADE'),
     )
     quantity: Mapped[int]
 
