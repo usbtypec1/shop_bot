@@ -17,7 +17,7 @@ SQLAlchemy = "^2.0.15"
 APScheduler = "^3.9.1"
 tzlocal = "^4.2"
 structlog = "^23.1.0"
-emoji = "^2.2.0"
+emoji = "^2.5.1"
 
 [tool.poetry.dev-dependencies]
 
