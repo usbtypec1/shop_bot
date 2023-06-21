@@ -15,7 +15,7 @@ toml = "^0.10.2"
 typing-extensions = "^4.6.3"
 SQLAlchemy = "^2.0.15"
 APScheduler = "^3.9.1"
-tzlocal = "^4.2"
+tzlocal = "^5.0.1"
 structlog = "^23.1.0"
 emoji = "^2.5.1"
 
