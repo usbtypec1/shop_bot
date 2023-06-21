@@ -3,7 +3,9 @@ from typing import Protocol
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from cart.callback_data import CartProductDeleteCallbackData
+from cart.callback_data import (
+    CartProductDeleteCallbackData
+)
 from cart.models import CartProduct
 from common.views import View
 
@@ -91,7 +93,7 @@ class UserShoppingCartView(View):
         markup.row(
             InlineKeyboardButton(
                 text='🗑️ Empty Cart',
-                callback_data='dev',
+                callback_data='delete-all-cart-products',
             )
         )
 

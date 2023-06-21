@@ -1,4 +1,5 @@
 from sqlalchemy import select, update, delete
+from sqlalchemy.orm import Session
 
 from cart import models as cart_models
 from common.repositories import BaseRepository
@@ -9,6 +10,33 @@ __all__ = ('CartRepository',)
 
 
 class CartRepository(BaseRepository):
+
+    def get_by_id(self, cart_product_id: int) -> cart_models.CartProduct:
+        statement = (
+            select(
+                CartProduct.id,
+                Product.id,
+                Product.name,
+                Product.price,
+                CartProduct.quantity,
+            )
+            .join(Product, onclause=CartProduct.product_id == Product.id)
+            .where(CartProduct.id == cart_product_id)
+        )
+        with self._session_factory() as session:
+            row = session.execute(statement).first()
+        if row is None:
+            raise  # TODO write exception class
+        cart_product_id, product_id, product_name, price, quantity = row
+        return cart_models.CartProduct(
+            id=cart_product_id,
+            product=cart_models.Product(
+                id=product_id,
+                name=product_name,
+                price=price,
+            ),
+            quantity=quantity,
+        )
 
     def get_cart_products(
             self,
@@ -122,11 +150,53 @@ class CartRepository(BaseRepository):
                 session.execute(update_product_quantity_statement)
                 session.execute(update_cart_product_quantity_statement)
 
-    def delete_by_id(self, cart_product_id: int) -> None:
+    def __update_product_quantity(
+            self,
+            *,
+            session: Session,
+            product_id: int,
+            quantity_to_add: int,
+    ) -> None:
         statement = (
+            update(Product)
+            .where(Product.id == product_id)
+            .values(quantity=Product.quantity + quantity_to_add)
+        )
+        session.execute(statement)
+
+    def delete_by_id(self, cart_product_id: int) -> None:
+        cart_product = self.get_by_id(cart_product_id)
+        delete_cart_product_statement = (
             delete(CartProduct)
             .where(CartProduct.id == cart_product_id)
         )
         with self._session_factory() as session:
             with session.begin():
-                session.execute(statement)
+                self.__update_product_quantity(
+                    session=session,
+                    product_id=cart_product.product.id,
+                    quantity_to_add=cart_product.quantity,
+                )
+                session.execute(delete_cart_product_statement)
+
+    def delete_by_user_telegram_id(self, user_telegram_id: int) -> None:
+        cart_products = self.get_cart_products(
+            user_telegram_id=user_telegram_id,
+        )
+        select_user_id_statement = (
+            select(User.id)
+            .where(User.telegram_id == user_telegram_id)
+        )
+        delete_cart_products_statement = (
+            delete(CartProduct)
+            .where(CartProduct.user_id.in_(select_user_id_statement))
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                for cart_product in cart_products:
+                    self.__update_product_quantity(
+                        session=session,
+                        product_id=cart_product.product.id,
+                        quantity_to_add=cart_product.quantity,
+                    )
+                session.execute(delete_cart_products_statement)
