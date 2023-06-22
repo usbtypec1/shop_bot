@@ -14,6 +14,7 @@ __all__ = (
     'UserShoppingCartView',
     'ProductQuantityOutOfRangeWarningView',
     'NotEnoughProductQuantityWarningView',
+    'UserShoppingCartDeleteAllAskForConfirmationView',
 )
 
 from products.callback_data import UserProductDetailCallbackData
@@ -105,7 +106,7 @@ class UserShoppingCartView(View):
         markup.row(
             InlineKeyboardButton(
                 text='🗑️ Empty Cart',
-                callback_data='delete-all-cart-products',
+                callback_data='ask-for-delete-all-in-shopping-cart',
             )
         )
 
@@ -155,3 +156,21 @@ class NotEnoughProductQuantityWarningView(View):
             '❌ Not enough quantity of the product in stock.'
             f' Available in stock: {self.__quantity}'
         )
+
+
+class UserShoppingCartDeleteAllAskForConfirmationView(View):
+    text = 'Are you sure you want to empty everything in the cart?'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='🗑️ Yes',
+                    callback_data='user-shopping-cart-delete-all-confirm',
+                ),
+                InlineKeyboardButton(
+                    text='⬅️ No',
+                    callback_data='show-user-shopping-cart',
+                )
+            ]
+        ]
+    )

@@ -10,7 +10,11 @@ from cart.callback_data import (
 )
 from cart.repositories import CartRepository
 from cart.services import validate_product_quantity_change
-from cart.views import UserShoppingCartView
+from cart.states import UserShoppingCartDeleteAllStates
+from cart.views import (
+    UserShoppingCartView,
+    UserShoppingCartDeleteAllAskForConfirmationView
+)
 from common.views import answer_view, edit_message_by_view
 
 __all__ = ('register_handlers',)
@@ -55,6 +59,16 @@ async def on_product_quantity_update_in_shopping_cart(
 
 async def on_delete_all_cart_products_in_shopping_cart(
         callback_query: CallbackQuery,
+) -> None:
+    await UserShoppingCartDeleteAllStates.confirm.set()
+    await edit_message_by_view(
+        message=callback_query.message,
+        view=UserShoppingCartDeleteAllAskForConfirmationView(),
+    )
+
+
+async def on_delete_all_cart_products_confirm(
+        callback_query: CallbackQuery,
         state: FSMContext,
         cart_repository: CartRepository,
 ) -> None:
@@ -84,15 +98,21 @@ async def on_delete_cart_product_in_shopping_cart(
 
 
 async def on_show_shopping_cart(
-        message: Message,
+        message_or_callback_query: Message | CallbackQuery,
         state: FSMContext,
         cart_repository: CartRepository,
 ) -> None:
     cart_products = cart_repository.get_cart_products(
-        user_telegram_id=message.from_user.id,
+        user_telegram_id=message_or_callback_query.from_user.id,
     )
     view = UserShoppingCartView(cart_products)
-    await answer_view(message=message, view=view)
+    if isinstance(message_or_callback_query, Message):
+        await answer_view(message=message_or_callback_query, view=view)
+    else:
+        await edit_message_by_view(
+            message=message_or_callback_query.message,
+            view=view,
+        )
     await state.finish()
 
 
@@ -104,14 +124,26 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         state='*',
     )
     dispatcher.register_callback_query_handler(
+        on_delete_all_cart_products_confirm,
+        Text('user-shopping-cart-delete-all-confirm'),
+        chat_type=ChatType.PRIVATE,
+        state=UserShoppingCartDeleteAllStates.confirm,
+    )
+    dispatcher.register_callback_query_handler(
         on_delete_all_cart_products_in_shopping_cart,
-        Text('delete-all-cart-products'),
+        Text('ask-for-delete-all-in-shopping-cart'),
         chat_type=ChatType.PRIVATE,
         state='*',
     )
     dispatcher.register_callback_query_handler(
         on_delete_cart_product_in_shopping_cart,
         CartProductDeleteCallbackData().filter(),
+        chat_type=ChatType.PRIVATE,
+        state='*',
+    )
+    dispatcher.register_callback_query_handler(
+        on_show_shopping_cart,
+        Text('show-user-shopping-cart'),
         chat_type=ChatType.PRIVATE,
         state='*',
     )
