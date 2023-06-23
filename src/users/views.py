@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
@@ -5,16 +7,16 @@ from aiogram.types import (
     InlineKeyboardButton,
 )
 
-from decimal import Decimal
 from common.models import Buyer
 from common.views import View
-from keyboards.buttons.navigation_buttons import InlineBackButton
-from keyboards.buttons.users_buttons import UnbanUserButton, BanUserButton
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
     EditUserBalanceCallbackFactory, TopUpUserBalanceCallbackFactory
 )
-from users.callback_data import UserDetailCallbackData
+from users.callback_data import (
+    UserDetailCallbackData, UserDeleteCallbackData,
+    UserUpdateCallbackData
+)
 from users.models import User
 
 __all__ = (
@@ -26,6 +28,7 @@ __all__ = (
     'UserGeneralStatisticsView',
     'UserListView',
     'NewUserNotificationView',
+    'UserDetailView',
 )
 
 
@@ -276,11 +279,9 @@ class UserDetailView(View):
             *,
             user: User,
             number_of_orders: int,
-            callback_data: dict[str, str] | None = None,
     ):
         self.__user = user
         self.__number_of_orders = number_of_orders
-        self.__callback_data = callback_data
 
     def get_text(self) -> str:
         username = self.__user.username or ''
@@ -291,23 +292,11 @@ class UserDetailView(View):
             f'<b>Username</b>: @{username}\n'
             f'<b>Registration Date</b>: {registered_at}\n'
             f'<b>Number of orders</b>: {self.__number_of_orders}\n'
-            f'<b>Balance</b>: ${self.__user.balance}\n\n'
+            f'<b>Balance</b>: ${self.__user.balance:.2f}\n\n'
             f'<b>Status</b>: {banned_status}'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
-        if self.__callback_data is None:
-            callback_data = {
-                '@': 'users',
-                'filter': '',
-                'page': '0',
-                'id': self.__user.id,
-                'action': 'manage',
-                'is_confirmed': '',
-            }
-        else:
-            self.__callback_data['is_confirmed'] = ''
-
         markup = InlineKeyboardMarkup()
         markup.row(
             InlineKeyboardButton(
@@ -329,36 +318,27 @@ class UserDetailView(View):
                 ),
             ),
         )
-        callback_data = self.__callback_data.copy()
-        callback_data.pop('@')
-        callback_data['action'] = 'delete'
-        callback_data['id'] = str(self.__user.id)
         markup.row(
             InlineKeyboardButton(
                 text='🫥 Delete User',
-                callback_data=UserCallbackFactory().new(**self.__callback_data),
+                callback_data=UserDeleteCallbackData().new(
+                    user_id=self.__user.id
+                ),
             ),
         )
         markup.row(
-            UnbanUserButton(self.__user.id, **callback_data) if
-            self.__user.is_banned else BanUserButton(self.__user.id,
-                                                     **callback_data)
+            InlineKeyboardButton(
+                text=f'🆓 Unban' if self.__user.is_banned else f'📛 Ban',
+                callback_data=UserUpdateCallbackData().new(
+                    user_id=self.__user.id,
+                    field='banned-status',
+                )
+            )
         )
         markup.row(
             InlineKeyboardButton(
                 text='🚫 Close',
                 callback_data='close',
-            )
-        )
-        markup.row(
-            InlineBackButton(
-                UserCallbackFactory().new(
-                    filter=callback_data['filter'],
-                    page=callback_data['page'],
-                    id='',
-                    action='',
-                    is_confirmed='',
-                )
             )
         )
         return markup

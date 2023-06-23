@@ -6,30 +6,6 @@ import aiogram
 from keyboards.inline import callback_factories
 
 
-class BanUserButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, user_id: int, **callback_data):
-        callback_data.pop('@')
-        callback_data['action'] = 'ban'
-        callback_data['id'] = str(user_id)
-        super().__init__(
-            text='📛 Ban',
-            callback_data=callback_factories.UserCallbackFactory().new(
-                **callback_data)
-        )
-
-
-class UnbanUserButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, user_id: int, **callback_data):
-        callback_data.pop('@')
-        callback_data['action'] = 'unban'
-        callback_data['id'] = str(user_id)
-        super().__init__(
-            text='🆓 Unban',
-            callback_data=callback_factories.UserCallbackFactory().new(
-                **callback_data)
-        )
-
-
 class TopUpBalanceButton(aiogram.types.InlineKeyboardButton):
     def __init__(self, user_id: int):
         super().__init__(

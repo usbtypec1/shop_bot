@@ -16,9 +16,8 @@ from keyboards.inline.callback_factories import (
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory,
 )
-from sales.repositories import SaleRepository
 from users.exceptions import UserNotInDatabase
-from users.handlers.admin.list import on_show_users_menu
+from users.handlers.admin.detail import user_menu
 from users.repositories import UserRepository
 from users.services import (
     parse_users_identifiers_for_search,
@@ -29,7 +28,7 @@ from users.states import (
     EditBalanceStates,
     TopUpBalanceStates,
 )
-from users.views import UsersView
+from users.views import UserListView
 
 
 async def user_not_in_db_error(
@@ -49,7 +48,7 @@ async def users(query: CallbackQuery, callback_data: dict) -> None:
     total_balance = user_repository.get_total_balance()
     with database.create_session() as session:
         page, page_size = int(callback_data['page']), 10
-        view = UsersView(
+        view = UserListView(
             users=queries.get_users(session, page_size + 1, page * page_size),
             total_balance=total_balance,
             page_size=page_size,
@@ -85,7 +84,7 @@ async def on_users_identifiers_for_search_input(
     sent_message = await message.answer(
         f'🔡 Found users with these usernames and ids: {message.text}'
     )
-    view = UsersView(
+    view = UserListView(
         users=users,
         total_balance=float(total_balance),
         users_filter=sent_message.message_id,
@@ -114,7 +113,7 @@ async def users_show(query: CallbackQuery, callback_data: dict) -> None:
                                       usernames, ids)
         for user in user_list:
             total_balance += decimal.Decimal(str(user.balance))
-        view = UsersView(
+        view = UserListView(
             users=user_list,
             total_balance=float(total_balance),
             users_filter=query.message.message_id,
@@ -122,20 +121,6 @@ async def users_show(query: CallbackQuery, callback_data: dict) -> None:
             page_size=page_size,
         )
         await answer_view(message=query.message, view=view)
-
-
-async def user_menu(
-        callback_query: CallbackQuery,
-        callback_data: dict,
-        sale_repository: SaleRepository,
-) -> None:
-    orders_count = sale_repository.count_by_user_telegram_id(
-        user_telegram_id=callback_query.from_user.id,
-    )
-    with database.create_session() as session:
-        user = queries.get_user(session, int(callback_data['id']))
-        await responses.users.UserResponse(callback_query, user, orders_count,
-                                           callback_data)
 
 
 async def ban_user(query: CallbackQuery, callback_data: dict[str: str]) -> None:
@@ -207,7 +192,7 @@ async def delete_user_confirm(
             total_balance = user_repository.get_total_balance()
             page, page_size = int(callback_data['page']), 10
             await responses.users.SuccessUserRemovalResponse(query, user)
-            view = UsersView(
+            view = UserListView(
                 users=queries.get_users(session, page_size + 1,
                                         page * page_size),
                 total_balance=total_balance,
@@ -371,12 +356,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         users_show,
         UserCallbackFactory().filter(id='', action=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        user_menu,
-        UserCallbackFactory().filter(action='manage'),
         AdminFilter(),
         state='*',
     )
