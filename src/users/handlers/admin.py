@@ -16,8 +16,10 @@ from keyboards.inline.callback_factories import (
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory,
 )
+from sales.repositories import SaleRepository
 from users.exceptions import UserNotInDatabase
 from users.repositories import UserRepository
+from users.services import parse_users_identifiers_for_search
 from users.states import (
     SearchUsersStates,
     EditBalanceStates,
@@ -73,19 +75,19 @@ async def search_users(query: CallbackQuery) -> None:
 async def search_users_ids_input(
         message: Message,
         state: FSMContext,
+        user_repository: UserRepository,
 ):
     await state.finish()
-    usernames, ids = [], []
+    users_identifiers = parse_users_identifiers_for_search(message.text)
+    user_repository.get_by_usernames_and_ids(
+        usernames=users_identifiers.usernames,
+        user_ids=users_identifiers.user_ids,
+    )
     page, page_size = 0, 10
     total_balance = decimal.Decimal('0')
-    for identifier in message.text.split():
-        if identifier.isdigit():
-            ids.append(int(identifier))
-        else:
-            usernames.append(identifier.lower())
     with database.create_session() as session:
         user_list = queries.get_users(session, page_size + 1, page_size * page,
-                                      usernames, ids)
+                                      usernames, user_ids)
         for user in user_list:
             total_balance += decimal.Decimal(str(user.balance))
         filter_message = await responses.users.FoundUsersResponse(message)
@@ -129,13 +131,16 @@ async def users_show(query: CallbackQuery, callback_data: dict) -> None:
 
 
 async def user_menu(
-        query: CallbackQuery,
-        callback_data: dict[str: str],
+        callback_query: CallbackQuery,
+        callback_data: dict,
+        sale_repository: SaleRepository,
 ) -> None:
+    orders_count = sale_repository.count_by_user_telegram_id(
+        user_telegram_id=callback_query.from_user.id,
+    )
     with database.create_session() as session:
         user = queries.get_user(session, int(callback_data['id']))
-        number_of_orders = queries.count_user_orders(session, user.id)
-        await responses.users.UserResponse(query, user, number_of_orders,
+        await responses.users.UserResponse(callback_query, user, orders_count,
                                            callback_data)
 
 
