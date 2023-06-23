@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from decimal import Decimal
 
 from sqlalchemy import select, func, delete, update
 
@@ -68,11 +69,11 @@ class UserRepository(BaseRepository):
                 result = session.execute(statement)
         return bool(result.rowcount)
 
-    def get_total_balance(self) -> float:
+    def get_total_balance(self) -> Decimal:
         statement = select(func.sum(User.balance))
         with self._session_factory() as session:
-            result = session.execute(statement).first()
-        return result[0]
+            row = session.execute(statement).first()
+        return Decimal('0') if row is None else row[0]
 
     def get_total_count(self) -> int:
         statement = select(func.count(User.id))
