@@ -132,7 +132,11 @@ class UserRepository(BaseRepository):
         Returns:
             A list of User objects matching the provided criteria.
         """
-        statement = select(User).slice(offset, offset + limit)
+        statement = (
+            select(User)
+            .order_by(User.id.desc())
+            .slice(offset, offset + limit)
+        )
         if usernames is not None:
             statement = statement.where(User.username.in_(usernames))
         if user_ids is not None:
