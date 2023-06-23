@@ -43,17 +43,22 @@ async def user_not_in_db_error(
     return True
 
 
-async def on_show_users_menu(message: Message) -> None:
-    user_repository = UserRepository(session_factory)
-    with database.create_session() as session:
-        total_balance = user_repository.get_total_balance()
-        page_size = 10
-        view = UsersView(
-            users=queries.get_users(session, page_size + 1),
-            total_balance=float(total_balance),
-            page_size=page_size,
-        )
-        await answer_view(message=message, view=view)
+async def on_show_users_menu(
+        message: Message,
+        user_repository: UserRepository,
+) -> None:
+    total_balance = user_repository.get_total_balance()
+    page_size = 10
+    users = user_repository.get_by_usernames_and_ids(
+        limit=page_size,
+        offset=0,
+    )
+    view = UsersView(
+        users=users,
+        total_balance=total_balance,
+        page_size=page_size,
+    )
+    await answer_view(message=message, view=view)
 
 
 async def users(query: CallbackQuery, callback_data: dict) -> None:
@@ -63,7 +68,7 @@ async def users(query: CallbackQuery, callback_data: dict) -> None:
         page, page_size = int(callback_data['page']), 10
         view = UsersView(
             users=queries.get_users(session, page_size + 1, page * page_size),
-            total_balance=float(total_balance),
+            total_balance=total_balance,
             page_size=page_size,
             page=page,
         )

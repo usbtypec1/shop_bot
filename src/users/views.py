@@ -5,6 +5,7 @@ from aiogram.types import (
     InlineKeyboardButton,
 )
 
+from decimal import Decimal
 from common.models import Buyer
 from common.views import View
 from keyboards.buttons.navigation_buttons import InlineBackButton
@@ -13,6 +14,7 @@ from keyboards.inline.callback_factories import (
     UserCallbackFactory,
     EditUserBalanceCallbackFactory, TopUpUserBalanceCallbackFactory
 )
+from users.callback_data import UserDetailCallbackData
 from users.models import User
 
 __all__ = (
@@ -164,7 +166,7 @@ class UsersView(View):
             self,
             *,
             users: list[User],
-            total_balance: float = 0.0,
+            total_balance: Decimal,
             users_filter: str = '',
             page: int = 0,
             page_size: int = 10,
@@ -199,23 +201,20 @@ class UsersView(View):
             users = self.__users
 
         for user in users:
-            callback_data.pop('@')
-            callback_data['action'] = 'manage'
-            callback_data['id'] = str(user.id)
-
             markup.row(
                 InlineKeyboardButton(
                     text=(
                         f'#{user.telegram_id}'
                         f' | {user.username}'
-                        f' | ${user.balance}'
+                        f' | ${user.balance:.2f}'
                         f' | {user.created_at:%m/%d/%Y}'
                     ),
-                    callback_data=UserCallbackFactory().new(**callback_data),
+                    callback_data=UserDetailCallbackData().new(
+                        user_id=user.id,
+                    ),
                 )
             )
         if not self.__users_filter:
-            callback_data['action'] = 'search'
             markup.row(
                 InlineKeyboardButton(
                     text='🔎 Search Users',
