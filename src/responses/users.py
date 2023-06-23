@@ -88,44 +88,6 @@ class UnbanUserAlertResponse(BaseResponse):
         )
 
 
-class DeleteUserAlert(BaseResponse):
-    def __init__(
-            self,
-            query: CallbackQuery,
-            user: schemas.User,
-            callback_data: dict[str, str],
-    ):
-        self.__query = query
-        self.__user = user
-        self.__keyboard = common_keybords.ConfirmationKeyboard(
-            callback_factory=UserCallbackFactory(),
-            **callback_data,
-        )
-
-    async def _send_response(self):
-        text = (
-            f'This user has ${self.__user.balance} left.'
-            f' Are you sure you want to delete this user?'
-        )
-        await self.__query.answer()
-        await self.__query.message.edit_text(text, reply_markup=self.__keyboard)
-
-
-class SuccessUserRemovalResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery, user: schemas.User):
-        self.__user = user
-        self.__query = query
-
-    async def _send_response(self) -> Message:
-        username = self.__user.username or 'user'
-        text = (
-            f'✅ Deleted {username} with {self.__user.telegram_id}'
-            f' and previous balance of {self.__user.balance}'
-        )
-        await self.__query.answer()
-        return await self.__query.message.edit_text(text=text)
-
-
 class EditBalanceAlertResponse(BaseResponse):
     def __init__(self, message: Message, user: schemas.User,
                  new_balance: str, callback_data: dict[str, str]):

@@ -9,8 +9,7 @@ import database
 import responses.users
 from common.filters import AdminFilter
 from common.views import answer_view
-from database import queries, session_factory
-from keyboards.inline import common_keybords
+from database import queries
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
     EditUserBalanceCallbackFactory,
@@ -40,20 +39,6 @@ async def user_not_in_db_error(
     elif update.message is not None:
         await update.message.answer(text)
     return True
-
-
-async def users(query: CallbackQuery, callback_data: dict) -> None:
-    user_repository = UserRepository(session_factory)
-    total_balance = user_repository.get_total_balance()
-    with database.create_session() as session:
-        page, page_size = int(callback_data['page']), 10
-        view = UserListView(
-            users=queries.get_users(session, page_size + 1, page * page_size),
-            total_balance=total_balance,
-            page_size=page_size,
-            page=page,
-        )
-        await answer_view(message=query.message, view=view)
 
 
 async def on_start_search_users_flow(
@@ -91,35 +76,6 @@ async def on_users_identifiers_for_search_input(
         page_size=page_size,
     )
     await answer_view(message=message, view=view)
-
-
-async def users_show(query: CallbackQuery, callback_data: dict) -> None:
-    usernames, ids = [], []
-    page, page_size = int(callback_data['page']), 10
-    total_balance = decimal.Decimal('0')
-    filter_message = await bot.edit_message_reply_markup(
-        query.message.chat.id, int(callback_data['filter']),
-        reply_markup=common_keybords.MockKeyboard()
-    )
-    await filter_message.delete_reply_markup()
-    for identifier in filter_message.text.split(': ', 1)[-1].split():
-        if identifier.isdigit():
-            ids.append(int(identifier))
-        else:
-            usernames.append(identifier.lower())
-    with database.create_session() as session:
-        user_list = queries.get_users(session, page_size + 1, page_size * page,
-                                      usernames, ids)
-        for user in user_list:
-            total_balance += decimal.Decimal(str(user.balance))
-        view = UserListView(
-            users=user_list,
-            total_balance=float(total_balance),
-            users_filter=query.message.message_id,
-            page=page,
-            page_size=page_size,
-        )
-        await answer_view(message=query.message, view=view)
 
 
 async def ban_user(query: CallbackQuery, callback_data: dict[str: str]) -> None:
@@ -167,6 +123,7 @@ async def unban_user_confirm(
         number_of_orders = queries.count_user_orders(session, user.id)
         await responses.users.UserResponse(query, user, number_of_orders,
                                            callback_data)
+
 
 async def edit_balance(
         query: CallbackQuery,
@@ -298,12 +255,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         exception=UserNotInDatabase,
     )
     dispatcher.register_callback_query_handler(
-        users,
-        UserCallbackFactory().filter(filter='', id='', action=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
         on_start_search_users_flow,
         AdminFilter(),
         Text('search-users'),
@@ -316,12 +267,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         content_types=ContentType.TEXT,
         chat_type=ChatType.PRIVATE,
         state=SearchUsersStates.waiting_identifiers,
-    )
-    dispatcher.register_callback_query_handler(
-        users_show,
-        UserCallbackFactory().filter(id='', action=''),
-        AdminFilter(),
-        state='*',
     )
     dispatcher.register_callback_query_handler(
         ban_user,
