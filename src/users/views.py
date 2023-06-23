@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Protocol
 
 from aiogram.types import (
     ReplyKeyboardMarkup,
@@ -29,7 +30,20 @@ __all__ = (
     'UserListView',
     'NewUserNotificationView',
     'UserDetailView',
+    'UserDeleteAskForConfirmationView',
+    'UserDeleteSuccessView',
 )
+
+
+class HasIdAndBalance(Protocol):
+    id: int
+    balance: Decimal
+
+
+class HasTelegramIdAndUsernameAndBalance(Protocol):
+    telegram_id: int
+    username: str | None
+    balance: Decimal
 
 
 class RulesView(View):
@@ -357,4 +371,47 @@ class NewUserNotificationView(View):
             '➖➖➖➖➖➖➖➖➖➖\n'
             f'🙍‍♂ Name: @{username}\n'
             f'🆔 ID: {self.__telegram_id}'
+        )
+
+
+class UserDeleteAskForConfirmationView(View):
+
+    def __init__(self, user: HasIdAndBalance):
+        self.__user = user
+
+    def get_text(self) -> str:
+        return (
+            f'This user has ${self.__user.balance:.2f} left.'
+            f' Are you sure you want to delete this user?'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='user-delete-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        ),
+                    )
+                ],
+            ],
+        )
+
+
+class UserDeleteSuccessView(View):
+
+    def __init__(self, user: HasTelegramIdAndUsernameAndBalance):
+        self.__user = user
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        return (
+            f'✅ Deleted {username} with ID {self.__user.telegram_id}'
+            f' and previous balance of {self.__user.balance:.2f}'
         )

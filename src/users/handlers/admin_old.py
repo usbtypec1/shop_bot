@@ -17,7 +17,6 @@ from keyboards.inline.callback_factories import (
     TopUpUserBalanceCallbackFactory,
 )
 from users.exceptions import UserNotInDatabase
-from users.handlers.admin.detail import user_menu
 from users.repositories import UserRepository
 from users.services import (
     parse_users_identifiers_for_search,
@@ -169,50 +168,14 @@ async def unban_user_confirm(
         await responses.users.UserResponse(query, user, number_of_orders,
                                            callback_data)
 
-
-async def delete_user(
-        query: CallbackQuery,
-        callback_data: dict[str: str],
-) -> None:
-    with database.create_session() as session:
-        user = queries.get_user(session, int(callback_data['id']))
-        await responses.users.DeleteUserAlert(query, user, callback_data)
-
-
-async def delete_user_confirm(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-        user_repository: UserRepository,
-) -> None:
-    with database.create_session() as session:
-        user_id = int(callback_data['id'])
-        user = queries.get_user(session, user_id)
-        if callback_data['is_confirmed'] == 'yes':
-            user_repository.delete_by_id(user_id)
-            total_balance = user_repository.get_total_balance()
-            page, page_size = int(callback_data['page']), 10
-            await responses.users.SuccessUserRemovalResponse(query, user)
-            view = UserListView(
-                users=queries.get_users(session, page_size + 1,
-                                        page * page_size),
-                total_balance=total_balance,
-                page=page,
-                page_size=page_size,
-            )
-            await answer_view(message=query.message, view=view)
-        else:
-            number_of_orders = queries.count_user_orders(session, user.id)
-            await responses.users.UserResponse(query, user, number_of_orders,
-                                               callback_data)
-
-
 async def edit_balance(
         query: CallbackQuery,
         callback_data: dict[str, str],
+        state: FSMContext,
 ) -> None:
     await responses.users.NewBalanceResponse(query)
     await EditBalanceStates.waiting_balance.set()
-    await dp.current_state().update_data({'callback_data': callback_data})
+    await state.update_data({'callback_data': callback_data})
 
 
 async def enter_new_balance(
@@ -274,10 +237,11 @@ async def edit_balance_cb(
 async def top_up_balance(
         query: CallbackQuery,
         callback_data: dict[str, str],
+        state: FSMContext,
 ) -> None:
     await responses.users.NewBalanceResponse(query)
     await TopUpBalanceStates.waiting_balance.set()
-    await dp.current_state().update_data({'callback_data': callback_data})
+    await state.update_data({'callback_data': callback_data})
 
 
 async def enter_balance(
@@ -380,18 +344,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         unban_user_confirm,
         UserCallbackFactory().filter(action='unban'),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        delete_user,
-        UserCallbackFactory().filter(action='delete', is_confirmed=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        delete_user_confirm,
-        UserCallbackFactory().filter(action='delete'),
         AdminFilter(),
         state='*',
     )

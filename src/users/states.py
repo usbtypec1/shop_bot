@@ -1,10 +1,15 @@
 from aiogram.dispatcher.filters import state
 
 __all__ = (
+    'UserDeleteStates',
     'SearchUsersStates',
     'EditBalanceStates',
     'TopUpBalanceStates',
 )
+
+
+class UserDeleteStates(state.StatesGroup):
+    confirm = state.State()
 
 
 class SearchUsersStates(state.StatesGroup):
