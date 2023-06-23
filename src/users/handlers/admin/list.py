@@ -7,10 +7,10 @@ from common.views import answer_view
 from users.repositories import UserRepository
 from users.views import UsersView
 
-__all__ = ('on_show_users_menu',)
+__all__ = ('on_show_users_list',)
 
 
-async def on_show_users_menu(
+async def on_show_users_list(
         message: Message,
         user_repository: UserRepository,
 ) -> None:
@@ -30,7 +30,7 @@ async def on_show_users_menu(
 
 def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_message_handler(
-        on_show_users_menu,
+        on_show_users_list,
         Text('🙍‍♂ Users'),
         AdminFilter(),
         state='*',
