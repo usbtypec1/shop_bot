@@ -3,7 +3,7 @@ import decimal
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, Update, CallbackQuery
+from aiogram.types import Message, Update, CallbackQuery, ChatType, ContentType
 
 import database
 import responses.users
@@ -16,8 +16,13 @@ from keyboards.inline.callback_factories import (
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory,
 )
+from sales.repositories import SaleRepository
 from users.exceptions import UserNotInDatabase
 from users.repositories import UserRepository
+from users.services import (
+    parse_users_identifiers_for_search,
+    calculate_total_balance
+)
 from users.states import (
     SearchUsersStates,
     EditBalanceStates,
@@ -65,38 +70,41 @@ async def users(query: CallbackQuery, callback_data: dict) -> None:
         await answer_view(message=query.message, view=view)
 
 
-async def search_users(query: CallbackQuery) -> None:
-    await responses.users.SearchUserResponse(query)
+async def on_start_search_users_flow(
+        callback_query: CallbackQuery,
+        state: FSMContext,
+) -> None:
+    await state.finish()
+    await callback_query.message.answer('🆔 Enter usernames or ids')
     await SearchUsersStates.waiting_identifiers.set()
 
 
-async def search_users_ids_input(
+async def on_users_identifiers_for_search_input(
         message: Message,
         state: FSMContext,
+        user_repository: UserRepository,
 ):
     await state.finish()
-    usernames, ids = [], []
     page, page_size = 0, 10
-    total_balance = decimal.Decimal('0')
-    for identifier in message.text.split():
-        if identifier.isdigit():
-            ids.append(int(identifier))
-        else:
-            usernames.append(identifier.lower())
-    with database.create_session() as session:
-        user_list = queries.get_users(session, page_size + 1, page_size * page,
-                                      usernames, ids)
-        for user in user_list:
-            total_balance += decimal.Decimal(str(user.balance))
-        filter_message = await responses.users.FoundUsersResponse(message)
-        view = UsersView(
-            users=user_list,
-            total_balance=float(total_balance),
-            users_filter=filter_message.message_id,
-            page=page,
-            page_size=page_size,
-        )
-        await answer_view(message=message, view=view)
+    users_identifiers = parse_users_identifiers_for_search(message.text)
+    users = user_repository.get_by_usernames_and_ids(
+        usernames=users_identifiers.usernames,
+        user_ids=users_identifiers.user_ids,
+        limit=page_size,
+        offset=page * page_size,
+    )
+    total_balance = calculate_total_balance(users)
+    sent_message = await message.answer(
+        f'🔡 Found users with these usernames and ids: {message.text}'
+    )
+    view = UsersView(
+        users=users,
+        total_balance=float(total_balance),
+        users_filter=sent_message.message_id,
+        page=page,
+        page_size=page_size,
+    )
+    await answer_view(message=message, view=view)
 
 
 async def users_show(query: CallbackQuery, callback_data: dict) -> None:
@@ -129,13 +137,16 @@ async def users_show(query: CallbackQuery, callback_data: dict) -> None:
 
 
 async def user_menu(
-        query: CallbackQuery,
-        callback_data: dict[str: str],
+        callback_query: CallbackQuery,
+        callback_data: dict,
+        sale_repository: SaleRepository,
 ) -> None:
+    orders_count = sale_repository.count_by_user_telegram_id(
+        user_telegram_id=callback_query.from_user.id,
+    )
     with database.create_session() as session:
         user = queries.get_user(session, int(callback_data['id']))
-        number_of_orders = queries.count_user_orders(session, user.id)
-        await responses.users.UserResponse(query, user, number_of_orders,
+        await responses.users.UserResponse(callback_query, user, orders_count,
                                            callback_data)
 
 
@@ -362,14 +373,17 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         state='*',
     )
     dispatcher.register_callback_query_handler(
-        search_users,
-        UserCallbackFactory().filter(id='', action='search'),
+        on_start_search_users_flow,
         AdminFilter(),
+        Text('search-users'),
+        chat_type=ChatType.PRIVATE,
         state='*',
     )
     dispatcher.register_message_handler(
-        search_users_ids_input,
+        on_users_identifiers_for_search_input,
         AdminFilter(),
+        content_types=ContentType.TEXT,
+        chat_type=ChatType.PRIVATE,
         state=SearchUsersStates.waiting_identifiers,
     )
     dispatcher.register_callback_query_handler(

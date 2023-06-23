@@ -9,7 +9,7 @@ from aiogram.types import ParseMode, BotCommand
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import backup.handlers
-import categories
+import cart.handlers
 import categories.handlers
 import common.handlers
 import config
@@ -19,13 +19,15 @@ import products.handlers
 import shop_info.handlers
 import support_tickets.handlers
 import users.handlers
+from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
 from common.middlewares import DependencyInjectMiddleware
 from database import session_factory
 from database.setup import init_tables
 from products.repositories import ProductRepository
+from sales.repositories import SaleRepository
 from services import notifications
-from users.middlewares import BannedUserMiddleware
+from users.middlewares import BannedUserMiddleware, AdminIdentifierMiddleware
 from users.repositories import UserRepository
 
 logger = structlog.get_logger('app')
@@ -33,6 +35,7 @@ logger = structlog.get_logger('app')
 
 def register_handlers(dispatcher: Dispatcher) -> None:
     backup.handlers.register_handlers(dispatcher)
+    cart.handlers.register_handlers(dispatcher)
     categories.handlers.register_handlers(dispatcher)
     common.handlers.register_handlers(dispatcher)
     mailing.handlers.register_handlers(dispatcher)
@@ -82,20 +85,26 @@ def main():
     config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
 
     scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
+    app_settings = config.AppSettings()
+    admin_telegram_ids = app_settings.admins_id
 
     setup_logging()
     # tasks.setup_tasks(scheduler)
 
     init_tables()
 
-    dispatcher.setup_middleware(BannedUserMiddleware())
+    user_repository = UserRepository(session_factory)
+    dispatcher.setup_middleware(BannedUserMiddleware(user_repository))
+    dispatcher.setup_middleware(AdminIdentifierMiddleware(admin_telegram_ids))
     dispatcher.setup_middleware(
         DependencyInjectMiddleware(
             bot=bot,
             dispatcher=dispatcher,
-            user_repository=UserRepository(session_factory),
+            user_repository=user_repository,
             product_repository=ProductRepository(session_factory),
             category_repository=CategoryRepository(session_factory),
+            cart_repository=CartRepository(session_factory),
+            sale_repository=SaleRepository(session_factory),
         ),
     )
 

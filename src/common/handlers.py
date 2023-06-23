@@ -26,6 +26,7 @@ async def on_accept_rules(
         message: Message,
         user_repository: UserRepository,
         bot: Bot,
+        is_admin: bool,
 ) -> None:
     user_repository.create(
         telegram_id=message.from_user.id,
@@ -35,7 +36,8 @@ async def on_accept_rules(
         message=message,
         view=UserGreetingsView(message.from_user.full_name),
     )
-    await answer_view(message=message, view=AdminMenuView())
+    view = AdminMenuView() if is_admin else UserMenuView()
+    await answer_view(message=message, view=view)
 
     view = NewUserNotificationView(
         telegram_id=message.from_user.id,
@@ -52,6 +54,7 @@ async def on_start(
         message: Message,
         state: FSMContext,
         user_repository: UserRepository,
+        is_admin: bool,
 ) -> None:
     await state.finish()
     try:
@@ -59,11 +62,7 @@ async def on_start(
     except UserNotInDatabase:
         await answer_view(message=message, view=RulesView())
         return
-    view = (
-        AdminMenuView()
-        if message.from_user.id in config.AppSettings().admins_id
-        else UserMenuView()
-    )
+    view = AdminMenuView() if is_admin else UserMenuView()
     await answer_view(message=message, view=view)
 
 

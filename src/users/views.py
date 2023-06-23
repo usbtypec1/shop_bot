@@ -54,6 +54,7 @@ class UserMenuView(View):
             ],
             [
                 KeyboardButton('📱 Profile'),
+                KeyboardButton('🛒 Cart'),
                 KeyboardButton('👨‍💻 Support'),
             ],
         ],
@@ -72,6 +73,7 @@ class AdminMenuView(View):
             ],
             [
                 KeyboardButton('🏪 Shop Information'),
+                KeyboardButton('🛒 Cart'),
                 KeyboardButton('💲 Balance'),
             ],
             [
@@ -213,12 +215,11 @@ class UsersView(View):
                 )
             )
         if not self.__users_filter:
-            callback_data.pop('@')
             callback_data['action'] = 'search'
             markup.row(
                 InlineKeyboardButton(
                     text='🔎 Search Users',
-                    callback_data=UserCallbackFactory().new(**callback_data)
+                    callback_data='search-users',
                 )
             )
         else:

@@ -39,6 +39,7 @@ class ProductUpdateStates(StatesGroup):
     max_replacement_time_in_minutes = State()
     max_displayed_stock = State()
     permitted_gateways = State()
+    quantity = State()
 
 
 class AddProductStates(StatesGroup):

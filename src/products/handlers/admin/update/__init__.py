@@ -13,6 +13,7 @@ from . import (
     can_be_purchased,
     permitted_gateways,
     media,
+    quantity,
 )
 
 __all__ = ('register_handlers',)
@@ -31,3 +32,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     can_be_purchased.register_handlers(dispatcher)
     permitted_gateways.register_handlers(dispatcher)
     media.register_handlers(dispatcher)
+    quantity.register_handlers(dispatcher)

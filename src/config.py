@@ -1,5 +1,4 @@
 import collections
-import os
 import pathlib
 from typing import Literal
 
@@ -7,12 +6,8 @@ import dotenv
 import toml
 from pydantic import BaseSettings, Field
 
-# ROOT_DIR = pathlib.Path(os.path.abspath('__file__'))
-ROOT_DIR = pathlib.Path(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-)
-# ROOT_DIR = '/root/shop_bot'
-print(pathlib.Path(ROOT_DIR))
+ROOT_DIR = pathlib.Path(__file__).parent.parent
+
 DATA_PATH = ROOT_DIR / 'data'
 BACKUP_PATH = ROOT_DIR / 'backups'
 PRODUCT_PATH = DATA_PATH / 'products'

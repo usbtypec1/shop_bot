@@ -68,5 +68,8 @@ class ShopManagementView(View):
                 KeyboardButton('📝 Products Management'),
                 KeyboardButton('📁 Categories Control'),
             ],
+            [
+                KeyboardButton('⬅️ Back'),
+            ],
         ],
     )

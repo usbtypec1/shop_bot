@@ -188,6 +188,7 @@ class AdminProductDetailView(View):
             ('📝 Max Displayed Stock', 'max-displayed-stock'),
             ('📝 Max Replacement Time', 'max-replacement-time'),
             ('📝 Permitted Gateways', 'permitted-gateways'),
+            ('📦 Quantity', 'quantity'),
             ('🖼️ Media', 'media')
         )
 

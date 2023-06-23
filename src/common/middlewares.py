@@ -4,7 +4,7 @@ __all__ = ('DependencyInjectMiddleware',)
 
 
 class DependencyInjectMiddleware(LifetimeControllerMiddleware):
-    skip_patterns = ["error", "update"]
+    skip_patterns = ("update",)
 
     def __init__(self, **kwargs):
         super().__init__()

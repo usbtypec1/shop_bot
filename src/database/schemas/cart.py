@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel
@@ -11,11 +11,9 @@ class CartProduct(BaseModel):
 
     user_id: Mapped[int] = mapped_column(
         ForeignKey('user.id', ondelete='CASCADE'),
-        primary_key=True,
     )
     product_id: Mapped[int] = mapped_column(
-        ForeignKey('products.id'),
-        primary_key=True,
+        ForeignKey('products.id', ondelete='CASCADE'),
     )
     quantity: Mapped[int]
 
@@ -26,4 +24,11 @@ class CartProduct(BaseModel):
     user: Mapped['User'] = relationship(
         'User',
         back_populates='cart_products',
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            'quantity >= 0',
+            name='check_cart_product_quantity_non_negative',
+        ),
     )
