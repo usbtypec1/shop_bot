@@ -18,6 +18,7 @@ from keyboards.inline.callback_factories import (
 )
 from sales.repositories import SaleRepository
 from users.exceptions import UserNotInDatabase
+from users.handlers.admin.list import on_show_users_menu
 from users.repositories import UserRepository
 from users.services import (
     parse_users_identifiers_for_search,
@@ -41,24 +42,6 @@ async def user_not_in_db_error(
     elif update.message is not None:
         await update.message.answer(text)
     return True
-
-
-async def on_show_users_menu(
-        message: Message,
-        user_repository: UserRepository,
-) -> None:
-    total_balance = user_repository.get_total_balance()
-    page_size = 10
-    users = user_repository.get_by_usernames_and_ids(
-        limit=page_size,
-        offset=0,
-    )
-    view = UsersView(
-        users=users,
-        total_balance=total_balance,
-        page_size=page_size,
-    )
-    await answer_view(message=message, view=view)
 
 
 async def users(query: CallbackQuery, callback_data: dict) -> None:
@@ -364,12 +347,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_errors_handler(
         user_not_in_db_error,
         exception=UserNotInDatabase,
-    )
-    dispatcher.register_message_handler(
-        on_show_users_menu,
-        Text('🙍‍♂ Users'),
-        AdminFilter(),
-        state='*',
     )
     dispatcher.register_callback_query_handler(
         users,
