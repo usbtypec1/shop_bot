@@ -24,7 +24,7 @@ __all__ = (
     'UserGreetingsView',
     'UserStatisticsMenuView',
     'UserGeneralStatisticsView',
-    'UsersView',
+    'UserListView',
     'NewUserNotificationView',
 )
 
@@ -160,7 +160,7 @@ class UserGeneralStatisticsView(View):
         return '\n'.join(lines)
 
 
-class UsersView(View):
+class UserListView(View):
 
     def __init__(
             self,
@@ -269,7 +269,7 @@ class UsersView(View):
         return markup
 
 
-class UserView(View):
+class UserDetailView(View):
 
     def __init__(
             self,

@@ -5,7 +5,7 @@ from aiogram.types import Message
 from common.filters import AdminFilter
 from common.views import answer_view
 from users.repositories import UserRepository
-from users.views import UsersView
+from users.views import UserListView
 
 __all__ = ('on_show_users_list',)
 
@@ -20,7 +20,7 @@ async def on_show_users_list(
         limit=page_size,
         offset=0,
     )
-    view = UsersView(
+    view = UserListView(
         users=users,
         total_balance=total_balance,
         page_size=page_size,
