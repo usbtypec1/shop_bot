@@ -1,8 +1,17 @@
+from collections.abc import Iterable
+from decimal import Decimal
+from typing import Protocol
+
 from users.models import UsersIdentifiers
 
 __all__ = (
     'parse_users_identifiers_for_search',
+    'calculate_total_balance',
 )
+
+
+class HasBalance(Protocol):
+    balance: Decimal
 
 
 def parse_users_identifiers_for_search(
@@ -38,3 +47,7 @@ def parse_users_identifiers_for_search(
         user_ids=user_ids,
         usernames=usernames,
     )
+
+
+def calculate_total_balance(items: Iterable[HasBalance]) -> Decimal:
+    return sum(item.balance for item in items)
