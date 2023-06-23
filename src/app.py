@@ -25,6 +25,7 @@ from common.middlewares import DependencyInjectMiddleware
 from database import session_factory
 from database.setup import init_tables
 from products.repositories import ProductRepository
+from sales.repositories import SaleRepository
 from services import notifications
 from users.middlewares import BannedUserMiddleware, AdminIdentifierMiddleware
 from users.repositories import UserRepository
@@ -103,6 +104,7 @@ def main():
             product_repository=ProductRepository(session_factory),
             category_repository=CategoryRepository(session_factory),
             cart_repository=CartRepository(session_factory),
+            sale_repository=SaleRepository(session_factory),
         ),
     )
 
