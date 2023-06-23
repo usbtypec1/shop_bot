@@ -44,16 +44,6 @@ class UserResponse(BaseResponse):
         )
 
 
-class SearchUserResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery):
-        self.__query = query
-
-    async def _send_response(self):
-        text = '🆔 Enter usernames or ids'
-        await self.__query.answer()
-        await self.__query.message.edit_text(text)
-
-
 class BanUserAlertResponse(BaseResponse):
     def __init__(self, query: CallbackQuery, user: schemas.User,
                  callback_data: dict[str, str]):
