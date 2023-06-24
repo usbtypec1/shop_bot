@@ -1,8 +1,10 @@
 import typing
+from decimal import Decimal, InvalidOperation
 
 import pydantic
 
 import config
+from payments.exceptions import BalanceAmountValidatorError
 from services import payments_apis
 
 
@@ -66,3 +68,23 @@ class PaymentsAPIsSettingsRepository:
 
     def add(self, name: str, settings: pydantic.BaseSettings):
         self.__settings[name] = settings
+
+
+def parse_balance_amount(text) -> Decimal:
+    """
+    Validates and converts a text representation
+     of an amount to a Decimal value.
+
+    Args:
+        text (str): The text representation of the amount.
+
+    Returns:
+        Decimal: The converted Decimal value.
+
+    Raises:
+        InvalidOperation: If the text cannot be converted to a Decimal value.
+    """
+    try:
+        return Decimal(text.replace(',', '.'))
+    except InvalidOperation:
+        raise BalanceAmountValidatorError

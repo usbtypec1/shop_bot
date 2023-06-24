@@ -1,0 +1,2 @@
+class BalanceAmountValidatorError(Exception):
+    pass
