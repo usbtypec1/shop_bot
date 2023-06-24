@@ -6,7 +6,6 @@ from keyboards.inline import (
     common_keybords,
 )
 from keyboards.inline.callback_factories import (
-    UserCallbackFactory,
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory
 )
@@ -41,50 +40,6 @@ class UserResponse(BaseResponse):
             user_id=user.id,
             is_user_banned=user.is_banned,
             callback_data=callback_data,
-        )
-
-
-class BanUserAlertResponse(BaseResponse):
-    def __init__(self, query: CallbackQuery, user: schemas.User,
-                 callback_data: dict[str, str]):
-        self.__query = query
-        self.__user = user
-        self.__keyboard = common_keybords.ConfirmationKeyboard(
-            callback_factory=UserCallbackFactory(),
-            **callback_data,
-        )
-
-    async def _send_response(self):
-        await self.__query.answer()
-        await self.__query.message.edit_text(
-            f'Are you sure you want to ban '
-            f'{self.__user.username if self.__user.username is not None else "user"} '
-            f'with {self.__user.telegram_id}?',
-            reply_markup=self.__keyboard
-        )
-
-
-class UnbanUserAlertResponse(BaseResponse):
-    def __init__(
-            self,
-            query: CallbackQuery,
-            user: schemas.User,
-            callback_data: dict[str, str],
-    ):
-        self.__query = query
-        self.__user = user
-        self.__keyboard = common_keybords.ConfirmationKeyboard(
-            callback_factory=UserCallbackFactory(),
-            **callback_data,
-        )
-
-    async def _send_response(self):
-        username = self.__user.username or 'user'
-        await self.__query.answer()
-        await self.__query.message.edit_text(
-            f'Are you sure you want to unban {username} '
-            f'with {self.__user.telegram_id}?',
-            reply_markup=self.__keyboard
         )
 
 

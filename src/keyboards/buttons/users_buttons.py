@@ -1,9 +1,6 @@
 import aiogram
 
 from keyboards.inline import callback_factories
-import aiogram
-
-from keyboards.inline import callback_factories
 
 
 class TopUpBalanceButton(aiogram.types.InlineKeyboardButton):

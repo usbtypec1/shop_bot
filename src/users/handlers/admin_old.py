@@ -9,62 +9,13 @@ import responses.users
 from common.filters import AdminFilter
 from database import queries
 from keyboards.inline.callback_factories import (
-    UserCallbackFactory,
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory,
 )
-from users.repositories import UserRepository
 from users.states import (
     EditBalanceStates,
     TopUpBalanceStates,
 )
-
-
-async def ban_user(query: CallbackQuery, callback_data: dict[str: str]) -> None:
-    with database.create_session() as session:
-        user = queries.get_user(session, int(callback_data['id']))
-        await responses.users.BanUserAlertResponse(query, user, callback_data)
-
-
-async def ban_user_confirm(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-        user_repository: UserRepository,
-) -> None:
-    user_id = int(callback_data['id'])
-    if callback_data['is_confirmed'] == 'yes':
-        user_repository.ban_by_id(user_id)
-    user = user_repository.get_by_id(user_id)
-
-    with database.create_session() as session:
-        number_of_orders = queries.count_user_orders(session, user.id)
-        await responses.users.UserResponse(query, user, number_of_orders,
-                                           callback_data)
-
-
-async def unban_user(
-        query: CallbackQuery,
-        callback_data: dict[str: str],
-) -> None:
-    with database.create_session() as session:
-        user = queries.get_user(session, int(callback_data['id']))
-        await responses.users.UnbanUserAlertResponse(query, user, callback_data)
-
-
-async def unban_user_confirm(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-        user_repository: UserRepository,
-) -> None:
-    user_id = int(callback_data['id'])
-    if callback_data['is_confirmed'] == 'yes':
-        user_repository.unban_by_id(user_id)
-    user = user_repository.get_by_id(user_id)
-
-    with database.create_session() as session:
-        number_of_orders = queries.count_user_orders(session, user.id)
-        await responses.users.UserResponse(query, user, number_of_orders,
-                                           callback_data)
 
 
 async def edit_balance(
@@ -192,30 +143,6 @@ async def top_up_balance_cb(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
-    dispatcher.register_callback_query_handler(
-        ban_user,
-        UserCallbackFactory().filter(action='ban', is_confirmed=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        ban_user_confirm,
-        UserCallbackFactory().filter(action='ban'),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        unban_user,
-        UserCallbackFactory().filter(action='unban', is_confirmed=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        unban_user_confirm,
-        UserCallbackFactory().filter(action='unban'),
-        AdminFilter(),
-        state='*',
-    )
     dispatcher.register_callback_query_handler(
         edit_balance,
         EditUserBalanceCallbackFactory().filter(is_confirmed=''),

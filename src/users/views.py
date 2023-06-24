@@ -12,11 +12,13 @@ from common.models import Buyer
 from common.views import View
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
-    EditUserBalanceCallbackFactory, TopUpUserBalanceCallbackFactory
+    EditUserBalanceCallbackFactory,
+    TopUpUserBalanceCallbackFactory,
 )
 from users.callback_data import (
-    UserDetailCallbackData, UserDeleteCallbackData,
-    UserUpdateCallbackData
+    UserDetailCallbackData,
+    UserDeleteCallbackData,
+    UserUpdateCallbackData,
 )
 from users.models import User
 
@@ -32,6 +34,7 @@ __all__ = (
     'UserDetailView',
     'UserDeleteAskForConfirmationView',
     'UserDeleteSuccessView',
+    'UserBannedStatusToggleView',
 )
 
 
@@ -40,10 +43,22 @@ class HasIdAndBalance(Protocol):
     balance: Decimal
 
 
-class HasTelegramIdAndUsernameAndBalance(Protocol):
+class HasTelegramIdAndUsername(Protocol):
     telegram_id: int
     username: str | None
+
+
+class HasIdAndTelegramIdAndUsernameAndBannedStatus(Protocol):
+    id: int
+    telegram_id: int
+    username: str | None
+    is_banned: bool
+
+
+class HasTelegramIdAndUsernameAndBalance(Protocol):
     balance: Decimal
+    telegram_id: int
+    username: str | None
 
 
 class RulesView(View):
@@ -403,3 +418,36 @@ class UserDeleteSuccessView(View):
             f'✅ Deleted {username} with ID {self.__user.telegram_id}'
             f' and previous balance of {self.__user.balance:.2f}'
         )
+
+
+class UserBannedStatusToggleView(View):
+
+    def __init__(self, user: HasIdAndTelegramIdAndUsernameAndBannedStatus):
+        self.__user = user
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        toggle_text = 'unban' if self.__user.is_banned else 'ban'
+        return (
+            f'Are you sure you want to <b><u>{toggle_text}</u></b>'
+            f' {username} with {self.__user.telegram_id}?'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='banned-status-toggle-confirm'
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        )
+                    ),
+                ],
+            ],
+        )
+        return markup
