@@ -204,20 +204,8 @@ class UserListView(View):
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()
-        callback_data = self.__callback_data or {
-            '@': '',
-            'filter': self.__users_filter,
-            'page': '0',
-            'id': '',
-            'action': '',
-            'is_confirmed': '',
-        }
-        if len(self.__users) > self.__page_size:
-            users = self.__users[:-1]
-        else:
-            users = self.__users
 
-        for user in users:
+        for user in self.__users:
             markup.row(
                 InlineKeyboardButton(
                     text=(
@@ -251,7 +239,7 @@ class UserListView(View):
                     )
                 )
             )
-        if len(users) > self.__page_size:
+        if len(self.__users) > self.__page_size:
             markup.row(
                 InlineKeyboardButton(
                     text='Next 👉',
