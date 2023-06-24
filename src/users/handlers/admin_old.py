@@ -1,5 +1,3 @@
-import decimal
-
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -8,14 +6,8 @@ import database
 import responses.users
 from common.filters import AdminFilter
 from database import queries
-from keyboards.inline.callback_factories import (
-    EditUserBalanceCallbackFactory,
-    TopUpUserBalanceCallbackFactory,
-)
-from users.states import (
-    EditBalanceStates,
-    TopUpBalanceStates,
-)
+from keyboards.inline.callback_factories import EditUserBalanceCallbackFactory
+from users.states import EditBalanceStates
 
 
 async def edit_balance(
@@ -84,64 +76,6 @@ async def edit_balance_cb(
             await responses.users.UserResponse(query, user, number_of_orders)
 
 
-async def top_up_balance(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-        state: FSMContext,
-) -> None:
-    await responses.users.NewBalanceResponse(query)
-    await TopUpBalanceStates.waiting_balance.set()
-    await state.update_data({'callback_data': callback_data})
-
-
-async def enter_balance(
-        message: Message,
-        state: FSMContext,
-) -> None:
-    if message.text.replace('.', '').isdigit():
-        callback_data = (await state.get_data())['callback_data']
-        with database.create_session() as session:
-            user = queries.get_user(session, callback_data['user_id'])
-            await responses.users.TopUpBalanceAlertResponse(
-                message, user, message.text, callback_data
-            )
-            await state.finish()
-    else:
-        await responses.users.IncorrectBalanceResponse(message)
-
-
-async def balance_refill_method(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-) -> None:
-    if callback_data['is_confirmed'] == 'yes':
-        await responses.users.BalanceRefillMethodResponse(query, callback_data)
-    else:
-        with database.create_session() as session:
-            user_id = int(callback_data['user_id'])
-            user = queries.get_user(session, user_id)
-            await responses.users.UserResponse(
-                query, user, queries.count_user_orders(session, user_id)
-            )
-
-
-async def top_up_balance_cb(
-        query: CallbackQuery,
-        callback_data: dict[str, str],
-) -> None:
-    with database.create_session() as session:
-        balance_delta = decimal.Decimal(callback_data['balance_delta'])
-        user_id = int(callback_data['user_id'])
-        reason = callback_data['payment_method'].capitalize()
-        queries.top_up_balance(session, user_id, balance_delta)
-        user = queries.get_user(session, user_id)
-        await responses.users.SuccessBalanceRefillResponse(query, user,
-                                                           float(balance_delta),
-                                                           reason)
-        number_of_orders = queries.count_user_orders(session, user.id)
-        await responses.users.UserResponse(query, user, number_of_orders)
-
-
 def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         edit_balance,
@@ -163,29 +97,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         edit_balance_cb,
         EditUserBalanceCallbackFactory().filter(),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        top_up_balance,
-        TopUpUserBalanceCallbackFactory().filter(is_confirmed=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_message_handler(
-        enter_balance,
-        AdminFilter(),
-        state=TopUpBalanceStates.waiting_balance,
-    )
-    dispatcher.register_callback_query_handler(
-        balance_refill_method,
-        TopUpUserBalanceCallbackFactory().filter(payment_method=''),
-        AdminFilter(),
-        state='*',
-    )
-    dispatcher.register_callback_query_handler(
-        top_up_balance_cb,
-        TopUpUserBalanceCallbackFactory().filter(),
         AdminFilter(),
         state='*',
     )

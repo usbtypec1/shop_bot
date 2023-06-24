@@ -47,12 +47,6 @@ class EditUserBalanceCallbackFactory(CallbackData):
                          'is_confirmed')
 
 
-class TopUpUserBalanceCallbackFactory(CallbackData):
-    def __init__(self):
-        super().__init__('top_up_balance', 'user_id', 'balance_delta',
-                         'payment_method', 'is_confirmed')
-
-
 class SupportCallbackFactory(CallbackData):
     def __init__(self):
         super().__init__('support', 'is_open', 'user_id', 'request_id',

@@ -6,41 +6,10 @@ from keyboards.inline import (
     common_keybords,
 )
 from keyboards.inline.callback_factories import (
-    EditUserBalanceCallbackFactory,
-    TopUpUserBalanceCallbackFactory
+    EditUserBalanceCallbackFactory
 )
 from responses.base import BaseResponse
 from services.time_utils import get_now_datetime
-from users.models import User
-
-
-class UserResponse(BaseResponse):
-    def __init__(
-            self,
-            query: CallbackQuery,
-            user: User,
-            number_of_orders: int,
-            callback_data: dict[str, str] | None = None,
-    ):
-        self.__query = query
-        self.__user = user
-        self.__number_of_orders = number_of_orders
-        if callback_data is None:
-            callback_data = {
-                '@': 'users',
-                'filter': '',
-                'page': '0',
-                'id': user.id,
-                'action': 'manage',
-                'is_confirmed': '',
-            }
-        else:
-            callback_data['is_confirmed'] = ''
-        self.__keyboard = users_keyboard.UserKeyboard(
-            user_id=user.id,
-            is_user_banned=user.is_banned,
-            callback_data=callback_data,
-        )
 
 
 class EditBalanceAlertResponse(BaseResponse):
@@ -129,78 +98,3 @@ class SuccessBalanceEditing(BaseResponse):
             text=text,
             parse_mode=ParseMode.HTML,
         )
-
-
-class TopUpBalanceAlertResponse(BaseResponse):
-    def __init__(
-            self,
-            message: Message,
-            user: schemas.User,
-            balance: str,
-            callback_data: dict[str, str],
-    ):
-        self.__message = message
-        self.__user = user
-        self.__balance = balance
-        callback_data['balance_delta'] = balance
-        self.__keyboard = common_keybords.ConfirmationKeyboard(
-            callback_factory=TopUpUserBalanceCallbackFactory(),
-            **callback_data,
-        )
-
-    async def _send_response(self):
-        username = self.__user.username or 'user'
-        text = (
-            f'Are you sure you want to top-up the balance of {username}'
-            f' with {self.__user.telegram_id} for ${self.__balance}?'
-        )
-        await self.__message.answer(text, reply_markup=self.__keyboard)
-
-
-class BalanceRefillMethodResponse(BaseResponse):
-    def __init__(
-            self,
-            query: CallbackQuery,
-            callback_data: dict[str, str],
-    ):
-        self.__query = query
-        self.__keyboard = users_keyboard.BalanceRefillMethodsKeyboard(
-            user_id=int(callback_data['user_id']),
-            balance=float(callback_data['balance_delta']),
-        )
-
-    async def _send_response(self):
-        text = '❓ Enter the manual payment method the user paid:'
-        await self.__query.answer()
-        await self.__query.message.edit_text(text, reply_markup=self.__keyboard)
-
-
-class SuccessBalanceRefillResponse(BaseResponse):
-    def __init__(
-            self,
-            query: CallbackQuery,
-            user: schemas.User,
-            balance_delta: float,
-            method: str,
-    ):
-        self.__query = query
-        self.__user = user
-        self.__balance_delta = balance_delta
-        self.__method = method
-
-    async def _send_response(self):
-        # TODO Refactor it too 😱
-        now = get_now_datetime()
-        text = (
-                f'Topped-up {self.__user.username or "user"} '
-                f'with {self.__user.telegram_id} for ${self.__balance_delta}\n'
-                f'<code>Date: {now:%m/%d/%Y}{150 * " "}' +
-                (
-                    f'Username: {self.__user.username}{150 * " "}' if self.__user.username is not None else '') +
-                f'ID: {self.__user.telegram_id}{150 * " "}'
-                f'Topped Up amount: {self.__balance_delta}{150 * " "}'
-                f'Total Balance: {self.__user.balance}{150 * " "}'
-                f'Method of payment: {self.__method}</code>'
-        )
-        await self.__query.answer()
-        await self.__query.message.answer(text)

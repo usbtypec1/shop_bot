@@ -13,7 +13,6 @@ from common.views import View
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
     EditUserBalanceCallbackFactory,
-    TopUpUserBalanceCallbackFactory,
 )
 from services.time_utils import get_now_datetime
 from users.callback_data import (
