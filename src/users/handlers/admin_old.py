@@ -2,45 +2,22 @@ import decimal
 
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, Update, CallbackQuery, ChatType, ContentType
+from aiogram.types import Message, CallbackQuery
 
 import database
 import responses.users
 from common.filters import AdminFilter
-from common.views import answer_view
 from database import queries
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory,
 )
-from users.exceptions import UserNotInDatabase
 from users.repositories import UserRepository
-from users.services import (
-    parse_users_identifiers_for_search,
-    calculate_total_balance
-)
 from users.states import (
-    SearchUsersStates,
     EditBalanceStates,
     TopUpBalanceStates,
 )
-from users.views import UserListView
-
-
-async def user_not_in_db_error(
-        update: Update,
-        _: UserNotInDatabase,
-) -> bool:
-    text = "❌ You aren't in the database! Enter /start to register"
-    if update.callback_query is not None:
-        await update.callback_query.message.answer(text)
-    elif update.message is not None:
-        await update.message.answer(text)
-    return True
-
-
 
 
 async def ban_user(query: CallbackQuery, callback_data: dict[str: str]) -> None:
@@ -215,10 +192,6 @@ async def top_up_balance_cb(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
-    dispatcher.register_errors_handler(
-        user_not_in_db_error,
-        exception=UserNotInDatabase,
-    )
     dispatcher.register_callback_query_handler(
         ban_user,
         UserCallbackFactory().filter(action='ban', is_confirmed=''),
