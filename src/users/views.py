@@ -12,13 +12,13 @@ from common.models import Buyer
 from common.views import View
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
-    EditUserBalanceCallbackFactory,
 )
 from services.time_utils import get_now_datetime
 from users.callback_data import (
     UserDetailCallbackData,
     UserDeleteCallbackData,
-    UserUpdateCallbackData, UserBalanceTopUpCallbackData,
+    UserUpdateCallbackData,
+    UserBalanceTopUpCallbackData, UserSetSpecificBalanceCallbackData,
 )
 from users.models import User
 
@@ -37,6 +37,9 @@ __all__ = (
     'UserBannedStatusToggleView',
     'UserBalanceTopUpReceiptView',
     'UserBalanceTopUpAskForConfirmationView',
+    'UserSetSpecificBalanceAskForConfirmationView',
+    'UserSetSpecificBalanceReceiptView',
+    'UserSetSpecificBalanceReasonsView',
 )
 
 
@@ -333,11 +336,8 @@ class UserDetailView(View):
         markup.row(
             InlineKeyboardButton(
                 text='⚖️ Edit Balance',
-                callback_data=EditUserBalanceCallbackFactory().new(
+                callback_data=UserSetSpecificBalanceCallbackData().new(
                     user_id=self.__user.id,
-                    balance='',
-                    reason='',
-                    is_confirmed='',
                 ),
             ),
             InlineKeyboardButton(
@@ -535,3 +535,103 @@ class UserBalanceTopUpReceiptView(View):
             f'Total Balance: {self.__user.balance:.2f}{150 * " "}'
             f'Method of payment: {self.__payment_method}</code>'
         )
+
+
+class UserSetSpecificBalanceAskForConfirmationView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasIdAndTelegramIdAndUsername,
+            amount_to_set: Decimal,
+            reason: str,
+    ):
+        self.__user = user
+        self.__amount_to_set = amount_to_set
+        self.__reason = reason
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        return (
+            f'Are you sure you want to change {username}\'s balance'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' for ${self.__amount_to_set}?\n'
+            f'Reason: {self.__reason}'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='set-specific-user-balance-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        )
+                    ),
+                ],
+            ],
+        )
+
+
+class UserSetSpecificBalanceReceiptView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasTelegramIdAndUsernameAndBalance,
+            old_balance: Decimal,
+            new_balance: Decimal,
+            reason: str,
+    ):
+        self.__user = user
+        self.__old_balance = old_balance
+        self.__new_balance = new_balance
+        self.__reason = reason
+
+    def get_text(self) -> str:
+        now = get_now_datetime()
+
+        # I don't know why each line ends with 150 * " " expression
+        username = f'{self.__user.username}{150 * " "}' or ''
+        return (
+            f'Changed balance of {self.__user.username or "user"}'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' from ${self.__old_balance:.2f} to ${self.__new_balance:.2f}\n'
+            f'<code>Date: {now:%m/%d/%Y}{150 * " "}'
+            f'Username: {username}'
+            f'ID: {self.__user.telegram_id}{150 * " "}'
+            f'Previous balance: {self.__old_balance:.2f}{" " * 150}'
+            f'New Balance: {self.__new_balance:.2f}{" " * 150}'
+            f'Reason: {self.__reason}</code>'
+        )
+
+
+class UserSetSpecificBalanceReasonsView(View):
+    text = '❓ Enter the reason of change balance'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='🤝 P2P Delivery',
+                    callback_data='P2P Delivery',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='🔄 Refunded Payment',
+                    callback_data='Refunded Payment',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='🫤 Admin Mistake',
+                    callback_data='Admin Mistake',
+                ),
+            ],
+        ]
+    )

@@ -168,3 +168,18 @@ class UserRepository(BaseRepository):
         with self._session_factory() as session:
             with session.begin():
                 session.execute(statement)
+
+    def update_balance(
+            self,
+            *,
+            user_id: int,
+            amount_to_set: Decimal,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(balance=amount_to_set)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)

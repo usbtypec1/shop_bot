@@ -41,12 +41,6 @@ class UserCallbackFactory(CallbackData):
                          'is_confirmed')
 
 
-class EditUserBalanceCallbackFactory(CallbackData):
-    def __init__(self):
-        super().__init__('edit_balance', 'user_id', 'balance', 'reason',
-                         'is_confirmed')
-
-
 class SupportCallbackFactory(CallbackData):
     def __init__(self):
         super().__init__('support', 'is_open', 'user_id', 'request_id',

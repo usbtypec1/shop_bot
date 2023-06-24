@@ -1,12 +1,18 @@
 from aiogram.dispatcher.filters import state
 
 __all__ = (
+    'UserSetSpecificBalanceStates',
     'UserBalanceTopUpStates',
     'UserDeleteStates',
     'SearchUsersStates',
     'EditBalanceStates',
-    'TopUpBalanceStates',
 )
+
+
+class UserSetSpecificBalanceStates(state.StatesGroup):
+    amount = state.State()
+    reason = state.State()
+    confirm = state.State()
 
 
 class UserBalanceTopUpStates(state.StatesGroup):
@@ -24,8 +30,4 @@ class SearchUsersStates(state.StatesGroup):
 
 
 class EditBalanceStates(state.StatesGroup):
-    waiting_balance = state.State()
-
-
-class TopUpBalanceStates(state.StatesGroup):
     waiting_balance = state.State()
