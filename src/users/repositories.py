@@ -153,3 +153,18 @@ class UserRepository(BaseRepository):
                 created_at=user.created_at,
             ) for user in users
         ]
+
+    def top_up_balance(
+            self,
+            *,
+            user_id: int,
+            amount_to_top_up: Decimal,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(balance=User.balance + amount_to_top_up)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)

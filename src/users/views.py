@@ -15,10 +15,11 @@ from keyboards.inline.callback_factories import (
     EditUserBalanceCallbackFactory,
     TopUpUserBalanceCallbackFactory,
 )
+from services.time_utils import get_now_datetime
 from users.callback_data import (
     UserDetailCallbackData,
     UserDeleteCallbackData,
-    UserUpdateCallbackData,
+    UserUpdateCallbackData, UserBalanceTopUpCallbackData,
 )
 from users.models import User
 
@@ -35,11 +36,16 @@ __all__ = (
     'UserDeleteAskForConfirmationView',
     'UserDeleteSuccessView',
     'UserBannedStatusToggleView',
+    'UserBalanceTopUpReceiptView',
+    'UserBalanceTopUpAskForConfirmationView',
 )
 
 
-class HasIdAndBalance(Protocol):
+class HasId(Protocol):
     id: int
+
+
+class HasBalance(Protocol):
     balance: Decimal
 
 
@@ -48,17 +54,27 @@ class HasTelegramIdAndUsername(Protocol):
     username: str | None
 
 
-class HasIdAndTelegramIdAndUsernameAndBannedStatus(Protocol):
-    id: int
-    telegram_id: int
-    username: str | None
+class HasIdAndBalance(HasId, HasBalance, Protocol):
+    pass
+
+
+class HasIdAndTelegramIdAndUsername(HasId, HasTelegramIdAndUsername, Protocol):
+    pass
+
+
+class HasIdAndTelegramIdAndUsernameAndBannedStatus(
+    HasIdAndTelegramIdAndUsername,
+    Protocol,
+):
     is_banned: bool
 
 
-class HasTelegramIdAndUsernameAndBalance(Protocol):
-    balance: Decimal
-    telegram_id: int
-    username: str | None
+class HasTelegramIdAndUsernameAndBalance(
+    HasTelegramIdAndUsername,
+    HasBalance,
+    Protocol,
+):
+    pass
 
 
 class RulesView(View):
@@ -327,11 +343,8 @@ class UserDetailView(View):
             ),
             InlineKeyboardButton(
                 text='💸 Top Up Balance',
-                callback_data=TopUpUserBalanceCallbackFactory().new(
+                callback_data=UserBalanceTopUpCallbackData().new(
                     user_id=self.__user.id,
-                    balance_delta='',
-                    payment_method='',
-                    is_confirmed='',
                 ),
             ),
         )
@@ -451,3 +464,75 @@ class UserBannedStatusToggleView(View):
             ],
         )
         return markup
+
+
+class UserBalanceTopUpAskForConfirmationView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasIdAndTelegramIdAndUsernameAndBannedStatus,
+            amount_to_top_up: Decimal,
+            payment_method: str,
+    ):
+        self.__user = user
+        self.__amount_to_top_up = amount_to_top_up
+        self.__payment_method = payment_method
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        return (
+            f'Are you sure you want to top-up {username}\'s balance'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' for ${self.__amount_to_top_up}?\n'
+            f'Method of payment: {self.__payment_method}'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='top-up-user-balance-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        )
+                    ),
+                ],
+            ],
+        )
+
+
+class UserBalanceTopUpReceiptView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasTelegramIdAndUsernameAndBalance,
+            amount_to_top_up: Decimal,
+            payment_method: str,
+    ):
+        self.__user = user
+        self.__amount_to_top_up = amount_to_top_up
+        self.__payment_method = payment_method
+
+    def get_text(self) -> str:
+        now = get_now_datetime()
+
+        # I don't know why each line ends with 150 * " " expression
+        username = f'{self.__user.username}{150 * " "}' or ''
+        return (
+            f'Topped-up {self.__user.username or "user"}'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' for ${self.__amount_to_top_up}\n'
+            f'<code>Date: {now:%m/%d/%Y}{150 * " "}'
+            f'Username: {username}'
+            f'ID: {self.__user.telegram_id}{150 * " "}'
+            f'Topped Up amount: {self.__amount_to_top_up}{150 * " "}'
+            f'Total Balance: {self.__user.balance:.2f}{150 * " "}'
+            f'Method of payment: {self.__payment_method}</code>'
+        )

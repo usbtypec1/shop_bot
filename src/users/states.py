@@ -1,11 +1,18 @@
 from aiogram.dispatcher.filters import state
 
 __all__ = (
+    'UserBalanceTopUpStates',
     'UserDeleteStates',
     'SearchUsersStates',
     'EditBalanceStates',
     'TopUpBalanceStates',
 )
+
+
+class UserBalanceTopUpStates(state.StatesGroup):
+    amount = state.State()
+    payment_method = state.State()
+    confirm = state.State()
 
 
 class UserDeleteStates(state.StatesGroup):

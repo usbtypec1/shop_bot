@@ -4,6 +4,7 @@ __all__ = (
     'UserDeleteCallbackData',
     'UserDetailCallbackData',
     'UserUpdateCallbackData',
+    'UserBalanceTopUpCallbackData',
 )
 
 
@@ -30,3 +31,9 @@ class UserDetailCallbackData(ParseUserIdMixin, CallbackData):
 
     def __init__(self):
         super().__init__('user-detail', 'user_id')
+
+
+class UserBalanceTopUpCallbackData(ParseUserIdMixin, CallbackData):
+
+    def __init__(self):
+        super().__init__('user-balance-top-up', 'user_id')
