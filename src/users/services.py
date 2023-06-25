@@ -83,8 +83,8 @@ def parse_permanent_discount(permanent_discount: str) -> int:
         raise PermanentDiscountValidationError(
             '❌ Permanent discount must be an integer'
         )
-    if not (1 <= permanent_discount <= 99):
+    if not (0 <= permanent_discount <= 99):
         raise PermanentDiscountValidationError(
-            '❌ Permanent discount must be within the range of 1 to 99'
+            '❌ Permanent discount must be within the range of 0 to 99'
         )
     return permanent_discount
