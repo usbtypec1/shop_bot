@@ -330,6 +330,12 @@ class UserDetailView(View):
             max_cart_cost = 'Not set'
         else:
             max_cart_cost = f'{self.__user.max_cart_cost:.2f}'
+
+        if self.__user.permanent_discount == 0:
+            permanent_discount = 'Not set'
+        else:
+            permanent_discount = f'{self.__user.permanent_discount}%'
+
         return (
             f'<b>User ID</b>: {self.__user.telegram_id}\n'
             f'<b>Username</b>: @{username}\n'
@@ -337,7 +343,8 @@ class UserDetailView(View):
             f'<b>Number of orders</b>: {self.__number_of_orders}\n'
             f'<b>Balance</b>: ${self.__user.balance:.2f}\n'
             f'<b>Status</b>: {banned_status}\n'
-            f'<b>Max Cart</b>: ${max_cart_cost}'
+            f'<b>Max Cart</b>: ${max_cart_cost}\n'
+            f'<b>Permanent Discount</b>: {permanent_discount}\n'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:

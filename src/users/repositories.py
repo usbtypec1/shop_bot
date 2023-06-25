@@ -26,6 +26,7 @@ class UserRepository(BaseRepository):
             is_banned=result.is_banned,
             created_at=result.created_at,
             max_cart_cost=result.max_cart_cost,
+            permanent_discount=result.permanent_discount,
         )
 
     def get_by_telegram_id(self, telegram_id: int) -> users_models.User:
@@ -42,6 +43,7 @@ class UserRepository(BaseRepository):
             is_banned=result.is_banned,
             created_at=result.created_at,
             max_cart_cost=result.max_cart_cost,
+            permanent_discount=result.permanent_discount,
         )
 
     def create(
@@ -62,6 +64,7 @@ class UserRepository(BaseRepository):
             is_banned=user.is_banned,
             created_at=user.created_at,
             max_cart_cost=user.max_cart_cost,
+            permanent_discount=user.permanent_discount,
         )
 
     def delete_by_id(self, user_id: int) -> bool:
@@ -154,6 +157,7 @@ class UserRepository(BaseRepository):
                 is_banned=user.is_banned,
                 created_at=user.created_at,
                 max_cart_cost=user.max_cart_cost,
+                permanent_discount=user.permanent_discount,
             ) for user in users
         ]
 
