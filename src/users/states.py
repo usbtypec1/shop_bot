@@ -10,7 +10,7 @@ __all__ = (
 )
 
 
-class UserGrantPermanentDiscountStates(State):
+class UserGrantPermanentDiscountStates(StatesGroup):
     discount_value = State()
     reason = State()
     confirm = State()

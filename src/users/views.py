@@ -42,6 +42,8 @@ __all__ = (
     'UserSetSpecificBalanceReceiptView',
     'UserSetSpecificBalanceReasonsView',
     'UserUpdateMaxCartCostView',
+    'UserPermanentDiscountGrantingReasonsView',
+    'UserPermanentDiscountGrantingConfirmView',
 )
 
 
@@ -674,3 +676,69 @@ class UserUpdateMaxCartCostView(View):
             ],
         ],
     )
+
+
+class UserPermanentDiscountGrantingReasonsView(View):
+    text = 'Choose the reason for this permanent discount'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text=reason, callback_data=reason),
+            ] for reason in (
+                'Reseller',
+                'VIP Customer',
+                'Group Member',
+                'Other',
+            )
+        ],
+    )
+
+
+class UserPermanentDiscountGrantingConfirmView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasIdAndTelegramIdAndUsername,
+            permanent_discount: int,
+            reason: str,
+    ):
+        self.__user = user
+        self.__permanent_discount = permanent_discount
+        self.__reason = reason
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        now = get_now_datetime()
+        return (
+            f'Applied Permanent Discount to {username}'
+            f' with Telegram ID {self.__user.telegram_id}.'
+            ' Here is the receipt:'
+            '\n\n'
+            '<code>'
+            f'Date: {now:%m/%d/%Y}\n'
+            f'Username: {self.__user.username}\n'
+            f'ID: {self.__user.telegram_id}\n'
+            'Applied Permanent (Shop-wide) Discount:'
+            f' {self.__permanent_discount}%\n'
+            f'Reason: {self.__reason}'
+            '</code>'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='permanent-discount-granting-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        ),
+                    ),
+                ],
+            ],
+        )
