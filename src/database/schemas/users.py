@@ -16,13 +16,13 @@ class User(BaseModel):
     balance: Mapped[Decimal] = mapped_column(default=0)
     is_banned: Mapped[bool] = mapped_column(default=False)
     max_cart_cost: Mapped[Decimal | None]
-    # permanent_discount: Mapped[int] = mapped_column(default=0)
+    permanent_discount: Mapped[int] = mapped_column(default=0)
 
     cart_products = relationship('CartProduct', back_populates='user')
 
-    # __table_args__ = (
-    #     CheckConstraint(
-    #         'permanent_discount BETWEEN 0 AND 100',
-    #         name='check_permanent_discount'
-    #     ),
-    # )
+    __table_args__ = (
+        CheckConstraint(
+            'permanent_discount BETWEEN 0 AND 99',
+            name='check_permanent_discount',
+        ),
+    )
