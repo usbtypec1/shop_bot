@@ -201,3 +201,18 @@ class UserRepository(BaseRepository):
         with self._session_factory() as session:
             with session.begin():
                 session.execute(statement)
+
+    def update_permanent_discount(
+            self,
+            *,
+            user_id: int,
+            permanent_discount: int,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(permanent_discount=permanent_discount)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
