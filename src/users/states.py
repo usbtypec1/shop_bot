@@ -18,7 +18,6 @@ class UserGrantPermanentDiscountStates(State):
 
 class UserUpdateStates(StatesGroup):
     max_cart_cost = State()
-    permanent_discount = State()
 
 
 class UserSetSpecificBalanceStates(StatesGroup):
