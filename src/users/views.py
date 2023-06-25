@@ -18,7 +18,8 @@ from users.callback_data import (
     UserDetailCallbackData,
     UserDeleteCallbackData,
     UserUpdateCallbackData,
-    UserBalanceTopUpCallbackData, UserSetSpecificBalanceCallbackData,
+    UserBalanceTopUpCallbackData,
+    UserSetSpecificBalanceCallbackData,
 )
 from users.models import User
 
@@ -359,6 +360,15 @@ class UserDetailView(View):
                 callback_data=UserUpdateCallbackData().new(
                     user_id=self.__user.id,
                     field='max-cart-cost',
+                ),
+            ),
+        )
+        markup.row(
+            InlineKeyboardButton(
+                text='% Permanent Discount',
+                callback_data=UserUpdateCallbackData().new(
+                    user_id=self.__user.id,
+                    field='permanent-discount',
                 ),
             ),
         )
