@@ -9,6 +9,7 @@ __all__ = (
     'parse_users_identifiers_for_search',
     'calculate_total_balance',
     'parse_permanent_discount',
+    'calculate_discounted_price',
 )
 
 
@@ -55,6 +56,15 @@ def calculate_total_balance(items: Iterable[HasBalance]) -> Decimal:
     return sum(item.balance for item in items)
 
 
+def validate_discount_percentage_range(
+        discount_percentage: int,
+) -> None:
+    if not (0 <= discount_percentage <= 99):
+        raise PermanentDiscountValidationError(
+            '❌ Permanent discount must be within the range of 0 to 99'
+        )
+
+
 def parse_permanent_discount(permanent_discount: str) -> int:
     """
     Parses the permanent discount value from a string and validates it.
@@ -83,8 +93,14 @@ def parse_permanent_discount(permanent_discount: str) -> int:
         raise PermanentDiscountValidationError(
             '❌ Permanent discount must be an integer'
         )
-    if not (0 <= permanent_discount <= 99):
-        raise PermanentDiscountValidationError(
-            '❌ Permanent discount must be within the range of 0 to 99'
-        )
+    validate_discount_percentage_range(permanent_discount)
     return permanent_discount
+
+
+def calculate_discounted_price(
+        original_price: Decimal,
+        discount_percentage: int,
+) -> Decimal:
+    validate_discount_percentage_range(discount_percentage)
+    discount_amount = original_price * discount_percentage / 100
+    return original_price - discount_amount
