@@ -6,10 +6,9 @@ from sqlalchemy import select, func, delete, update
 from common.repositories import BaseRepository
 from database.schemas import User
 from users import models as users_models
+from users.exceptions import UserNotInDatabase
 
 __all__ = ('UserRepository',)
-
-from users.exceptions import UserNotInDatabase
 
 
 class UserRepository(BaseRepository):
@@ -26,6 +25,7 @@ class UserRepository(BaseRepository):
             balance=result.balance,
             is_banned=result.is_banned,
             created_at=result.created_at,
+            max_cart_cost=result.max_cart_cost,
         )
 
     def get_by_telegram_id(self, telegram_id: int) -> users_models.User:
@@ -41,6 +41,7 @@ class UserRepository(BaseRepository):
             balance=result.balance,
             is_banned=result.is_banned,
             created_at=result.created_at,
+            max_cart_cost=result.max_cart_cost,
         )
 
     def create(
@@ -60,6 +61,7 @@ class UserRepository(BaseRepository):
             balance=user.balance,
             is_banned=user.is_banned,
             created_at=user.created_at,
+            max_cart_cost=user.max_cart_cost,
         )
 
     def delete_by_id(self, user_id: int) -> bool:
@@ -151,6 +153,7 @@ class UserRepository(BaseRepository):
                 balance=user.balance,
                 is_banned=user.is_banned,
                 created_at=user.created_at,
+                max_cart_cost=user.max_cart_cost,
             ) for user in users
         ]
 
@@ -179,6 +182,21 @@ class UserRepository(BaseRepository):
             update(User)
             .where(User.id == user_id)
             .values(balance=amount_to_set)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
+
+    def update_max_cart_cost(
+            self,
+            *,
+            user_id: int,
+            max_cart_cost: Decimal | None,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(max_cart_cost=max_cart_cost)
         )
         with self._session_factory() as session:
             with session.begin():

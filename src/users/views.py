@@ -40,6 +40,7 @@ __all__ = (
     'UserSetSpecificBalanceAskForConfirmationView',
     'UserSetSpecificBalanceReceiptView',
     'UserSetSpecificBalanceReasonsView',
+    'UserUpdateMaxCartCostView',
 )
 
 
@@ -322,13 +323,18 @@ class UserDetailView(View):
         username = self.__user.username or ''
         banned_status = 'banned' if self.__user.is_banned else 'not banned'
         registered_at = f'{self.__user.created_at:%m/%d/%Y}'
+        if self.__user.max_cart_cost is None:
+            max_cart_cost = 'Not set'
+        else:
+            max_cart_cost = f'{self.__user.max_cart_cost:.2f}'
         return (
             f'<b>User ID</b>: {self.__user.telegram_id}\n'
             f'<b>Username</b>: @{username}\n'
             f'<b>Registration Date</b>: {registered_at}\n'
             f'<b>Number of orders</b>: {self.__number_of_orders}\n'
-            f'<b>Balance</b>: ${self.__user.balance:.2f}\n\n'
-            f'<b>Status</b>: {banned_status}'
+            f'<b>Balance</b>: ${self.__user.balance:.2f}\n'
+            f'<b>Status</b>: {banned_status}\n'
+            f'<b>Max Cart</b>: ${max_cart_cost}'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
@@ -344,6 +350,15 @@ class UserDetailView(View):
                 text='💸 Top Up Balance',
                 callback_data=UserBalanceTopUpCallbackData().new(
                     user_id=self.__user.id,
+                ),
+            ),
+        )
+        markup.row(
+            InlineKeyboardButton(
+                text='🛒 Maximum Cart',
+                callback_data=UserUpdateCallbackData().new(
+                    user_id=self.__user.id,
+                    field='max-cart-cost',
                 ),
             ),
         )
@@ -634,4 +649,18 @@ class UserSetSpecificBalanceReasonsView(View):
                 ),
             ],
         ]
+    )
+
+
+class UserUpdateMaxCartCostView(View):
+    text = 'Please enter the new maximum cart cost'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='Remove Max Cart Cost Limit',
+                    callback_data='remove-max-cart-cost',
+                ),
+            ],
+        ],
     )

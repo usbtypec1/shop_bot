@@ -1,11 +1,16 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 __all__ = (
+    'UserUpdateStates',
     'UserSetSpecificBalanceStates',
     'UserBalanceTopUpStates',
     'UserDeleteStates',
     'SearchUsersStates',
 )
+
+
+class UserUpdateStates(StatesGroup):
+    max_cart_cost = State()
 
 
 class UserSetSpecificBalanceStates(StatesGroup):

@@ -1,10 +1,11 @@
 from aiogram import Dispatcher
 
-from . import is_banned, balance
+from . import is_banned, balance, max_cart_cost
 
 __all__ = ('register_handlers',)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
     is_banned.register_handlers(dispatcher)
+    max_cart_cost.register_handlers(dispatcher)
     balance.register_handlers(dispatcher)
