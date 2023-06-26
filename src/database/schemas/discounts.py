@@ -14,7 +14,7 @@ class TimeSensitiveDiscount(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     starts_at: Mapped[datetime]
     expires_at: Mapped[datetime | None]
-    code: Mapped[str]
+    code: Mapped[str] = mapped_column(unique=True)
     value: Mapped[int]
 
     __table_args__ = (
