@@ -1,8 +1,12 @@
+import structlog
 from aiogram import Dispatcher
+from structlog.stdlib import BoundLogger
 
-from . import menu, create, list, detail
+from . import menu, create, list, detail, delete
 
 __all__ = ('register_handlers',)
+
+logger: BoundLogger = structlog.get_logger('app')
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
@@ -10,3 +14,5 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     create.register_handlers(dispatcher)
     list.register_handlers(dispatcher)
     detail.register_handlers(dispatcher)
+    delete.register_handlers(dispatcher)
+    logger.debug('Registered time sensitive discounts handlers')

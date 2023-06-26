@@ -21,6 +21,7 @@ __all__ = (
     'TimeSensitiveDiscountAskForConfirmationView',
     'TimeSensitiveDiscountListView',
     'TimeSensitiveDiscountDetailView',
+    'TimeSensitiveDiscountDeleteAskForConfirmationView',
 )
 
 
@@ -159,4 +160,33 @@ class TimeSensitiveDiscountDetailView(View):
                     ),
                 ],
             ]
+        )
+
+
+class TimeSensitiveDiscountDeleteAskForConfirmationView(View):
+    text = '❓ Are you sure you want to delete this time sensitive discount?'
+
+    def __init__(self, time_sensitive_discount_id: int):
+        self.__time_sensitive_discount_id = time_sensitive_discount_id
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='time-sensitive-discount-delete-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=(
+                            TimeSensitiveDiscountDetailCallbackData().new(
+                                time_sensitive_discount_id=(
+                                    self.__time_sensitive_discount_id
+                                ),
+                            )
+                        ),
+                    ),
+                ],
+            ],
         )
