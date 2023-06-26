@@ -69,6 +69,9 @@ class ShopManagementView(View):
                 KeyboardButton('📁 Categories Control'),
             ],
             [
+                KeyboardButton('% Time Sensitive Discounts'),
+            ],
+            [
                 KeyboardButton('⬅️ Back'),
             ],
         ],
