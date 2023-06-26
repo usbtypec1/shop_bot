@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from common.repositories import BaseRepository
 from database.schemas import TimeSensitiveDiscount
@@ -42,6 +42,7 @@ class TimeSensitiveDiscountRepository(BaseRepository):
         create: Create a new TimeSensitiveDiscount object.
         get_all: Retrieve all TimeSensitiveDiscount objects.
         get_by_id: Retrieve a TimeSensitiveDiscount object by ID.
+        delete_by_id: Delete a TimeSensitiveDiscount object by ID.
     """
 
     def create(
@@ -118,3 +119,18 @@ class TimeSensitiveDiscountRepository(BaseRepository):
         if time_sensitive_discount is None:
             raise TimeSensitiveDiscountDoesNotExistError
         return map_to_dto(time_sensitive_discount)
+
+    def delete_by_id(self, time_sensitive_discount_id: int) -> None:
+        """
+        Delete a TimeSensitiveDiscount by ID.
+
+        Args:
+            time_sensitive_discount_id: The ID of the TimeSensitiveDiscount.
+        """
+        statement = (
+            delete(TimeSensitiveDiscount)
+            .where(TimeSensitiveDiscount.id == time_sensitive_discount_id)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
