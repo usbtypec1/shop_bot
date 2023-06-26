@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, ContentType, ChatType, CallbackQuery
 
 from common.filters import AdminFilter
-from common.views import answer_view
+from common.views import answer_view, edit_message_by_view
 from services.time_utils import get_now_datetime
 from time_sensitive_discounts.exceptions import DatetimeValidationError
 from time_sensitive_discounts.repositories import (
@@ -16,6 +16,7 @@ from time_sensitive_discounts.services import parse_datetime
 from time_sensitive_discounts.states import TimeSensitiveDiscountCreateStates
 from time_sensitive_discounts.views import (
     TimeSensitiveDiscountAskForConfirmationView,
+    TimeSensitiveDiscountDetailView,
 )
 from users.services import parse_permanent_discount
 
@@ -109,7 +110,8 @@ async def on_time_sensitive_discount_code_creation_confirm(
         code=code,
         value=value,
     )
-    print(time_sensitive_discount)
+    view = TimeSensitiveDiscountDetailView(time_sensitive_discount)
+    await edit_message_by_view(message=callback_query.message, view=view)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
