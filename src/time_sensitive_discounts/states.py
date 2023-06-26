@@ -1,6 +1,9 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
-__all__ = ('TimeSensitiveDiscountCreateStates',)
+__all__ = (
+    'TimeSensitiveDiscountCreateStates',
+    'TimeSensitiveDiscountDeleteStates',
+)
 
 
 class TimeSensitiveDiscountCreateStates(StatesGroup):
@@ -8,4 +11,8 @@ class TimeSensitiveDiscountCreateStates(StatesGroup):
     expires_at = State()
     code = State()
     discount_value = State()
+    confirm = State()
+
+
+class TimeSensitiveDiscountDeleteStates(StatesGroup):
     confirm = State()
