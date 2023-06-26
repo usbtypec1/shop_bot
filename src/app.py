@@ -28,6 +28,9 @@ from database.setup import init_tables
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
 from services import notifications
+from time_sensitive_discounts.repositories import (
+    TimeSensitiveDiscountRepository,
+)
 from users.middlewares import BannedUserMiddleware, AdminIdentifierMiddleware
 from users.repositories import UserRepository
 
@@ -107,6 +110,9 @@ def main():
             category_repository=CategoryRepository(session_factory),
             cart_repository=CartRepository(session_factory),
             sale_repository=SaleRepository(session_factory),
+            time_sensitive_discount_repository=(
+                TimeSensitiveDiscountRepository(session_factory)
+            ),
         ),
     )
 

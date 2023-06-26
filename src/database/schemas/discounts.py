@@ -5,20 +5,22 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from database.schemas.base import Base
 
-__all__ = ('TimeSpecificDiscount',)
+__all__ = ('TimeSensitiveDiscount',)
 
 
-class TimeSpecificDiscount(Base):
-    __tablename__ = 'time_specific_discounts'
+class TimeSensitiveDiscount(Base):
+    __tablename__ = 'time_sensitive_discounts'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    starts_at: Mapped[datetime | None]
-    ends_at: Mapped[datetime | None]
+    starts_at: Mapped[datetime]
+    expires_at: Mapped[datetime | None]
     code: Mapped[str]
     value: Mapped[int]
 
     __table_args__ = (
         CheckConstraint(
-            '(ends_at IS NULL) OR (starts_at IS NULL) OR (ends_at > starts_at)',
-            name='check_time_specific_discount_ends_after_starts'),
+            '(expires_at IS NULL)'
+            ' OR (starts_at IS NULL)'
+            ' OR (expires_at > starts_at)',
+            name='check_time_sensitive_discount_expires_after_starts'),
     )

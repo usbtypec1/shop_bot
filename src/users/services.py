@@ -65,6 +65,7 @@ def validate_discount_percentage_range(
         )
 
 
+# TODO rename to 'discount_value'
 def parse_permanent_discount(permanent_discount: str) -> int:
     """
     Parses the permanent discount value from a string and validates it.

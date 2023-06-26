@@ -1,0 +1,2 @@
+class DatetimeValidationError(Exception):
+    pass
