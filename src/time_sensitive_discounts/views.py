@@ -22,6 +22,8 @@ __all__ = (
     'TimeSensitiveDiscountListView',
     'TimeSensitiveDiscountDetailView',
     'TimeSensitiveDiscountDeleteAskForConfirmationView',
+    'TimeSensitiveDiscountUpdateReceiptView',
+    'TimeSensitiveDiscountUpdateAskForConfirmationView',
 )
 
 
@@ -73,7 +75,7 @@ class TimeSensitiveDiscountCreateAskForConfirmationView(View):
                     ),
                     InlineKeyboardButton(
                         text='No',
-                        callback_data='dev',
+                        callback_data='show-time-sensitive-discount-list',
                     ),
                 ],
             ],
