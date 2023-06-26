@@ -9,17 +9,19 @@ from aiogram.types import (
 )
 
 from common.views import View
+from time_sensitive_discounts.callback_data import (
+    TimeSensitiveDiscountDetailCallbackData,
+    TimeSensitiveDiscountUpdateCallbackData,
+    TimeSensitiveDiscountDeleteCallbackData,
+)
+from time_sensitive_discounts.models import TimeSensitiveDiscount
 
 __all__ = (
     'TimeSensitiveDiscountMenuView',
     'TimeSensitiveDiscountAskForConfirmationView',
     'TimeSensitiveDiscountListView',
+    'TimeSensitiveDiscountDetailView',
 )
-
-from time_sensitive_discounts.callback_data import \
-    TimeSensitiveDiscountDetailCallbackData
-
-from time_sensitive_discounts.models import TimeSensitiveDiscount
 
 
 class TimeSensitiveDiscountMenuView(View):
@@ -109,3 +111,52 @@ class TimeSensitiveDiscountListView(View):
             )
 
         return markup
+
+
+class TimeSensitiveDiscountDetailView(View):
+
+    def __init__(self, time_sensitive_discount: TimeSensitiveDiscount):
+        self.__time_sensitive_discount = time_sensitive_discount
+
+    def get_text(self) -> str:
+        starts_at = f'{self.__time_sensitive_discount.starts_at:%m/%d/%Y %H:%M}'
+        text = (
+            f'<b>Code:</b> {self.__time_sensitive_discount.code}\n'
+            f'<b>Will be started at:</b> {starts_at}\n'
+        )
+        if self.__time_sensitive_discount.expires_at is not None:
+            text += (
+                f'<b>Will be ended at:</b>'
+                f' {self.__time_sensitive_discount.expires_at:%m/%d/%Y %H:%M}'
+            )
+        return text
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='📝 Edit',
+                        callback_data=(
+                            TimeSensitiveDiscountUpdateCallbackData().new(
+                                time_sensitive_discount_id=(
+                                    self.__time_sensitive_discount.id
+                                ),
+                            )
+                        ),
+                    ),
+                ],
+                [
+                    InlineKeyboardButton(
+                        text='🗑️ Delete',
+                        callback_data=(
+                            TimeSensitiveDiscountDeleteCallbackData().new(
+                                time_sensitive_discount_id=(
+                                    self.__time_sensitive_discount.id
+                                ),
+                            )
+                        ),
+                    ),
+                ],
+            ]
+        )

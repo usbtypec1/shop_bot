@@ -13,7 +13,7 @@ class ParseTimeSensitiveDiscountIdMixin:
         callback_data = super().parse(callback_data)
         return callback_data | {
             'time_sensitive_discount_id': (
-                int(callback_data['time_sensitive_discount_id']),
+                int(callback_data['time_sensitive_discount_id'])
             ),
         }
 
