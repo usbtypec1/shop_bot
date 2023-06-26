@@ -1,7 +1,7 @@
 from aiogram import Dispatcher
 from aiogram.types import Update
 
-from users.exceptions import UserNotInDatabase
+from users.exceptions import UserNotInDatabase, PermanentDiscountValidationError
 
 __all__ = ('register_handlers',)
 
@@ -18,8 +18,24 @@ async def user_not_in_db_error(
     return True
 
 
+async def on_permanent_discount_validation_error(
+        update: Update,
+        _: PermanentDiscountValidationError,
+) -> bool:
+    text = '❌ Discount value must be within the range of 0 to 99'
+    if update.message is not None:
+        await update.message.answer(text)
+    if update.callback_query is not None:
+        await update.callback_query.answer(text, show_alert=True)
+    return True
+
+
 def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_errors_handler(
         user_not_in_db_error,
         exception=UserNotInDatabase,
+    )
+    dispatcher.register_errors_handler(
+        on_permanent_discount_validation_error,
+        exception=PermanentDiscountValidationError,
     )
