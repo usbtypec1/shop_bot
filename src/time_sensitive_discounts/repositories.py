@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy import select
+
 from common.repositories import BaseRepository
 from database.schemas import TimeSensitiveDiscount
 from time_sensitive_discounts import models as discounts_models
@@ -35,3 +37,17 @@ class TimeSensitiveDiscountRepository(BaseRepository):
             code=time_sensitive_discount.code,
             value=time_sensitive_discount.value,
         )
+
+    def get_all(self) -> list[discounts_models.TimeSensitiveDiscount]:
+        statement = select(TimeSensitiveDiscount)
+        with self._session_factory() as session:
+            time_sensitive_discounts = session.scalars(statement).all()
+        return [
+            discounts_models.TimeSensitiveDiscount(
+                id=time_sensitive_discount.id,
+                starts_at=time_sensitive_discount.starts_at,
+                expires_at=time_sensitive_discount.expires_at,
+                code=time_sensitive_discount.code,
+                value=time_sensitive_discount.value,
+            ) for time_sensitive_discount in time_sensitive_discounts
+        ]
