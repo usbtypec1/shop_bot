@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from datetime import datetime
 
 from aiogram.types import (
@@ -12,7 +13,13 @@ from common.views import View
 __all__ = (
     'TimeSensitiveDiscountMenuView',
     'TimeSensitiveDiscountAskForConfirmationView',
+    'TimeSensitiveDiscountListView',
 )
+
+from time_sensitive_discounts.callback_data import \
+    TimeSensitiveDiscountDetailCallbackData
+
+from time_sensitive_discounts.models import TimeSensitiveDiscount
 
 
 class TimeSensitiveDiscountMenuView(View):
@@ -68,3 +75,37 @@ class TimeSensitiveDiscountAskForConfirmationView(View):
                 ],
             ],
         )
+
+
+class TimeSensitiveDiscountListView(View):
+
+    def __init__(
+            self,
+            time_sensitive_discounts: Iterable[TimeSensitiveDiscount],
+    ):
+        self.__time_sensitive_discounts = tuple(time_sensitive_discounts)
+
+    def get_text(self) -> str:
+        return (
+            'Time Sensitive Discounts' if self.__time_sensitive_discounts
+            else 'No Time Sensitive Discounts available'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup()
+
+        for time_sensitive_discount in self.__time_sensitive_discounts:
+            text = (
+                f'#{time_sensitive_discount.id}'
+                f' - {time_sensitive_discount.code}'
+            )
+            markup.row(
+                InlineKeyboardButton(
+                    text=text,
+                    callback_data=TimeSensitiveDiscountDetailCallbackData().new(
+                        time_sensitive_discount_id=time_sensitive_discount.id,
+                    ),
+                ),
+            )
+
+        return markup
