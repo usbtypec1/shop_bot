@@ -41,7 +41,7 @@ async def on_time_sensitive_discount_starts_at_input(
     try:
         starts_at = parse_datetime(message.text)
     except DatetimeValidationError:
-        starts_at = get_now_datetime()
+        starts_at = None
     await TimeSensitiveDiscountCreateStates.expires_at.set()
     await state.update_data(starts_at=starts_at)
     await message.answer(
@@ -104,6 +104,8 @@ async def on_time_sensitive_discount_code_creation_confirm(
     expires_at: datetime | None = state_data['expires_at']
     code: str = state_data['discount_code']
     value: int = state_data['discount_value']
+    if starts_at is None:
+        starts_at = get_now_datetime()
     time_sensitive_discount = time_sensitive_discount_repository.create(
         starts_at=starts_at,
         expires_at=expires_at,
