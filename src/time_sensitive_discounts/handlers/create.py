@@ -15,7 +15,7 @@ from time_sensitive_discounts.repositories import (
 from time_sensitive_discounts.services import parse_datetime
 from time_sensitive_discounts.states import TimeSensitiveDiscountCreateStates
 from time_sensitive_discounts.views import (
-    TimeSensitiveDiscountAskForConfirmationView,
+    TimeSensitiveDiscountCreateAskForConfirmationView,
     TimeSensitiveDiscountDetailView,
 )
 from users.services import parse_permanent_discount
@@ -86,7 +86,7 @@ async def on_time_sensitive_discount_value_input(
     state_data = await state.get_data()
     starts_at: datetime = state_data['starts_at']
     expires_at: datetime = state_data['expires_at']
-    view = TimeSensitiveDiscountAskForConfirmationView(
+    view = TimeSensitiveDiscountCreateAskForConfirmationView(
         starts_at=starts_at,
         expires_at=expires_at,
     )

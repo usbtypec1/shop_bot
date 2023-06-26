@@ -18,7 +18,7 @@ from time_sensitive_discounts.models import TimeSensitiveDiscount
 
 __all__ = (
     'TimeSensitiveDiscountMenuView',
-    'TimeSensitiveDiscountAskForConfirmationView',
+    'TimeSensitiveDiscountCreateAskForConfirmationView',
     'TimeSensitiveDiscountListView',
     'TimeSensitiveDiscountDetailView',
     'TimeSensitiveDiscountDeleteAskForConfirmationView',
@@ -41,7 +41,7 @@ class TimeSensitiveDiscountMenuView(View):
     )
 
 
-class TimeSensitiveDiscountAskForConfirmationView(View):
+class TimeSensitiveDiscountCreateAskForConfirmationView(View):
 
     def __init__(
             self,
