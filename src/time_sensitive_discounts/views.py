@@ -192,3 +192,89 @@ class TimeSensitiveDiscountDeleteAskForConfirmationView(View):
                 ],
             ],
         )
+
+
+class TimeSensitiveDiscountUpdateAskForConfirmationView(View):
+
+    def __init__(
+            self,
+            *,
+            starts_at: datetime,
+            expires_at: datetime,
+            time_sensitive_discount_id: int,
+    ):
+        self.__starts_at = starts_at
+        self.__expires_at = expires_at
+        self.__time_sensitive_discount_id = time_sensitive_discount_id
+
+    def get_text(self) -> str:
+        text = (
+            'Are you sure you want to edit a discount which begins in'
+            f' {self.__starts_at:%m/%d/%Y %H:%M} and'
+        )
+        if self.__expires_at is None:
+            text += ' never finishes'
+        else:
+            text += f' finishes in {self.__expires_at:%m/%d/%Y %H:%M}'
+        return text
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='time-sensitive-discount-update-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=(
+                            TimeSensitiveDiscountDetailCallbackData().new(
+                                time_sensitive_discount_id=(
+                                    self.__time_sensitive_discount_id
+                                ),
+                            )
+                        ),
+                    ),
+                ],
+            ],
+        )
+
+
+class TimeSensitiveDiscountUpdateReceiptView(View):
+
+    def __init__(
+            self,
+            *,
+            old_discount_code: str,
+            new_discount_code: str,
+            new_discount_value: int,
+            new_starts_at: datetime | None,
+            new_expires_at: datetime | None,
+    ):
+        self.__old_discount_code = old_discount_code
+        self.__new_discount_code = new_discount_code
+        self.__new_discount_value = new_discount_value
+        self.__new_starts_at = new_starts_at
+        self.__new_expires_at = new_expires_at
+
+    def get_text(self) -> str:
+        if self.__new_starts_at is None:
+            starts_at = 'Now'
+        else:
+            starts_at = f'{self.__new_starts_at:%m/%d/%Y %H:%M}'
+
+        if self.__new_expires_at is None:
+            expires_at = 'infinite'
+        else:
+            expires_at = f'{self.__new_expires_at:%m/%d/%Y %H:%M}'
+
+        return (
+            '<code>'
+            f'Old Discount Code: {self.__old_discount_code}\n'
+            f'New Discount Code: {self.__new_discount_code}\n'
+            f'New Discounted Amount: {self.__new_discount_value}%\n'
+            f'New Start Date: {starts_at}\n'
+            f'New Finish Date: {expires_at}'
+            '</code>'
+        )

@@ -43,6 +43,7 @@ class TimeSensitiveDiscountRepository(BaseRepository):
         get_all: Retrieve all TimeSensitiveDiscount objects.
         get_by_id: Retrieve a TimeSensitiveDiscount object by ID.
         delete_by_id: Delete a TimeSensitiveDiscount object by ID.
+        update: Update a TimeSensitiveDiscount object by ID.
     """
 
     def create(
@@ -134,3 +135,37 @@ class TimeSensitiveDiscountRepository(BaseRepository):
         with self._session_factory() as session:
             with session.begin():
                 session.execute(statement)
+
+    def update(
+            self,
+            *,
+            id_: int,
+            starts_at: datetime | None,
+            expires_at: datetime | None,
+            code: str,
+            value: int,
+    ) -> discounts_models.TimeSensitiveDiscount:
+        """
+        Update TimeSensitiveDiscount object.
+
+        Keyword Args:
+            id_: Id of the TimeSensitiveDiscount object.
+            starts_at: The start date and time of the discount.
+            expires_at: The expiration date and time of the discount.
+            code: The discount code.
+            value: The value of the discount.
+
+        Returns:
+            The updated TimeSensitiveDiscount object.
+        """
+        time_sensitive_discount = TimeSensitiveDiscount(
+            id=id_,
+            starts_at=starts_at,
+            expires_at=expires_at,
+            code=code,
+            value=value,
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.merge(time_sensitive_discount)
+        return map_to_dto(time_sensitive_discount)
