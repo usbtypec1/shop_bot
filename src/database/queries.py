@@ -53,25 +53,6 @@ def add_sale(
     return sale
 
 
-def get_users(
-        session: orm.Session,
-        limit: int = None,
-        offset: int = None,
-        usernames: list[str] = (),
-        ids: list[int] = (),
-) -> list[schemas.User]:
-    statement = select(schemas.User)
-    if len(usernames) > 0:
-        statement = statement.filter(schemas.User.username.in_(usernames))
-    if len(ids) > 0:
-        statement = statement.filter(schemas.User.id.in_(ids))
-    if limit is not None:
-        statement = statement.limit(limit)
-        if offset is not None:
-            statement = statement.offset(offset)
-    return session.scalars(statement).all()
-
-
 def get_buyers(
         session: orm.Session
 ) -> list[tuple[int, str | None, int, float]]:
@@ -223,16 +204,6 @@ def top_up_balance(
         user.balance = float(balance)
 
 
-def update_balance(
-        session: orm.Session,
-        user_id: int,
-        new_balance: float,
-) -> None:
-    user = get_user(session, user_id)
-    if user is not None:
-        user.balance = new_balance
-
-
 def edit_product_unit(
         session: orm.Session,
         product_unit_id: int,
@@ -253,50 +224,6 @@ def add_sold_product_unit(
     product_unit.sale_id = sale_id
 
 
-def edit_product_name(
-        session: orm.Session,
-        product_id: int,
-        name: str,
-) -> schemas.Product | None:
-    product = get_product(session, product_id)
-    if product is not None:
-        product.name = name
-    return product
-
-
-def edit_product_description(
-        session: orm.Session,
-        product_id: int,
-        description: str,
-) -> schemas.Product | None:
-    product = get_product(session, product_id)
-    if product is not None:
-        product.description = description
-    return product
-
-
-def edit_product_picture(
-        session: orm.Session,
-        product_id: int,
-        picture: str | None,
-) -> schemas.Product | None:
-    product = get_product(session, product_id)
-    if product:
-        product.picture = picture
-    return product
-
-
-def edit_product_price(
-        session: orm.Session,
-        product_id: int,
-        price: float,
-) -> schemas.Product | None:
-    product = get_product(session, product_id)
-    if product is not None:
-        product.price = price
-    return product
-
-
 def edit_product_quantity(
         session: orm.Session,
         product_id: int,
@@ -306,20 +233,6 @@ def edit_product_quantity(
     if product is not None:
         product.quantity += quantity_delta
     return product
-
-
-def reset_product_quantity(
-        session: orm.Session,
-        product_id: int,
-) -> schemas.Product | None:
-    product = get_product(session, product_id)
-    if product is not None:
-        product.quantity = 0
-    return product
-
-
-def delete_product(session: orm.Session, product_id: int) -> None:
-    session.execute(delete(schemas.Product).filter_by(id=product_id))
 
 
 def delete_product_unit(session: orm.Session, product_unit_id: int) -> None:
@@ -333,14 +246,6 @@ def delete_not_sold_product_units(session: orm.Session,
     statement = delete(schemas.ProductUnit).filter_by(
         product_id=product_id, sale_id=None)
     session.execute(statement)
-
-
-def count_user_orders(session: orm.Session, user_id: int) -> int:
-    statement = select(
-        func.count(schemas.Sale.id)).filter_by(
-        user_id=user_id
-    )
-    return session.scalar(statement)
 
 
 def count_purchases(session: orm.Session) -> int:
@@ -374,11 +279,4 @@ def get_user_balance(session: orm.Session, user_id: int) -> float:
 def check_is_user_exists(session: orm.Session, telegram_id: int) -> bool:
     statement = exists(
         select(schemas.User).filter_by(telegram_id=telegram_id))
-    return session.scalar(statement.select())
-
-
-def check_is_user_banned(session: orm.Session, telegram_id: int) -> bool:
-    statement = exists(
-        select(schemas.User).filter_by(telegram_id=telegram_id,
-                                       is_banned=True))
     return session.scalar(statement.select())

@@ -9,7 +9,6 @@ from aiogram.utils.exceptions import TelegramAPIError
 import config
 from config import AppSettings
 from database import schemas
-from support_tickets.models import SupportTicket
 
 logger = structlog.get_logger('app')
 
@@ -18,28 +17,6 @@ class BaseNotification(abc.ABC):
     @abc.abstractmethod
     def send(self, *args):
         pass
-
-
-class NewUserNotification(BaseNotification):
-    def __init__(self, bot: Bot, user_id: int, username: str | None):
-        self.__user_id = user_id
-        self.__username = username
-        self.__bot = bot
-
-    async def send(self):
-        text = (
-                '📱 New user\n'
-                '➖➖➖➖➖➖➖➖➖➖\n' +
-                ('🙍‍♂ Name: '
-                 f'@{self.__username}\n' if self.__username else '') +
-                f'🆔 ID: {self.__user_id}'
-        )
-        for user_id in AppSettings().admins_id:
-            try:
-                await self.__bot.send_message(user_id, text)
-            except (
-            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
-                continue
 
 
 class NewPurchaseNotification(BaseNotification):
@@ -74,7 +51,8 @@ class NewPurchaseNotification(BaseNotification):
                 for media_group in media_groups:
                     await self.__bot.send_media_group(admin_id, media_group)
             except (
-            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                    aiogram.exceptions.BotBlocked,
+                    aiogram.exceptions.ChatNotFound):
                 continue
 
     def __get_text(self):
@@ -115,51 +93,9 @@ class BalanceRefillNotification(BaseNotification):
                     f'{"@" + self.__user.username if self.__user.username else self.__user.id}'
                 )
             except (
-            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                    aiogram.exceptions.BotBlocked,
+                    aiogram.exceptions.ChatNotFound):
                 continue
-
-
-class NewSupportRequestNotification(BaseNotification):
-    def __init__(self, bot: Bot, support_request: SupportTicket):
-        self.__support_request = support_request
-        self.__bot = bot
-
-    async def send(self):
-        text = (
-                '👨‍💻 New request\n'
-                '➖➖➖➖➖➖➖➖➖➖\n'
-                f'🆔 Request number: {self.__support_request.id}\n'
-                f'🙍‍♂ User: ' +
-                (
-                    f'@{self.__support_request.username}\n' if self.__support_request.username is not None else
-                    f'{self.__support_request.user_id}\n') +
-                '➖➖➖➖➖➖➖➖➖➖\n'
-                f'📗 Request subject: {self.__support_request.subject}\n'
-                '📋 Description:\n\n'
-                f'{self.__support_request.issue}'
-        )
-        for user_id in AppSettings().admins_id:
-            try:
-                await self.__bot.send_message(user_id, text)
-            except (
-            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
-                continue
-
-
-class AnsweredSupportRequestNotification(BaseNotification):
-    def __init__(self, bot: Bot, request_id: int, answer: str):
-        self.__request_id = request_id
-        self.__answer = answer
-        self.__bot = bot
-
-    async def send(self, user_id: int):
-        text = (
-                '✅ Your request was reviewed\n'
-                '➖➖➖➖➖➖➖➖➖➖\n'
-                f'🆔 Request number: {self.__request_id}\n'
-                '📕 Answer:\n\n' + self.__answer
-        )
-        await self.__bot.send_message(user_id, text)
 
 
 class ErrorNotification(BaseNotification):
@@ -177,5 +113,6 @@ class ErrorNotification(BaseNotification):
             try:
                 await self.__bot.send_message(user_id, text)
             except (
-            aiogram.exceptions.BotBlocked, aiogram.exceptions.ChatNotFound):
+                    aiogram.exceptions.BotBlocked,
+                    aiogram.exceptions.ChatNotFound):
                 continue
