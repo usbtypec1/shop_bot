@@ -3,54 +3,9 @@ import aiogram.types
 import products.callback_data
 
 
-class CategoryButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, category_name: str, category_id: int):
-        super().__init__(
-            text=category_name,
-            callback_data=products.callback_data.ProductCallbackFactory().new(
-                category_id=category_id, subcategory_id='', product_id='',
-                action='manage'
-            )
-        )
-
-
-class SubcategoryButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, category_id: int, subcategory_id: int,
-                 subcategory_name: str):
-        super().__init__(
-            text=subcategory_name,
-            callback_data=products.callback_data.ProductCallbackFactory().new(
-                category_id=category_id, subcategory_id=subcategory_id,
-                product_id='', action='manage'
-            )
-        )
-
-
-class AddProductButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, category_id: int = None, subcategory_id: int = None):
-        super().__init__('📓 Add Products',
-                         callback_data=products.callback_data.ProductCallbackFactory().new(
-                             category_id=category_id or '',
-                             subcategory_id=subcategory_id or '',
-                             product_id='', action='add'
-                         ))
-
-
 class CompleteProductAddingKeyboard(aiogram.types.KeyboardButton):
     def __init__(self):
         super().__init__('✅ Complete')
-
-
-class ProductButton(aiogram.types.InlineKeyboardButton):
-    def __init__(self, category_id: int, product_id: int,
-                 product_text: str):
-        super().__init__(
-            text=product_text,
-            callback_data=products.callback_data.ProductCallbackFactory().new(
-                category_id=category_id, subcategory_id='',
-                product_id=product_id, action='manage'
-            )
-        )
 
 
 class EditProductTitleButton(aiogram.types.InlineKeyboardButton):

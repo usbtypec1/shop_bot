@@ -18,6 +18,7 @@ import payments.handlers
 import products.handlers
 import shop_info.handlers
 import support_tickets.handlers
+import time_sensitive_discounts.handlers
 import users.handlers
 from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
@@ -27,6 +28,9 @@ from database.setup import init_tables
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
 from services import notifications
+from time_sensitive_discounts.repositories import (
+    TimeSensitiveDiscountRepository,
+)
 from users.middlewares import BannedUserMiddleware, AdminIdentifierMiddleware
 from users.repositories import UserRepository
 
@@ -43,6 +47,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     products.handlers.register_handlers(dispatcher)
     shop_info.handlers.register_handlers(dispatcher)
     support_tickets.handlers.register_handlers(dispatcher)
+    time_sensitive_discounts.handlers.register_handlers(dispatcher)
     users.handlers.register_handlers(dispatcher)
 
 
@@ -105,6 +110,9 @@ def main():
             category_repository=CategoryRepository(session_factory),
             cart_repository=CartRepository(session_factory),
             sale_repository=SaleRepository(session_factory),
+            time_sensitive_discount_repository=(
+                TimeSensitiveDiscountRepository(session_factory)
+            ),
         ),
     )
 

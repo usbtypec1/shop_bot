@@ -1,3 +1,6 @@
+from decimal import Decimal
+from typing import Protocol
+
 from aiogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
@@ -7,11 +10,16 @@ from aiogram.types import (
 
 from common.models import Buyer
 from common.views import View
-from keyboards.buttons.navigation_buttons import InlineBackButton
-from keyboards.buttons.users_buttons import UnbanUserButton, BanUserButton
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
-    EditUserBalanceCallbackFactory, TopUpUserBalanceCallbackFactory
+)
+from services.time_utils import get_now_datetime
+from users.callback_data import (
+    UserDetailCallbackData,
+    UserDeleteCallbackData,
+    UserUpdateCallbackData,
+    UserBalanceTopUpCallbackData,
+    UserSetSpecificBalanceCallbackData,
 )
 from users.models import User
 
@@ -22,9 +30,57 @@ __all__ = (
     'UserGreetingsView',
     'UserStatisticsMenuView',
     'UserGeneralStatisticsView',
-    'UsersView',
+    'UserListView',
     'NewUserNotificationView',
+    'UserDetailView',
+    'UserDeleteAskForConfirmationView',
+    'UserDeleteSuccessView',
+    'UserBannedStatusToggleView',
+    'UserBalanceTopUpReceiptView',
+    'UserBalanceTopUpAskForConfirmationView',
+    'UserSetSpecificBalanceAskForConfirmationView',
+    'UserSetSpecificBalanceReceiptView',
+    'UserSetSpecificBalanceReasonsView',
+    'UserUpdateMaxCartCostView',
+    'UserPermanentDiscountGrantingReasonsView',
+    'UserPermanentDiscountGrantingConfirmView',
 )
+
+
+class HasId(Protocol):
+    id: int
+
+
+class HasBalance(Protocol):
+    balance: Decimal
+
+
+class HasTelegramIdAndUsername(Protocol):
+    telegram_id: int
+    username: str | None
+
+
+class HasIdAndBalance(HasId, HasBalance, Protocol):
+    pass
+
+
+class HasIdAndTelegramIdAndUsername(HasId, HasTelegramIdAndUsername, Protocol):
+    pass
+
+
+class HasIdAndTelegramIdAndUsernameAndBannedStatus(
+    HasIdAndTelegramIdAndUsername,
+    Protocol,
+):
+    is_banned: bool
+
+
+class HasTelegramIdAndUsernameAndBalance(
+    HasTelegramIdAndUsername,
+    HasBalance,
+    Protocol,
+):
+    pass
 
 
 class RulesView(View):
@@ -158,13 +214,13 @@ class UserGeneralStatisticsView(View):
         return '\n'.join(lines)
 
 
-class UsersView(View):
+class UserListView(View):
 
     def __init__(
             self,
             *,
             users: list[User],
-            total_balance: float = 0.0,
+            total_balance: Decimal,
             users_filter: str = '',
             page: int = 0,
             page_size: int = 10,
@@ -185,37 +241,22 @@ class UsersView(View):
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
         markup = InlineKeyboardMarkup()
-        callback_data = self.__callback_data or {
-            '@': '',
-            'filter': self.__users_filter,
-            'page': '0',
-            'id': '',
-            'action': '',
-            'is_confirmed': '',
-        }
-        if len(self.__users) > self.__page_size:
-            users = self.__users[:-1]
-        else:
-            users = self.__users
 
-        for user in users:
-            callback_data.pop('@')
-            callback_data['action'] = 'manage'
-            callback_data['id'] = str(user.id)
-
+        for user in self.__users:
             markup.row(
                 InlineKeyboardButton(
                     text=(
                         f'#{user.telegram_id}'
                         f' | {user.username}'
-                        f' | ${user.balance}'
+                        f' | ${user.balance:.2f}'
                         f' | {user.created_at:%m/%d/%Y}'
                     ),
-                    callback_data=UserCallbackFactory().new(**callback_data),
+                    callback_data=UserDetailCallbackData().new(
+                        user_id=user.id,
+                    ),
                 )
             )
         if not self.__users_filter:
-            callback_data['action'] = 'search'
             markup.row(
                 InlineKeyboardButton(
                     text='🔎 Search Users',
@@ -235,7 +276,7 @@ class UsersView(View):
                     )
                 )
             )
-        if len(users) > self.__page_size:
+        if len(self.__users) > self.__page_size:
             markup.row(
                 InlineKeyboardButton(
                     text='Next 👉',
@@ -270,96 +311,97 @@ class UsersView(View):
         return markup
 
 
-class UserView(View):
+class UserDetailView(View):
 
     def __init__(
             self,
             *,
             user: User,
             number_of_orders: int,
-            callback_data: dict[str, str] | None = None,
     ):
         self.__user = user
         self.__number_of_orders = number_of_orders
-        self.__callback_data = callback_data
 
     def get_text(self) -> str:
         username = self.__user.username or ''
         banned_status = 'banned' if self.__user.is_banned else 'not banned'
         registered_at = f'{self.__user.created_at:%m/%d/%Y}'
+        if self.__user.max_cart_cost is None:
+            max_cart_cost = 'Not set'
+        else:
+            max_cart_cost = f'{self.__user.max_cart_cost:.2f}'
+
+        if self.__user.permanent_discount == 0:
+            permanent_discount = 'Not set'
+        else:
+            permanent_discount = f'{self.__user.permanent_discount}%'
+
         return (
             f'<b>User ID</b>: {self.__user.telegram_id}\n'
             f'<b>Username</b>: @{username}\n'
             f'<b>Registration Date</b>: {registered_at}\n'
             f'<b>Number of orders</b>: {self.__number_of_orders}\n'
-            f'<b>Balance</b>: ${self.__user.balance}\n\n'
-            f'<b>Status</b>: {banned_status}'
+            f'<b>Balance</b>: ${self.__user.balance:.2f}\n'
+            f'<b>Status</b>: {banned_status}\n'
+            f'<b>Max Cart</b>: ${max_cart_cost}\n'
+            f'<b>Permanent Discount</b>: {permanent_discount}\n'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
-        if self.__callback_data is None:
-            callback_data = {
-                '@': 'users',
-                'filter': '',
-                'page': '0',
-                'id': self.__user.id,
-                'action': 'manage',
-                'is_confirmed': '',
-            }
-        else:
-            self.__callback_data['is_confirmed'] = ''
-
         markup = InlineKeyboardMarkup()
         markup.row(
             InlineKeyboardButton(
                 text='⚖️ Edit Balance',
-                callback_data=EditUserBalanceCallbackFactory().new(
+                callback_data=UserSetSpecificBalanceCallbackData().new(
                     user_id=self.__user.id,
-                    balance='',
-                    reason='',
-                    is_confirmed='',
                 ),
             ),
             InlineKeyboardButton(
                 text='💸 Top Up Balance',
-                callback_data=TopUpUserBalanceCallbackFactory().new(
+                callback_data=UserBalanceTopUpCallbackData().new(
                     user_id=self.__user.id,
-                    balance_delta='',
-                    payment_method='',
-                    is_confirmed='',
                 ),
             ),
         )
-        callback_data = self.__callback_data.copy()
-        callback_data.pop('@')
-        callback_data['action'] = 'delete'
-        callback_data['id'] = str(self.__user.id)
         markup.row(
             InlineKeyboardButton(
-                text='🫥 Delete User',
-                callback_data=UserCallbackFactory().new(**self.__callback_data),
+                text='🛒 Maximum Cart',
+                callback_data=UserUpdateCallbackData().new(
+                    user_id=self.__user.id,
+                    field='max-cart-cost',
+                ),
             ),
         )
         markup.row(
-            UnbanUserButton(self.__user.id, **callback_data) if
-            self.__user.is_banned else BanUserButton(self.__user.id,
-                                                     **callback_data)
+            InlineKeyboardButton(
+                text='% Permanent Discount',
+                callback_data=UserUpdateCallbackData().new(
+                    user_id=self.__user.id,
+                    field='permanent-discount',
+                ),
+            ),
+        )
+        markup.row(
+            InlineKeyboardButton(
+                text='🫥 Delete User',
+                callback_data=UserDeleteCallbackData().new(
+                    user_id=self.__user.id
+                ),
+            ),
+        )
+        markup.row(
+            InlineKeyboardButton(
+                text=f'🆓 Unban' if self.__user.is_banned else f'📛 Ban',
+                callback_data=UserUpdateCallbackData().new(
+                    user_id=self.__user.id,
+                    field='banned-status',
+                )
+            )
         )
         markup.row(
             InlineKeyboardButton(
                 text='🚫 Close',
                 callback_data='close',
-            )
-        )
-        markup.row(
-            InlineBackButton(
-                UserCallbackFactory().new(
-                    filter=callback_data['filter'],
-                    page=callback_data['page'],
-                    id='',
-                    action='',
-                    is_confirmed='',
-                )
             )
         )
         return markup
@@ -378,4 +420,332 @@ class NewUserNotificationView(View):
             '➖➖➖➖➖➖➖➖➖➖\n'
             f'🙍‍♂ Name: @{username}\n'
             f'🆔 ID: {self.__telegram_id}'
+        )
+
+
+class UserDeleteAskForConfirmationView(View):
+
+    def __init__(self, user: HasIdAndBalance):
+        self.__user = user
+
+    def get_text(self) -> str:
+        return (
+            f'This user has ${self.__user.balance:.2f} left.'
+            f' Are you sure you want to delete this user?'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='user-delete-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        ),
+                    )
+                ],
+            ],
+        )
+
+
+class UserDeleteSuccessView(View):
+
+    def __init__(self, user: HasTelegramIdAndUsernameAndBalance):
+        self.__user = user
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        return (
+            f'✅ Deleted {username} with ID {self.__user.telegram_id}'
+            f' and previous balance of {self.__user.balance:.2f}'
+        )
+
+
+class UserBannedStatusToggleView(View):
+
+    def __init__(self, user: HasIdAndTelegramIdAndUsernameAndBannedStatus):
+        self.__user = user
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        toggle_text = 'unban' if self.__user.is_banned else 'ban'
+        return (
+            f'Are you sure you want to <b><u>{toggle_text}</u></b>'
+            f' {username} with {self.__user.telegram_id}?'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='banned-status-toggle-confirm'
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        )
+                    ),
+                ],
+            ],
+        )
+        return markup
+
+
+class UserBalanceTopUpAskForConfirmationView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasIdAndTelegramIdAndUsernameAndBannedStatus,
+            amount_to_top_up: Decimal,
+            payment_method: str,
+    ):
+        self.__user = user
+        self.__amount_to_top_up = amount_to_top_up
+        self.__payment_method = payment_method
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        return (
+            f'Are you sure you want to top-up {username}\'s balance'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' for ${self.__amount_to_top_up}?\n'
+            f'Method of payment: {self.__payment_method}'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='top-up-user-balance-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        )
+                    ),
+                ],
+            ],
+        )
+
+
+class UserBalanceTopUpReceiptView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasTelegramIdAndUsernameAndBalance,
+            amount_to_top_up: Decimal,
+            payment_method: str,
+    ):
+        self.__user = user
+        self.__amount_to_top_up = amount_to_top_up
+        self.__payment_method = payment_method
+
+    def get_text(self) -> str:
+        now = get_now_datetime()
+
+        # I don't know why each line ends with 150 * " " expression
+        username = f'{self.__user.username}{150 * " "}' or ''
+        return (
+            f'Topped-up {self.__user.username or "user"}'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' for ${self.__amount_to_top_up}\n'
+            f'<code>Date: {now:%m/%d/%Y}{150 * " "}'
+            f'Username: {username}'
+            f'ID: {self.__user.telegram_id}{150 * " "}'
+            f'Topped Up amount: {self.__amount_to_top_up}{150 * " "}'
+            f'Total Balance: {self.__user.balance:.2f}{150 * " "}'
+            f'Method of payment: {self.__payment_method}</code>'
+        )
+
+
+class UserSetSpecificBalanceAskForConfirmationView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasIdAndTelegramIdAndUsername,
+            amount_to_set: Decimal,
+            reason: str,
+    ):
+        self.__user = user
+        self.__amount_to_set = amount_to_set
+        self.__reason = reason
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        return (
+            f'Are you sure you want to change {username}\'s balance'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' for ${self.__amount_to_set}?\n'
+            f'Reason: {self.__reason}'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='set-specific-user-balance-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        )
+                    ),
+                ],
+            ],
+        )
+
+
+class UserSetSpecificBalanceReceiptView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasTelegramIdAndUsernameAndBalance,
+            old_balance: Decimal,
+            new_balance: Decimal,
+            reason: str,
+    ):
+        self.__user = user
+        self.__old_balance = old_balance
+        self.__new_balance = new_balance
+        self.__reason = reason
+
+    def get_text(self) -> str:
+        now = get_now_datetime()
+
+        # I don't know why each line ends with 150 * " " expression
+        username = f'{self.__user.username}{150 * " "}' or ''
+        return (
+            f'Changed balance of {self.__user.username or "user"}'
+            f' with Telegram ID {self.__user.telegram_id}'
+            f' from ${self.__old_balance:.2f} to ${self.__new_balance:.2f}\n'
+            f'<code>Date: {now:%m/%d/%Y}{150 * " "}'
+            f'Username: {username}'
+            f'ID: {self.__user.telegram_id}{150 * " "}'
+            f'Previous balance: {self.__old_balance:.2f}{" " * 150}'
+            f'New Balance: {self.__new_balance:.2f}{" " * 150}'
+            f'Reason: {self.__reason}</code>'
+        )
+
+
+class UserSetSpecificBalanceReasonsView(View):
+    text = '❓ Enter the reason of change balance'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='🤝 P2P Delivery',
+                    callback_data='P2P Delivery',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='🔄 Refunded Payment',
+                    callback_data='Refunded Payment',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='🫤 Admin Mistake',
+                    callback_data='Admin Mistake',
+                ),
+            ],
+        ]
+    )
+
+
+class UserUpdateMaxCartCostView(View):
+    text = 'Please enter the new maximum cart cost'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='Remove Max Cart Cost Limit',
+                    callback_data='remove-max-cart-cost',
+                ),
+            ],
+        ],
+    )
+
+
+class UserPermanentDiscountGrantingReasonsView(View):
+    text = 'Choose the reason for this permanent discount'
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text=reason, callback_data=reason),
+            ] for reason in (
+                'Reseller',
+                'VIP Customer',
+                'Group Member',
+                'Other',
+            )
+        ],
+    )
+
+
+class UserPermanentDiscountGrantingConfirmView(View):
+
+    def __init__(
+            self,
+            *,
+            user: HasIdAndTelegramIdAndUsername,
+            permanent_discount: int,
+            reason: str,
+    ):
+        self.__user = user
+        self.__permanent_discount = permanent_discount
+        self.__reason = reason
+
+    def get_text(self) -> str:
+        username = self.__user.username or 'user'
+        now = get_now_datetime()
+        return (
+            f'Applied Permanent Discount to {username}'
+            f' with Telegram ID {self.__user.telegram_id}.'
+            ' Here is the receipt:'
+            '\n\n'
+            '<code>'
+            f'Date: {now:%m/%d/%Y}\n'
+            f'Username: {self.__user.username}\n'
+            f'ID: {self.__user.telegram_id}\n'
+            'Applied Permanent (Shop-wide) Discount:'
+            f' {self.__permanent_discount}%\n'
+            f'Reason: {self.__reason}'
+            '</code>'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='permanent-discount-granting-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=UserDetailCallbackData().new(
+                            user_id=self.__user.id,
+                        ),
+                    ),
+                ],
+            ],
         )

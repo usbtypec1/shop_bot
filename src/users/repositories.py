@@ -1,14 +1,14 @@
 from collections.abc import Iterable
+from decimal import Decimal
 
 from sqlalchemy import select, func, delete, update
 
 from common.repositories import BaseRepository
 from database.schemas import User
 from users import models as users_models
+from users.exceptions import UserNotInDatabase
 
 __all__ = ('UserRepository',)
-
-from users.exceptions import UserNotInDatabase
 
 
 class UserRepository(BaseRepository):
@@ -25,6 +25,8 @@ class UserRepository(BaseRepository):
             balance=result.balance,
             is_banned=result.is_banned,
             created_at=result.created_at,
+            max_cart_cost=result.max_cart_cost,
+            permanent_discount=result.permanent_discount,
         )
 
     def get_by_telegram_id(self, telegram_id: int) -> users_models.User:
@@ -40,6 +42,8 @@ class UserRepository(BaseRepository):
             balance=result.balance,
             is_banned=result.is_banned,
             created_at=result.created_at,
+            max_cart_cost=result.max_cart_cost,
+            permanent_discount=result.permanent_discount,
         )
 
     def create(
@@ -59,6 +63,8 @@ class UserRepository(BaseRepository):
             balance=user.balance,
             is_banned=user.is_banned,
             created_at=user.created_at,
+            max_cart_cost=user.max_cart_cost,
+            permanent_discount=user.permanent_discount,
         )
 
     def delete_by_id(self, user_id: int) -> bool:
@@ -68,11 +74,11 @@ class UserRepository(BaseRepository):
                 result = session.execute(statement)
         return bool(result.rowcount)
 
-    def get_total_balance(self) -> float:
+    def get_total_balance(self) -> Decimal:
         statement = select(func.sum(User.balance))
         with self._session_factory() as session:
-            result = session.execute(statement).first()
-        return result[0]
+            row = session.execute(statement).first()
+        return Decimal('0') if row is None else row[0]
 
     def get_total_count(self) -> int:
         statement = select(func.count(User.id))
@@ -131,7 +137,11 @@ class UserRepository(BaseRepository):
         Returns:
             A list of User objects matching the provided criteria.
         """
-        statement = select(User).slice(offset, offset + limit)
+        statement = (
+            select(User)
+            .order_by(User.id.desc())
+            .slice(offset, offset + limit)
+        )
         if usernames is not None:
             statement = statement.where(User.username.in_(usernames))
         if user_ids is not None:
@@ -146,5 +156,67 @@ class UserRepository(BaseRepository):
                 balance=user.balance,
                 is_banned=user.is_banned,
                 created_at=user.created_at,
+                max_cart_cost=user.max_cart_cost,
+                permanent_discount=user.permanent_discount,
             ) for user in users
         ]
+
+    def top_up_balance(
+            self,
+            *,
+            user_id: int,
+            amount_to_top_up: Decimal,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(balance=User.balance + amount_to_top_up)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
+
+    def update_balance(
+            self,
+            *,
+            user_id: int,
+            amount_to_set: Decimal,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(balance=amount_to_set)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
+
+    def update_max_cart_cost(
+            self,
+            *,
+            user_id: int,
+            max_cart_cost: Decimal | None,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(max_cart_cost=max_cart_cost)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
+
+    def update_permanent_discount(
+            self,
+            *,
+            user_id: int,
+            permanent_discount: int,
+    ) -> None:
+        statement = (
+            update(User)
+            .where(User.id == user_id)
+            .values(permanent_discount=permanent_discount)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)

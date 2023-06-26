@@ -19,3 +19,5 @@ class User:
     balance: Decimal
     is_banned: bool
     created_at: datetime
+    max_cart_cost: Decimal | None
+    permanent_discount: int

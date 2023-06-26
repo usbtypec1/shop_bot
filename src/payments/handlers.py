@@ -2,16 +2,29 @@ import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, Update
 
 import config
 import responses.payments_management
 from common.filters import AdminFilter
 from keyboards.inline import callback_factories
 from mailing.states import ChangeCoinbaseData
+from payments.exceptions import BalanceAmountValidatorError
 from services.payments_apis import coinbase_api
 
 logger = structlog.get_logger('app')
+
+
+async def on_balance_amount_validation_error(
+        update: Update,
+        _: BalanceAmountValidatorError,
+) -> bool:
+    text = '❌ Incorrect balance amount!'
+    if update.message is not None:
+        await update.message.answer(text)
+    if update.callback_query is not None:
+        await update.callback_query.answer(text, show_alert=True)
+    return True
 
 
 async def payments_management(message: Message) -> None:
@@ -44,6 +57,10 @@ async def change_api_key_input(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
+    dispatcher.register_errors_handler(
+        on_balance_amount_validation_error,
+        exception=BalanceAmountValidatorError,
+    )
     dispatcher.register_message_handler(
         payments_management,
         Text('💳 Payment Management'),
