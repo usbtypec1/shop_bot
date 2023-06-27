@@ -1,16 +1,16 @@
-from aiogram import Dispatcher
+from aiogram import Dispatcher, Bot
 from aiogram.types import CallbackQuery
 
 from common.filters import AdminFilter
 from common.views import edit_message_by_view
 from services.alerts import notify_user_ticket_status_changed
-from support_tickets.callback_data import (
+from support.callback_data import (
     SupportTicketStatusUpdateCallbackData,
     SupportTicketStatusListCallbackData,
 )
-from support_tickets.models import SupportTicketStatus
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.views import (
+from support.models import SupportTicketStatus
+from support.repositories import SupportTicketRepository
+from support.views import (
     SupportTicketStatusListView,
     AdminSupportTicketDetailView,
 )
@@ -19,6 +19,7 @@ from support_tickets.views import (
 async def on_support_ticket_status_update(
         callback_query: CallbackQuery,
         callback_data: dict,
+        bot: Bot,
         support_ticket_repository: SupportTicketRepository,
 ) -> None:
     support_ticket_id: int = callback_data['support_ticket_id']
@@ -30,7 +31,10 @@ async def on_support_ticket_status_update(
     support_ticket = support_ticket_repository.get_by_id(support_ticket_id)
     view = AdminSupportTicketDetailView(support_ticket)
     await edit_message_by_view(message=callback_query.message, view=view)
-    await notify_user_ticket_status_changed(support_ticket)
+    await notify_user_ticket_status_changed(
+        bot=bot,
+        support_ticket=support_ticket,
+    )
 
 
 async def on_show_support_ticket_status_list(

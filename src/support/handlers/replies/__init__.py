@@ -2,10 +2,7 @@ from aiogram import Dispatcher
 
 from . import create, list
 
-__all__ = (
-    'create',
-    'list',
-)
+__all__ = ('register_handlers',)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:

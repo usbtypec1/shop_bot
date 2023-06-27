@@ -4,8 +4,8 @@ from aiogram.types import Message
 
 from common.filters import AdminFilter
 from common.views import answer_view
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.views import (
+from support.repositories import SupportTicketRepository
+from support.views import (
     AdminOpenSupportTicketListView,
     AdminClosedSupportTicketListView,
 )

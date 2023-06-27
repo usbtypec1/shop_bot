@@ -4,10 +4,10 @@ from aiogram.types import CallbackQuery, Message, ContentType
 
 from common.filters import AdminFilter
 from common.views import answer_view
-from support_tickets.callback_data import SupportTicketAnswerUpdateCallbackData
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.states import AdminSupportTicketUpdateStates
-from support_tickets.views import AdminSupportTicketDetailView
+from support.callback_data import SupportTicketAnswerUpdateCallbackData
+from support.repositories import SupportTicketRepository
+from support.states import AdminSupportTicketUpdateStates
+from support.views import AdminSupportTicketDetailView
 
 
 async def on_start_support_ticket_answer_update_flow(

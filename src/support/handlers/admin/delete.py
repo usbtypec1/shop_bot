@@ -5,10 +5,10 @@ from aiogram.types import CallbackQuery
 
 from common.filters import AdminFilter
 from common.views import edit_message_by_view
-from support_tickets.callback_data import SupportTicketDeleteCallbackData
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.states import SupportTicketDeleteStatus
-from support_tickets.views import SupportTicketAskDeleteConfirmationView
+from support.callback_data import SupportTicketDeleteCallbackData
+from support.repositories import SupportTicketRepository
+from support.states import SupportTicketDeleteStatus
+from support.views import SupportTicketAskDeleteConfirmationView
 
 
 async def on_ask_support_ticket_delete_confirmation(

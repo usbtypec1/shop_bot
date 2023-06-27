@@ -3,8 +3,8 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types import Message
 
 from common.views import answer_view
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.views import SupportTicketListView
+from support.repositories import SupportTicketRepository
+from support.views import SupportTicketListView
 
 
 async def on_show_support_tickets_list(

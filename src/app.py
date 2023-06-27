@@ -17,7 +17,7 @@ import mailing.handlers
 import payments.handlers
 import products.handlers
 import shop_info.handlers
-import support_tickets.handlers
+import support.handlers
 import time_sensitive_discounts.handlers
 import top_up_bonuses.handlers
 import users.handlers
@@ -29,6 +29,11 @@ from database.setup import init_tables
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
 from services import notifications
+from shop_info.repositories import ShopInfoRepository
+from support.repositories import (
+    SupportTicketRepository,
+    SupportTicketReplyRepository,
+)
 from time_sensitive_discounts.repositories import (
     TimeSensitiveDiscountRepository,
 )
@@ -48,7 +53,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     payments.handlers.register_handlers(dispatcher)
     products.handlers.register_handlers(dispatcher)
     shop_info.handlers.register_handlers(dispatcher)
-    support_tickets.handlers.register_handlers(dispatcher)
+    support.handlers.register_handlers(dispatcher)
     time_sensitive_discounts.handlers.register_handlers(dispatcher)
     top_up_bonuses.handlers.register_handlers(dispatcher)
     users.handlers.register_handlers(dispatcher)
@@ -117,6 +122,11 @@ def main():
                 TimeSensitiveDiscountRepository(session_factory)
             ),
             top_up_bonus_repository=TopUpBonusRepository(session_factory),
+            support_ticket_repository=SupportTicketRepository(session_factory),
+            support_ticket_reply_repository=(
+                SupportTicketReplyRepository(session_factory)
+            ),
+            shop_info_repository=ShopInfoRepository(session_factory),
         ),
     )
 

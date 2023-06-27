@@ -2,8 +2,8 @@ import structlog
 from aiogram import Bot
 from aiogram.utils.exceptions import TelegramAPIError
 
-from support_tickets.models import SupportTicket
-from support_tickets.views import SupportTicketStatusChangedNotificationView
+from support.models import SupportTicket
+from support.views import SupportTicketStatusChangedNotificationView
 
 logger = structlog.get_logger('app')
 

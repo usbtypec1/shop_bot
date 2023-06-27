@@ -1,13 +1,14 @@
 from aiogram import Dispatcher
 from aiogram.types import CallbackQuery
 
+from common.filters import AdminFilter
 from common.views import edit_message_by_view
-from support_tickets.callback_data import SupportTicketDetailCallbackData
-from support_tickets.repositories import (
+from support.callback_data import AdminSupportTicketDetailCallbackData
+from support.repositories import (
     SupportTicketRepository,
-    SupportTicketReplyRepository,
+    SupportTicketReplyRepository
 )
-from support_tickets.views import SupportTicketDetailView
+from support.views import AdminSupportTicketDetailView
 
 
 async def on_show_support_ticket_detail(
@@ -23,7 +24,7 @@ async def on_show_support_ticket_detail(
             support_ticket_id=support_ticket.id,
         )
     )
-    view = SupportTicketDetailView(
+    view = AdminSupportTicketDetailView(
         support_ticket=support_ticket,
         has_replies=bool(support_ticket_replies),
     )
@@ -33,6 +34,7 @@ async def on_show_support_ticket_detail(
 def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         on_show_support_ticket_detail,
-        SupportTicketDetailCallbackData().filter(),
+        AdminSupportTicketDetailCallbackData().filter(),
+        AdminFilter(),
         state='*',
     )
