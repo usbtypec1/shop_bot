@@ -1,14 +1,14 @@
 from sqlalchemy import delete, update, select
 
-from common.repositories import BaseRepository
-from database import schemas as database_models
 from common.models import Period
-from support.models import (
+from common.repositories import BaseRepository
+from database.schemas import (
     SupportTicket,
-    SupportTicketStatus,
     SupportTicketReply,
-    SupportTicketReplySource,
+    User,
+    SupportTicketStatus,
 )
+from support import models as support_models
 
 __all__ = (
     'SupportTicketRepository',
@@ -16,30 +16,49 @@ __all__ = (
 )
 
 
+def map_support_ticket_to_dto(
+        *,
+        support_ticket: SupportTicket,
+        user_telegram_id: int
+) -> support_models.SupportTicket:
+    return support_models.SupportTicket(
+        id=support_ticket.id,
+        user_id=support_ticket.user_id,
+        user_telegram_id=user_telegram_id,
+        subject=support_ticket.subject,
+        issue=support_ticket.issue,
+        answer=support_ticket.answer,
+        status=support_ticket.status,
+        created_at=support_ticket.created_at,
+    )
+
+
+def map_support_ticket_reply_to_dto(
+        support_ticket_reply: SupportTicketReply,
+) -> support_models.SupportTicketReply:
+    return support_models.SupportTicketReply(
+        id=support_ticket_reply.id,
+        support_ticket_id=support_ticket_reply.ticket_id,
+        source=support_ticket_reply.source,
+        text=support_ticket_reply.text,
+        created_at=support_ticket_reply.created_at,
+    )
+
+
 class SupportTicketRepository(BaseRepository):
 
     def get_by_id(self, support_ticket_id: int) -> SupportTicket:
         statement = (
-            select(database_models.SupportTicket,
-                   database_models.User.telegram_id)
-            .join(
-                database_models.User,
-                database_models.SupportTicket.user_id == database_models.User.id
-            )
+            select(SupportTicket, User.telegram_id)
+            .join(User, SupportTicket.user_id == User.id)
             .where(SupportTicket.id == support_ticket_id)
         )
         with self._session_factory() as session:
             result = session.execute(statement).first()
-        support_ticket, telegram_id = result
-        return SupportTicket(
-            id=support_ticket.id,
-            user_id=support_ticket.user_id,
-            user_telegram_id=telegram_id,
-            subject=support_ticket.subject,
-            issue=support_ticket.issue,
-            answer=support_ticket.answer,
-            status=support_ticket.status,
-            created_at=support_ticket.created_at,
+        support_ticket, user_telegram_id = result
+        return map_support_ticket_to_dto(
+            support_ticket=support_ticket,
+            user_telegram_id=user_telegram_id,
         )
 
     def get_by_user_telegram_id(
@@ -47,26 +66,19 @@ class SupportTicketRepository(BaseRepository):
             user_telegram_id: int,
     ) -> list[SupportTicket]:
         statement = (
-            select(SupportTicket, database_models.User.telegram_id)
-            .join(database_models.User,
-                  database_models.SupportTicket.user_id == database_models.User.id)
-            .where(database_models.User.telegram_id == user_telegram_id)
-            .order_by(database_models.SupportTicket.created_at.desc())
+            select(SupportTicket, User.telegram_id)
+            .join(User, SupportTicket.user_id == User.id)
+            .where(User.telegram_id == user_telegram_id)
+            .order_by(SupportTicket.created_at.desc())
             .limit(30)
         )
         with self._session_factory() as session:
             result = session.execute(statement).all()
         return [
-            SupportTicket(
-                id=support_ticket.id,
-                user_id=support_ticket.user_id,
-                user_telegram_id=telegram_id,
-                subject=support_ticket.subject,
-                issue=support_ticket.issue,
-                answer=support_ticket.answer,
-                status=support_ticket.status,
-                created_at=support_ticket.created_at,
-            ) for support_ticket, telegram_id in result
+            map_support_ticket_to_dto(
+                support_ticket=support_ticket,
+                user_telegram_id=user_telegram_id,
+            ) for support_ticket, user_telegram_id in result
         ]
 
     def create(
@@ -77,7 +89,7 @@ class SupportTicketRepository(BaseRepository):
             subject: str,
             issue: str,
     ) -> SupportTicket:
-        support_ticket = database_models.SupportTicket(
+        support_ticket = SupportTicket(
             user_id=user_id,
             subject=subject,
             issue=issue,
@@ -88,76 +100,56 @@ class SupportTicketRepository(BaseRepository):
                 session.flush()
                 session.refresh(support_ticket)
                 session.commit()
-        return SupportTicket(
-            id=support_ticket.id,
-            user_id=support_ticket.user_id,
+        return map_support_ticket_to_dto(
+            support_ticket=support_ticket,
             user_telegram_id=user_telegram_id,
-            subject=support_ticket.subject,
-            issue=support_ticket.issue,
-            answer=support_ticket.answer,
-            status=support_ticket.status,
-            created_at=support_ticket.created_at,
         )
 
     def get_all_open(self) -> list[SupportTicket]:
         statement = (
-            select(database_models.SupportTicket,
-                   database_models.User.telegram_id)
-            .join(database_models.User,
-                  database_models.SupportTicket.user_id == User.id)
-            .where(
-                database_models.SupportTicket.status != SupportTicketStatus.CLOSED)
-            .order_by(database_models.SupportTicket.created_at.desc())
+            select(SupportTicket, User.telegram_id)
+            .join(User, SupportTicket.user_id == User.id)
+            .where(SupportTicket.status != SupportTicketStatus.CLOSED)
+            .order_by(SupportTicket.created_at.desc())
         )
         with self._session_factory() as session:
-            result = session.execute(statement).all()
+            support_tickets = session.execute(statement).all()
         return [
-            SupportTicket(
-                id=support_ticket.id,
-                user_id=support_ticket.user_id,
-                user_telegram_id=telegram_id,
-                subject=support_ticket.subject,
-                issue=support_ticket.issue,
-                answer=support_ticket.answer,
-                status=support_ticket.status,
-                created_at=support_ticket.created_at,
-            ) for support_ticket, telegram_id in result
+            map_support_ticket_to_dto(
+                support_ticket=support_ticket,
+                user_telegram_id=user_telegram_id,
+            ) for support_ticket, user_telegram_id in support_tickets
         ]
 
     def get_all_closed(self) -> list[SupportTicket]:
         statement = (
-            select(database_models.SupportTicket,
-                   database_models.User.telegram_id)
-            .join(database_models.User,
-                  SupportTicket.user_id == database_models.User.id)
-            .where(
-                database_models.SupportTicket.status == SupportTicketStatus.CLOSED)
-            .order_by(database_models.SupportTicket.created_at.desc())
+            select(SupportTicket, User.telegram_id)
+            .join(User, SupportTicket.user_id == User.id)
+            .where(SupportTicket.status == SupportTicketStatus.CLOSED)
+            .order_by(SupportTicket.created_at.desc())
         )
         with self._session_factory() as session:
-            result = session.execute(statement).all()
+            support_tickets = session.execute(statement).all()
         return [
-            SupportTicket(
-                id=support_ticket.id,
-                user_id=support_ticket.user_id,
-                user_telegram_id=telegram_id,
-                subject=support_ticket.subject,
-                issue=support_ticket.issue,
-                answer=support_ticket.answer,
-                status=support_ticket.status,
-                created_at=support_ticket.created_at,
-            ) for support_ticket, telegram_id in result
+            map_support_ticket_to_dto(
+                support_ticket=support_ticket,
+                user_telegram_id=user_telegram_id,
+            ) for support_ticket, user_telegram_id in support_tickets
         ]
 
-    def delete_by_id(self, support_ticket_id: int) -> bool:
-        statement = (
-            delete(database_models.SupportTicket)
-            .where(database_models.SupportTicket.id == support_ticket_id)
+    def delete_by_id(self, support_ticket_id: int):
+        delete_replies_statement = (
+            delete(SupportTicketReply)
+            .where(SupportTicketReply.ticket_id == support_ticket_id)
+        )
+        delete_ticket_statement = (
+            delete(SupportTicket)
+            .where(SupportTicket.id == support_ticket_id)
         )
         with self._session_factory() as session:
             with session.begin():
-                result = session.execute(statement)
-        return bool(result.rowcount)
+                session.execute(delete_replies_statement)
+                session.execute(delete_ticket_statement)
 
     def update_support_ticket_status(
             self,
@@ -166,8 +158,8 @@ class SupportTicketRepository(BaseRepository):
             status: SupportTicketStatus,
     ) -> bool:
         statement = (
-            update(database_models.SupportTicket)
-            .where(database_models.SupportTicket.id == support_ticket_id)
+            update(SupportTicket)
+            .where(SupportTicket.id == support_ticket_id)
             .values(status=status)
         )
         with self._session_factory() as session:
@@ -182,8 +174,8 @@ class SupportTicketRepository(BaseRepository):
             answer: str,
     ) -> bool:
         statement = (
-            update(database_models.SupportTicket)
-            .where(database_models.SupportTicket.id == support_ticket_id)
+            update(SupportTicket)
+            .where(SupportTicket.id == support_ticket_id)
             .values(answer=answer)
         )
         with self._session_factory() as session:
@@ -206,15 +198,9 @@ class SupportTicketRepository(BaseRepository):
         with self._session_factory() as session:
             support_ticket = session.scalar(statement)
         if support_ticket is not None:
-            return SupportTicket(
-                id=support_ticket.id,
-                user_id=support_ticket.user_id,
+            return map_support_ticket_to_dto(
+                support_ticket=support_ticket,
                 user_telegram_id=user_telegram_id,
-                subject=support_ticket.subject,
-                issue=support_ticket.issue,
-                answer=support_ticket.answer,
-                status=support_ticket.status,
-                created_at=support_ticket.created_at,
             )
 
     def get_support_tickets_by_filter(
@@ -242,18 +228,12 @@ class SupportTicketRepository(BaseRepository):
                 ),
             )
         with self._session_factory() as session:
-            result = session.execute(statement).all()
+            support_tickets = session.execute(statement).all()
         return [
-            SupportTicket(
-                id=support_ticket.id,
-                user_id=support_ticket.user_id,
-                user_telegram_id=telegram_id,
-                subject=support_ticket.subject,
-                issue=support_ticket.issue,
-                answer=support_ticket.answer,
-                status=support_ticket.status,
-                created_at=support_ticket.created_at,
-            ) for support_ticket, telegram_id in result
+            map_support_ticket_to_dto(
+                support_ticket=support_ticket,
+                user_telegram_id=user_telegram_id
+            ) for support_ticket, user_telegram_id in support_tickets
         ]
 
 
@@ -263,11 +243,11 @@ class SupportTicketReplyRepository(BaseRepository):
             self,
             *,
             support_ticket_id: int,
-            source: SupportTicketReplySource,
+            source: support_models.SupportTicketReplySource,
             text: str,
     ):
-        support_ticket_reply = database_models.SupportTicketReply(
-            support_ticket_id=support_ticket_id,
+        support_ticket_reply = SupportTicketReply(
+            ticket_id=support_ticket_id,
             source=source,
             text=text
         )
@@ -276,32 +256,20 @@ class SupportTicketReplyRepository(BaseRepository):
                 session.add(support_ticket_reply)
                 session.flush()
                 session.refresh(support_ticket_reply)
-        return SupportTicketReply(
-            id=support_ticket_reply.id,
-            support_ticket_id=support_ticket_id,
-            source=source,
-            text=text,
-            created_at=support_ticket_reply.created_at,
-        )
+        return map_support_ticket_reply_to_dto(support_ticket_reply)
 
     def get_by_support_ticket_id(
             self,
             support_ticket_id: int,
-    ) -> list[SupportTicketReply]:
+    ) -> list[support_models.SupportTicketReply]:
         statement = (
-            select(database_models.SupportTicketReply)
-            .where(
-                database_models.SupportTicketReply.support_ticket_id == support_ticket_id)
-            .order_by(database_models.SupportTicketReply.created_at.asc())
+            select(SupportTicketReply)
+            .where(SupportTicketReply.ticket_id == support_ticket_id)
+            .order_by(SupportTicketReply.created_at.asc())
         )
         with self._session_factory() as session:
             result = session.scalars(statement).all()
         return [
-            SupportTicketReply(
-                id=support_ticket_reply.id,
-                support_ticket_id=support_ticket_reply.support_ticket_id,
-                source=support_ticket_reply.source,
-                text=support_ticket_reply.text,
-                created_at=support_ticket_reply.created_at,
-            ) for support_ticket_reply in result
+            map_support_ticket_reply_to_dto(support_ticket_reply)
+            for support_ticket_reply in result
         ]
