@@ -29,6 +29,11 @@ from database.setup import init_tables
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
 from services import notifications
+from shop_info.repositories import ShopInfoRepository
+from support.repositories import (
+    SupportTicketRepository,
+    SupportTicketReplyRepository,
+)
 from time_sensitive_discounts.repositories import (
     TimeSensitiveDiscountRepository,
 )
@@ -117,6 +122,11 @@ def main():
                 TimeSensitiveDiscountRepository(session_factory)
             ),
             top_up_bonus_repository=TopUpBonusRepository(session_factory),
+            support_ticket_repository=SupportTicketRepository(session_factory),
+            support_ticket_reply_repository=(
+                SupportTicketReplyRepository(session_factory)
+            ),
+            shop_info_repository=ShopInfoRepository(session_factory),
         ),
     )
 
