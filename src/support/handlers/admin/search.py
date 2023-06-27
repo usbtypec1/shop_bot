@@ -13,7 +13,7 @@ from aiogram.types import (
 from common.filters import AdminFilter
 from common.views import answer_view
 from database.schemas import SupportTicketStatus
-from services.validators import validate_date_range
+from support.services import validate_date_range
 from support.exceptions import InvalidSupportDateRangeError
 from support.repositories import SupportTicketRepository
 from support.states import SupportTicketSearchStates

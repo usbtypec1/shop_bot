@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, ContentType, Update
 
 from common.views import answer_view
-from services.rate_limit import check_support_ticket_create_rate_limit
+from support.services import check_support_ticket_create_rate_limit
 from shop_info.models import ShopInfo
 from shop_info.repositories import ShopInfoRepository
 from support.exceptions import SupportTicketCreateRateLimitError
