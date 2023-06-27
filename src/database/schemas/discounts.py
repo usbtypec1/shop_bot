@@ -19,8 +19,6 @@ class TimeSensitiveDiscount(Base):
 
     __table_args__ = (
         CheckConstraint(
-            '(expires_at IS NULL)'
-            ' OR (starts_at IS NULL)'
-            ' OR (expires_at > starts_at)',
+            '(expires_at IS NULL) OR (expires_at > starts_at)',
             name='check_time_sensitive_discount_expires_after_starts'),
     )
