@@ -20,10 +20,11 @@ from top_up_bonuses.models import TopUpBonus
 __all__ = (
     'TopUpBonusListView',
     'TopUpBonusMenuView',
-    'TopUpBonusCreateAskForConfirmationView',
+    'TopUpBonusCreateUpdateAskForConfirmationView',
     'TopUpBonusCreateReceiptView',
     'TopUpBonusDeleteAskForConfirmationView',
     'TopUpBonusDetailView',
+    'TopUpBonusUpdateReceiptView',
 )
 
 
@@ -76,7 +77,7 @@ class TopUpBonusMenuView(View):
     )
 
 
-class TopUpBonusCreateAskForConfirmationView(View):
+class TopUpBonusCreateUpdateAskForConfirmationView(View):
 
     def __init__(
             self,
@@ -115,7 +116,7 @@ class TopUpBonusCreateAskForConfirmationView(View):
                 [
                     InlineKeyboardButton(
                         text='Yes',
-                        callback_data='top-up-bonus-create-confirm',
+                        callback_data='top-up-bonus-create-update-confirm',
                     ),
                     InlineKeyboardButton(
                         text='No',
@@ -236,4 +237,46 @@ class TopUpBonusDetailView(View):
                     ),
                 ],
             ],
+        )
+
+
+class TopUpBonusUpdateReceiptView(View):
+
+    def __init__(
+            self,
+            old_minimum_amount: Decimal,
+            old_bonus_percentage: int,
+            new_minimum_amount: Decimal,
+            new_bonus_percentage: int,
+            new_starts_at: datetime | None,
+            new_expires_at: datetime | None,
+    ):
+        self.__old_minimum_amount = old_minimum_amount
+        self.__old_bonus_percentage = old_bonus_percentage
+        self.__new_minimum_amount = new_minimum_amount
+        self.__new_bonus_percentage = new_bonus_percentage
+        self.__new_starts_at = new_starts_at
+        self.__new_expires_at = new_expires_at
+
+    def get_text(self) -> str:
+        if self.__new_starts_at is None:
+            starts_at = 'now'
+        else:
+            starts_at = f'{self.__new_starts_at:%m/%d/%Y %H:%M}'
+
+        if self.__new_expires_at is None:
+            expires_at = 'infinite'
+        else:
+            expires_at = f'{self.__new_expires_at:%m/%d/%Y %H:%M}'
+
+        return (
+            '<code>'
+            f'Previous Amount: ${self.__old_minimum_amount:.2f}\n'
+            f'Old Bonus: {self.__old_bonus_percentage}%\n'
+            'New Minimum amount to activate this top up bonus:'
+            f' ${self.__new_minimum_amount:.2f}\n'
+            f'New Amount of bonus: {self.__new_bonus_percentage}%\n'
+            f'Start Date: {starts_at}\n'
+            f'Finish Date: {expires_at}\n'
+            '</code>'
         )

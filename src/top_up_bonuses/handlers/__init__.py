@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
 
-from . import list, menu, create, detail, delete
+from . import list, menu, create, detail, delete, update
 
 __all__ = ('register_handlers',)
 
@@ -11,3 +11,4 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     create.register_handlers(dispatcher)
     detail.register_handlers(dispatcher)
     delete.register_handlers(dispatcher)
+    update.register_handlers(dispatcher)
