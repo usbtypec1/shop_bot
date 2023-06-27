@@ -2,10 +2,15 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentType
 
+from common.views import answer_view
 from support.callback_data import SupportTicketReplyCreateCallbackData
 from support.models import SupportTicketReplySource
-from support.repositories import SupportTicketReplyRepository
+from support.repositories import (
+    SupportTicketReplyRepository,
+    SupportTicketRepository
+)
 from support.states import SupportTicketReplyCreateStates
+from support.views import SupportTicketDetailView
 
 
 async def on_support_ticket_reply_create(
@@ -22,6 +27,7 @@ async def on_support_ticket_reply_create(
 async def on_support_ticket_reply_input(
         message: Message,
         state: FSMContext,
+        support_ticket_repository: SupportTicketRepository,
         support_ticket_reply_repository: SupportTicketReplyRepository,
 ) -> None:
     state_data = await state.get_data()
@@ -32,7 +38,13 @@ async def on_support_ticket_reply_input(
         source=SupportTicketReplySource.USER,
         text=message.text,
     )
-    await message.answer('Replied')
+    support_ticket = support_ticket_repository.get_by_id(support_ticket_id)
+    await message.reply('Replied')
+    view = SupportTicketDetailView(
+        support_ticket=support_ticket,
+        has_replies=True,
+    )
+    await answer_view(message=message, view=view)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
