@@ -40,7 +40,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_callback_query_handler(
         on_show_top_up_bonuses_list,
         AdminFilter(),
-        Text('on-show-top-up-bonuses-list'),
+        Text('show-top-up-bonuses-list'),
         chat_type=ChatType.PRIVATE,
         state='*',
     )

@@ -8,3 +8,4 @@ class TopUpBonusCreateStates(StatesGroup):
     bonus_percentage = State()
     starts_at = State()
     expires_at = State()
+    confirm = State()
