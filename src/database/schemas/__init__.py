@@ -5,4 +5,5 @@ from .products import *
 from .sales import *
 from .shop_info import *
 from .support_tickets import *
+from .top_up_bonuses import *
 from .users import *

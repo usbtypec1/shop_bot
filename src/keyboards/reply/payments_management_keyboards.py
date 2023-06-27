@@ -1,4 +1,5 @@
 import aiogram.types
+from aiogram.types import KeyboardButton
 
 from keyboards.buttons import payments_buttons, navigation_buttons
 from payments.services import PaymentsAPIsRepository
@@ -17,4 +18,5 @@ class PaymentsKeyboard(aiogram.types.ReplyKeyboardMarkup):
         apis_repository = PaymentsAPIsRepository()
         for name, api in apis_repository.get_enabled_apis():
             self.add(buttons[name])
+        self.row(KeyboardButton('Top Up Bonuses'))
         self.row(navigation_buttons.BackButton())
