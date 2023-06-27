@@ -1,0 +1,2 @@
+class TopUpBonusDoesNotExistError(Exception):
+    pass

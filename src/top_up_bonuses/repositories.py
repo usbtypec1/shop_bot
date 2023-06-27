@@ -1,11 +1,26 @@
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import select
+
 from common.repositories import BaseRepository
 from database.schemas import TopUpBonus
 from top_up_bonuses import models as bonuses_models
+from top_up_bonuses.exceptions import TopUpBonusDoesNotExistError
 
 __all__ = ('TopUpBonusRepository',)
 
 
 def map_to_dto(top_up_bonus: TopUpBonus) -> bonuses_models.TopUpBonus:
+    """
+    Maps a database model TopUpBonus to a TopUpBonus DTO.
+
+    Args:
+        top_up_bonus: The database model TopUpBonus to be mapped.
+
+    Returns:
+        The TopUpBonus DTO.
+    """
     return bonuses_models.TopUpBonus(
         id=top_up_bonus.id,
         min_amount_threshold=top_up_bonus.min_amount_threshold,
@@ -16,15 +31,113 @@ def map_to_dto(top_up_bonus: TopUpBonus) -> bonuses_models.TopUpBonus:
 
 
 class TopUpBonusRepository(BaseRepository):
+    """
+    Repository for managing TopUpBonus objects.
 
-    def create(self):
-        pass
+    Methods:
+        create: Create a new TopUpBonus object.
+        get_by_id: Retrieve a TopUpBonus object by ID.
+        get_all: Retrieve all TopUpBonus objects.
+        update: Update an existing TopUpBonus object.
+    """
+    def create(
+            self,
+            *,
+            min_amount_threshold: Decimal,
+            bonus_percentage: int,
+            starts_at: datetime,
+            expires_at: datetime | None,
+    ) -> bonuses_models.TopUpBonus:
+        """
+        Create a new TopUpBonus object.
 
-    def get_by_id(self):
-        pass
+        Keyword Args:
+            min_amount_threshold: The minimum amount threshold for the bonus.
+            bonus_percentage: The bonus percentage.
+            starts_at: The start date and time of the bonus.
+            expires_at: The expiration date and time of the bonus.
+
+        Returns:
+            The created TopUpBonus as DTO.
+        """
+        top_up_bonus = TopUpBonus(
+            min_amount_threshold=min_amount_threshold,
+            bonus_percentage=bonus_percentage,
+            starts_at=starts_at,
+            expires_at=expires_at,
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.add(top_up_bonus)
+                session.flush()
+                session.refresh(top_up_bonus)
+        return map_to_dto(top_up_bonus)
+
+    def get_by_id(self, top_up_bonus_id: int) -> bonuses_models.TopUpBonus:
+        """
+        Retrieve a TopUpBonus DTO by ID.
+
+        Args:
+            top_up_bonus_id: The ID of the TopUpBonus.
+
+        Returns:
+            The retrieved TopUpBonus DTO.
+
+        Raises:
+            TopUpBonusDoesNotExistError: If the TopUpBonus does not exist.
+        """
+        statement = (
+            select(TopUpBonus)
+            .where(TopUpBonus.id == top_up_bonus_id)
+        )
+        with self._session_factory() as session:
+            top_up_bonus: TopUpBonus | None = session.scalar(statement)
+        if top_up_bonus is None:
+            raise TopUpBonusDoesNotExistError
+        return map_to_dto(top_up_bonus)
 
     def get_all(self):
-        pass
+        """
+        Retrieve all TopUpBonus objects.
 
-    def update(self):
-        pass
+        Returns:
+            A list of TopUpBonus DTOs.
+        """
+        statement = select(TopUpBonus)
+        with self._session_factory() as session:
+            top_up_bonuses = session.scalars(statement)
+        return [map_to_dto(top_up_bonus) for top_up_bonus in top_up_bonuses]
+
+    def update(
+            self,
+            *,
+            id_: int,
+            min_amount_threshold: Decimal,
+            bonus_percentage: int,
+            starts_at: datetime,
+            expires_at: datetime | None,
+    ) -> bonuses_models.TopUpBonus:
+        """
+        Update an existing TopUpBonus object.
+
+        Args:
+            id_: The ID of the TopUpBonus to be updated.
+            min_amount_threshold: The minimum amount threshold for the bonus.
+            bonus_percentage: The bonus percentage.
+            starts_at: The start date and time of the bonus.
+            expires_at: The expiration date and time of the bonus.
+
+        Returns:
+            The updated TopUpBonus object as DTO.
+        """
+        top_up_bonus = TopUpBonus(
+            id=id_,
+            min_amount_threshold=min_amount_threshold,
+            bonus_percentage=bonus_percentage,
+            starts_at=starts_at,
+            expires_at=expires_at,
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.merge(top_up_bonus)
+        return map_to_dto(top_up_bonus)
