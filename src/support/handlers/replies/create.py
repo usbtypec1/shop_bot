@@ -7,10 +7,10 @@ from support.callback_data import SupportTicketReplyCreateCallbackData
 from support.models import SupportTicketReplySource
 from support.repositories import (
     SupportTicketReplyRepository,
-    SupportTicketRepository
+    SupportTicketRepository,
 )
 from support.states import SupportTicketReplyCreateStates
-from support.views import SupportTicketDetailView
+from support.views import SupportTicketDetailView, AdminSupportTicketDetailView
 
 
 async def on_support_ticket_reply_create(
@@ -19,8 +19,9 @@ async def on_support_ticket_reply_create(
         state: FSMContext,
 ) -> None:
     support_ticket_id: int = callback_data['support_ticket_id']
+    source: SupportTicketReplySource = callback_data['source']
     await SupportTicketReplyCreateStates.text.set()
-    await state.update_data(support_ticket_id=support_ticket_id)
+    await state.update_data(support_ticket_id=support_ticket_id, source=source)
     await callback_query.message.edit_text('✏️ Enter Reply')
 
 
@@ -33,14 +34,19 @@ async def on_support_ticket_reply_input(
     state_data = await state.get_data()
     await state.finish()
     support_ticket_id: int = state_data['support_ticket_id']
+    source: SupportTicketReplySource = state_data['source']
     support_ticket_reply_repository.create(
         support_ticket_id=support_ticket_id,
-        source=SupportTicketReplySource.USER,
+        source=source,
         text=message.text,
     )
     support_ticket = support_ticket_repository.get_by_id(support_ticket_id)
     await message.reply('Replied')
-    view = SupportTicketDetailView(
+    source_to_view = {
+        SupportTicketReplySource.USER: SupportTicketDetailView,
+        SupportTicketReplySource.ADMIN: AdminSupportTicketDetailView,
+    }
+    view = source_to_view[source](
         support_ticket=support_ticket,
         has_replies=True,
     )

@@ -7,8 +7,8 @@ from aiogram.types import (
     InlineKeyboardButton,
 )
 
-from common.views import View
 from common.services import get_now_datetime
+from common.views import View
 from support.callback_data import (
     SupportTicketReplyListCallbackData,
     SupportTicketReplyCreateCallbackData,
@@ -131,8 +131,13 @@ class SupportTicketStatusListView(View):
 
 class AdminSupportTicketDetailView(View):
 
-    def __init__(self, support_ticket: SupportTicket):
+    def __init__(
+            self,
+            support_ticket: SupportTicket,
+            has_replies: bool = False,
+    ):
         self.__support_ticket = support_ticket
+        self.__has_replies = has_replies
 
     def get_text(self) -> str:
         lines = [
@@ -155,6 +160,28 @@ class AdminSupportTicketDetailView(View):
                 InlineKeyboardButton(
                     text='✏️ Answer',
                     callback_data=SupportTicketAnswerUpdateCallbackData().new(
+                        support_ticket_id=self.__support_ticket.id,
+                    ),
+                ),
+            )
+            if self.__support_ticket.status != SupportTicketStatus.CLOSED:
+                markup.row(
+                    InlineKeyboardButton(
+                        text='➕ Reply',
+                        callback_data=(
+                            SupportTicketReplyCreateCallbackData().new(
+                                support_ticket_id=self.__support_ticket.id,
+                                source=SupportTicketReplySource.ADMIN.name,
+                            )
+                        ),
+                    ),
+                )
+
+        if self.__has_replies:
+            markup.row(
+                InlineKeyboardButton(
+                    text='Replies',
+                    callback_data=SupportTicketReplyListCallbackData().new(
                         support_ticket_id=self.__support_ticket.id,
                     ),
                 ),
@@ -242,6 +269,7 @@ class SupportTicketDetailView(View):
                     text='➕ Reply',
                     callback_data=SupportTicketReplyCreateCallbackData().new(
                         support_ticket_id=self.__support_ticket.id,
+                        source=SupportTicketReplySource.USER.name,
                     ),
                 ),
             )
@@ -372,13 +400,9 @@ class SupportTicketReplyView(View):
         self.__support_ticket_reply = support_ticket_reply
 
     def get_text(self) -> str:
-        match self.__support_ticket_reply.source:
-            case SupportTicketReplySource.USER:
-                return f'From user: {self.__support_ticket_reply.text}'
-            case SupportTicketReplySource.ADMIN:
-                return f'From admin: {self.__support_ticket_reply.text}'
-            case _:
-                raise ValueError(
-                    'Invalid support ticket reply source'
-                    f' {self.__support_ticket_reply.source}'
-                )
+        return (
+            f'<b>From:</b> {self.__support_ticket_reply.source.value.lower()}\n'
+            '<b>Replied at:</b>'
+            f' {self.__support_ticket_reply.created_at:%m/%d/%Y %H:%M}\n'
+            f'<b>Text:</b> {self.__support_ticket_reply.text}'
+        )
