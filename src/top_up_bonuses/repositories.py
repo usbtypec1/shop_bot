@@ -105,7 +105,7 @@ class TopUpBonusRepository(BaseRepository):
         """
         statement = select(TopUpBonus)
         with self._session_factory() as session:
-            top_up_bonuses = session.scalars(statement)
+            top_up_bonuses = session.scalars(statement).all()
         return [map_to_dto(top_up_bonus) for top_up_bonus in top_up_bonuses]
 
     def update(
