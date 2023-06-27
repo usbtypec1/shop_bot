@@ -10,7 +10,11 @@ from aiogram.types import (
 )
 
 from common.views import View
-from top_up_bonuses.callback_data import TopUpBonusDetailCallbackData
+from top_up_bonuses.callback_data import (
+    TopUpBonusDetailCallbackData,
+    TopUpBonusUpdateCallbackData,
+    TopUpBonusDeleteCallbackData,
+)
 from top_up_bonuses.models import TopUpBonus
 
 __all__ = (
@@ -18,6 +22,8 @@ __all__ = (
     'TopUpBonusMenuView',
     'TopUpBonusCreateAskForConfirmationView',
     'TopUpBonusCreateReceiptView',
+    'TopUpBonusDeleteAskForConfirmationView',
+    'TopUpBonusDetailView',
 )
 
 
@@ -154,4 +160,80 @@ class TopUpBonusCreateReceiptView(View):
             f'Start Date: {starts_at}\n'
             f'Finish Date: {expires_at}\n'
             '</code>'
+        )
+
+
+class TopUpBonusDeleteAskForConfirmationView(View):
+
+    def __init__(
+            self,
+            top_up_bonus: TopUpBonus,
+    ):
+        self.__top_up_bonus = top_up_bonus
+
+    def get_text(self) -> str:
+        return (
+            'Are you sure you want to delete'
+            f' {self.__top_up_bonus.bonus_percentage}% bonus on any amounts'
+            f' above ${self.__top_up_bonus.min_amount_threshold:.2f}?'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Yes',
+                        callback_data='top-up-bonus-delete-confirm',
+                    ),
+                    InlineKeyboardButton(
+                        text='No',
+                        callback_data=TopUpBonusDetailCallbackData().new(
+                            top_up_bonus_id=self.__top_up_bonus.id,
+                        ),
+                    ),
+                ],
+            ],
+        )
+
+
+class TopUpBonusDetailView(View):
+
+    def __init__(self, top_up_bonus: TopUpBonus):
+        self.__top_up_bonus = top_up_bonus
+
+    def get_text(self) -> str:
+        starts_at = f'{self.__top_up_bonus.starts_at:%m/%d/%Y %H:%M}'
+        if self.__top_up_bonus.expires_at is None:
+            expires_at = 'infinite'
+        else:
+            expires_at = f'{self.__top_up_bonus.expires_at:%m/%d/%Y %H:%M}'
+        return (
+            '<b>Top Up Bonus</b>\n'
+            f'<b>Bonus:</b> {self.__top_up_bonus.bonus_percentage}\n'
+            f'<b>Min Amount:</b> {self.__top_up_bonus.min_amount_threshold}\n'
+            f'<b>Start date</b>: {starts_at}\n'
+            f'<b>End date</b>: {expires_at}'
+        )
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='📝 Edit',
+                        callback_data=TopUpBonusUpdateCallbackData().new(
+                            top_up_bonus_id=self.__top_up_bonus.id,
+                        ),
+                    ),
+                ],
+                [
+                    InlineKeyboardButton(
+                        text='🗑️ Delete',
+                        callback_data=TopUpBonusDeleteCallbackData().new(
+                            top_up_bonus_id=self.__top_up_bonus.id,
+                        ),
+                    ),
+                ],
+            ],
         )
