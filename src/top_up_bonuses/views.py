@@ -1,12 +1,20 @@
 from collections.abc import Iterable
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
 from common.views import View
 from top_up_bonuses.callback_data import TopUpBonusDetailCallbackData
 from top_up_bonuses.models import TopUpBonus
 
-__all__ = ('TopUpBonusListView',)
+__all__ = (
+    'TopUpBonusListView',
+    'TopUpBonusMenuView',
+)
 
 
 class TopUpBonusListView(View):
@@ -40,3 +48,18 @@ class TopUpBonusListView(View):
             )
 
         return markup
+
+
+class TopUpBonusMenuView(View):
+    text = 'Top Up Bonuses'
+    reply_markup = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton('Create New Top Up Bonus'),
+            ],
+            [
+                KeyboardButton('View Active Top Up Bonuses'),
+            ],
+        ],
+    )
