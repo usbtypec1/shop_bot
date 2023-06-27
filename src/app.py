@@ -31,6 +31,7 @@ from services import notifications
 from time_sensitive_discounts.repositories import (
     TimeSensitiveDiscountRepository,
 )
+from top_up_bonuses.repositories import TopUpBonusRepository
 from users.middlewares import BannedUserMiddleware, AdminIdentifierMiddleware
 from users.repositories import UserRepository
 
@@ -113,6 +114,7 @@ def main():
             time_sensitive_discount_repository=(
                 TimeSensitiveDiscountRepository(session_factory)
             ),
+            top_up_bonus_repository=TopUpBonusRepository(session_factory),
         ),
     )
 
