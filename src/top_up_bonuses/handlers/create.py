@@ -16,13 +16,13 @@ from top_up_bonuses.exceptions import BonusPercentageValidationError
 from top_up_bonuses.repositories import TopUpBonusRepository
 from top_up_bonuses.services import parse_top_up_bonus_percentage
 from top_up_bonuses.states import TopUpBonusCreateStates
-
-__all__ = ('register_handlers',)
-
 from top_up_bonuses.views import (
     TopUpBonusCreateAskForConfirmationView,
-    TopUpBonusCreateReceiptView
+    TopUpBonusCreateReceiptView,
+    TopUpBonusDetailView,
 )
+
+__all__ = ('register_handlers',)
 
 
 async def on_bonus_percentage_validation_error(
@@ -138,6 +138,8 @@ async def on_top_up_bonus_creation_confirm(
         expires_at=expires_at,
     )
     await edit_message_by_view(message=callback_query.message, view=view)
+    view = TopUpBonusDetailView(top_up_bonus)
+    await answer_view(message=callback_query.message, view=view)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
