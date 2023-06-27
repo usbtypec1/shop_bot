@@ -8,7 +8,7 @@ from aiogram.types import (
 )
 
 from common.views import View
-from services.time_utils import get_now_datetime
+from common.services import get_now_datetime
 from support.callback_data import (
     SupportTicketReplyListCallbackData,
     SupportTicketReplyCreateCallbackData,

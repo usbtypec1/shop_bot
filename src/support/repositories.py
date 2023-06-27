@@ -2,7 +2,7 @@ from sqlalchemy import delete, update, select
 
 from common.repositories import BaseRepository
 from database import schemas as database_models
-from services.time_utils import Period
+from common.models import Period
 from support.models import (
     SupportTicket,
     SupportTicketStatus,

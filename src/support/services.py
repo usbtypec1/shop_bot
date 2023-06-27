@@ -1,7 +1,8 @@
 import datetime
 from typing import NoReturn
 
-from services.time_utils import Period, to_local_time, get_now_datetime
+from common.services import get_now_datetime, to_local_time
+from common.models import Period
 from support.exceptions import (
     InvalidSupportDateRangeError,
     SupportTicketCreateRateLimitError
