@@ -57,9 +57,10 @@ class TopUpBonusMenuView(View):
         keyboard=[
             [
                 KeyboardButton('Create New Top Up Bonus'),
+                KeyboardButton('View Active Top Up Bonuses'),
             ],
             [
-                KeyboardButton('View Active Top Up Bonuses'),
+                KeyboardButton('⬅️ Back'),
             ],
         ],
     )
