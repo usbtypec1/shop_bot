@@ -32,7 +32,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_message_handler(
         on_show_top_up_bonuses_list,
         AdminFilter(),
-        Text('Top Up Bonuses'),
+        Text('View Active Top Up Bonuses'),
         content_types=ContentType.TEXT,
         chat_type=ChatType.PRIVATE,
         state='*',

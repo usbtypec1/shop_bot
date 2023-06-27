@@ -19,6 +19,7 @@ import products.handlers
 import shop_info.handlers
 import support_tickets.handlers
 import time_sensitive_discounts.handlers
+import top_up_bonuses.handlers
 import users.handlers
 from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
@@ -49,6 +50,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     shop_info.handlers.register_handlers(dispatcher)
     support_tickets.handlers.register_handlers(dispatcher)
     time_sensitive_discounts.handlers.register_handlers(dispatcher)
+    top_up_bonuses.handlers.register_handlers(dispatcher)
     users.handlers.register_handlers(dispatcher)
 
 
