@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from common.repositories import BaseRepository
 from database.schemas import TopUpBonus
@@ -39,7 +39,9 @@ class TopUpBonusRepository(BaseRepository):
         get_by_id: Retrieve a TopUpBonus object by ID.
         get_all: Retrieve all TopUpBonus objects.
         update: Update an existing TopUpBonus object.
+        delete_by_id: Delete a TopUpBonus object by ID.
     """
+
     def create(
             self,
             *,
@@ -141,3 +143,15 @@ class TopUpBonusRepository(BaseRepository):
             with session.begin():
                 session.merge(top_up_bonus)
         return map_to_dto(top_up_bonus)
+
+    def delete_by_id(self, top_up_bonus_id: int) -> None:
+        """
+        Delete a TopUpBonus by ID.
+
+        Args:
+            top_up_bonus_id: The ID of the TopUpBonus.
+        """
+        statement = delete(TopUpBonus).where(TopUpBonus.id == top_up_bonus_id)
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(statement)
