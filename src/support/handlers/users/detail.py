@@ -2,12 +2,12 @@ from aiogram import Dispatcher
 from aiogram.types import CallbackQuery
 
 from common.views import edit_message_by_view
-from support_tickets.callback_data import SupportTicketDetailCallbackData
-from support_tickets.repositories import (
+from support.callback_data import SupportTicketDetailCallbackData
+from support.repositories import (
     SupportTicketRepository,
     SupportTicketReplyRepository,
 )
-from support_tickets.views import SupportTicketDetailView
+from support.views import SupportTicketDetailView
 
 
 async def on_show_support_ticket_detail(

@@ -17,7 +17,7 @@ import mailing.handlers
 import payments.handlers
 import products.handlers
 import shop_info.handlers
-import support_tickets.handlers
+import support.handlers
 import time_sensitive_discounts.handlers
 import top_up_bonuses.handlers
 import users.handlers
@@ -48,7 +48,7 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     payments.handlers.register_handlers(dispatcher)
     products.handlers.register_handlers(dispatcher)
     shop_info.handlers.register_handlers(dispatcher)
-    support_tickets.handlers.register_handlers(dispatcher)
+    support.handlers.register_handlers(dispatcher)
     time_sensitive_discounts.handlers.register_handlers(dispatcher)
     top_up_bonuses.handlers.register_handlers(dispatcher)
     users.handlers.register_handlers(dispatcher)

@@ -2,7 +2,7 @@ import datetime
 from typing import NoReturn
 
 from services.time_utils import get_now_datetime, to_local_time
-from support_tickets.exceptions import SupportTicketCreateRateLimitError
+from support.exceptions import SupportTicketCreateRateLimitError
 
 __all__ = ('check_support_ticket_create_rate_limit',)
 

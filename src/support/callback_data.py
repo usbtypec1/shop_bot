@@ -1,6 +1,6 @@
 from aiogram.utils.callback_data import CallbackData
 
-from support_tickets.models import SupportTicketStatus
+from support.models import SupportTicketStatus
 
 
 class SupportTicketReplyListCallbackData(CallbackData):

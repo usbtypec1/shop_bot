@@ -4,13 +4,13 @@ from aiogram.types import CallbackQuery
 from common.filters import AdminFilter
 from common.views import edit_message_by_view
 from services.alerts import notify_user_ticket_status_changed
-from support_tickets.callback_data import (
+from support.callback_data import (
     SupportTicketStatusUpdateCallbackData,
     SupportTicketStatusListCallbackData,
 )
-from support_tickets.models import SupportTicketStatus
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.views import (
+from support.models import SupportTicketStatus
+from support.repositories import SupportTicketRepository
+from support.views import (
     SupportTicketStatusListView,
     AdminSupportTicketDetailView,
 )

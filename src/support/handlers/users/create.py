@@ -7,10 +7,10 @@ from common.views import answer_view
 from services.rate_limit import check_support_ticket_create_rate_limit
 from shop_info.models import ShopInfo
 from shop_info.repositories import ShopInfoRepository
-from support_tickets.exceptions import SupportTicketCreateRateLimitError
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.states import SupportTicketCreateStates
-from support_tickets.views import (
+from support.exceptions import SupportTicketCreateRateLimitError
+from support.repositories import SupportTicketRepository
+from support.states import SupportTicketCreateStates
+from support.views import (
     SupportRulesAcceptView,
     SupportTicketCreatedView,
 )

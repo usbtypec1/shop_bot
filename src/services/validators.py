@@ -1,7 +1,7 @@
 import datetime
 
 from services.time_utils import Period
-from support_tickets.exceptions import InvalidSupportDateRangeError
+from support.exceptions import InvalidSupportDateRangeError
 
 __all__ = ('validate_date_range',)
 

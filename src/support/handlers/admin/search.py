@@ -14,10 +14,10 @@ from common.filters import AdminFilter
 from common.views import answer_view
 from database.schemas import SupportTicketStatus
 from services.validators import validate_date_range
-from support_tickets.exceptions import InvalidSupportDateRangeError
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.states import SupportTicketSearchStates
-from support_tickets.views import AdminSupportTicketListView
+from support.exceptions import InvalidSupportDateRangeError
+from support.repositories import SupportTicketRepository
+from support.states import SupportTicketSearchStates
+from support.views import AdminSupportTicketListView
 
 
 async def on_start_support_ticket_search_flow(

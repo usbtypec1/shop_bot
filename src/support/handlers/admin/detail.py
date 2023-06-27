@@ -3,9 +3,9 @@ from aiogram.types import CallbackQuery
 
 from common.filters import AdminFilter
 from common.views import edit_message_by_view
-from support_tickets.callback_data import AdminSupportTicketDetailCallbackData
-from support_tickets.repositories import SupportTicketRepository
-from support_tickets.views import AdminSupportTicketDetailView
+from support.callback_data import AdminSupportTicketDetailCallbackData
+from support.repositories import SupportTicketRepository
+from support.views import AdminSupportTicketDetailView
 
 
 async def on_show_support_ticket_detail(

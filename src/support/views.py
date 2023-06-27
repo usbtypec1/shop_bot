@@ -9,7 +9,7 @@ from aiogram.types import (
 
 from common.views import View
 from services.time_utils import get_now_datetime
-from support_tickets.callback_data import (
+from support.callback_data import (
     SupportTicketReplyListCallbackData,
     SupportTicketReplyCreateCallbackData,
     SupportTicketAnswerUpdateCallbackData,
@@ -19,7 +19,7 @@ from support_tickets.callback_data import (
     AdminSupportTicketDetailCallbackData,
     SupportTicketDetailCallbackData,
 )
-from support_tickets.models import (
+from support.models import (
     SupportTicket,
     SupportTicketStatus,
     SupportTicketReply,

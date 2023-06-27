@@ -2,10 +2,10 @@ from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentType
 
-from support_tickets.callback_data import SupportTicketReplyCreateCallbackData
-from support_tickets.models import SupportTicketReplySource
-from support_tickets.repositories import SupportTicketReplyRepository
-from support_tickets.states import SupportTicketReplyCreateStates
+from support.callback_data import SupportTicketReplyCreateCallbackData
+from support.models import SupportTicketReplySource
+from support.repositories import SupportTicketReplyRepository
+from support.states import SupportTicketReplyCreateStates
 
 
 async def on_support_ticket_reply_create(

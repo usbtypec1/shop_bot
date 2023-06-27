@@ -2,9 +2,9 @@ from aiogram import Dispatcher
 from aiogram.types import CallbackQuery
 
 from common.views import answer_view
-from support_tickets.callback_data import SupportTicketReplyListCallbackData
-from support_tickets.repositories import SupportTicketReplyRepository
-from support_tickets.views import SupportTicketReplyView
+from support.callback_data import SupportTicketReplyListCallbackData
+from support.repositories import SupportTicketReplyRepository
+from support.views import SupportTicketReplyView
 
 
 async def on_show_support_ticket_replies_list(
