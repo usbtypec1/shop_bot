@@ -1,6 +1,9 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
-__all__ = ('TopUpBonusCreateStates',)
+__all__ = (
+    'TopUpBonusCreateStates',
+    'TopUpBonusDeleteStates',
+)
 
 
 class TopUpBonusCreateStates(StatesGroup):
@@ -8,4 +11,8 @@ class TopUpBonusCreateStates(StatesGroup):
     bonus_percentage = State()
     starts_at = State()
     expires_at = State()
+    confirm = State()
+
+
+class TopUpBonusDeleteStates(StatesGroup):
     confirm = State()
