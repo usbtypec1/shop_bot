@@ -177,7 +177,7 @@ class UserGeneralStatisticsView(View):
             self,
             *,
             buyers_count: int,
-            orders_total_cost: float,
+            orders_total_cost: Decimal,
             sold_products_count: int,
             sold_product_units_quantity: list[tuple[str, int, ...]],
             active_buyers: list[Buyer],
@@ -192,7 +192,8 @@ class UserGeneralStatisticsView(View):
         lines = [
             f'🙍‍♂ Number of buyers: {self.__buyers_count}'
             '➖➖➖➖➖➖➖➖➖➖',
-            f'🛒 Number of purchased items: {self.__sold_products_quantity}',
+            '🛒 Number of purchased items:'
+            f' {self.__sold_product_units_quantity}',
             '\n',
         ]
         lines += [

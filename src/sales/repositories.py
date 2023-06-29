@@ -25,3 +25,15 @@ class SaleRepository(BaseRepository):
         with self._session_factory() as session:
             row = session.execute(statement).first()
         return row[0] if row is not None else Decimal('0')
+
+    def calculate_total_cost(self) -> Decimal:
+        statement = select(func.sum(Sale.amount * Sale.quantity))
+        with self._session_factory() as session:
+            row = session.execute(statement).first()
+        return row[0] if row is not None else Decimal('0')
+
+    def count_all(self) -> int:
+        statement = select(func.count())
+        with self._session_factory() as session:
+            row = session.execute(statement).first()
+        return row[0] if row is not None else 0
