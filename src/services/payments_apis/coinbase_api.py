@@ -1,9 +1,11 @@
 import asyncio
 import contextlib
+from decimal import Decimal
 
 import coinbase_commerce
-from coinbase_commerce.api_resources import charge
 from coinbase_commerce import error
+from coinbase_commerce.api_resources import charge
+
 from services.payments_apis import base_payments_api
 
 
@@ -11,17 +13,22 @@ class CoinbaseAPI(base_payments_api.BasePaymentAPI):
     def __init__(self, api_key: str):
         self.__client = coinbase_commerce.client.Client(api_key=api_key)
 
-    def create_charge(self, name: str, price: float, description: str = None) -> charge.Charge:
-        charge_info = {
-            "name": name,
-            "description": description,
-            "local_price": {
-                "amount": price,
-                "currency": "USD"
+    async def create_charge(
+            self,
+            name: str,
+            price: Decimal | str,
+            description: str = None,
+    ) -> charge.Charge:
+        return await asyncio.to_thread(
+            self.__client.charge.create,
+            name=name,
+            description=description,
+            local_price={
+                'amount': str(price),
+                'currency': str('USD'),
             },
-            "pricing_type": "fixed_price"
-        }
-        return self.__client.charge.create(**charge_info)
+            pricing_type='fixed_price',
+        )
 
     @staticmethod
     async def check_payment(payment: charge.Charge) -> bool:

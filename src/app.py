@@ -24,11 +24,13 @@ import users.handlers
 from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
 from common.middlewares import DependencyInjectMiddleware
+from common.services import AdminsNotificator
 from database import session_factory
 from database.setup import init_tables
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
 from services import notifications
+from services.payments_apis import CoinbaseAPI
 from time_sensitive_discounts.repositories import (
     TimeSensitiveDiscountRepository,
 )
@@ -101,6 +103,13 @@ def main():
 
     init_tables()
 
+    coinbase_settings = config.CoinbaseSettings()
+
+    admins_notificator = AdminsNotificator(
+        bot=bot,
+        admin_ids=app_settings.admins_id,
+    )
+
     user_repository = UserRepository(session_factory)
     dispatcher.setup_middleware(BannedUserMiddleware(user_repository))
     dispatcher.setup_middleware(AdminIdentifierMiddleware(admin_telegram_ids))
@@ -117,6 +126,8 @@ def main():
                 TimeSensitiveDiscountRepository(session_factory)
             ),
             top_up_bonus_repository=TopUpBonusRepository(session_factory),
+            coinbase_api=CoinbaseAPI(coinbase_settings.api_key),
+            admins_notificator=admins_notificator,
         ),
     )
 

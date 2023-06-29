@@ -92,4 +92,3 @@ def register_handlers(dispatcher: Dispatcher) -> None:
         AdminFilter(),
         state=ChangeCoinbaseData.waiting_api_key,
     )
-    logger.debug('Registered payments handlers')
