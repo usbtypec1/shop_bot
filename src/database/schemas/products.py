@@ -114,6 +114,6 @@ class ProductUnit(BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
     content: Mapped[str]
     type: Mapped[str]
-    sale_id: Mapped[int] = mapped_column(ForeignKey('sale.id'))
+    sale_id: Mapped[int] = mapped_column(ForeignKey('sales.id'))
 
     product: Mapped[Product] = relationship('Product', back_populates='units')

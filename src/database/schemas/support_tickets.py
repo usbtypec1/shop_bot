@@ -23,7 +23,7 @@ class SupportTicketStatus(enum.Enum):
 class SupportTicket(BaseModel):
     __tablename__ = 'support_tickets'
 
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.telegram_id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     subject: Mapped[str] = mapped_column(String(64))
     issue: Mapped[str]
     answer: Mapped[str | None]

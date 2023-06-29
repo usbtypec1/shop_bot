@@ -10,7 +10,7 @@ class CartProduct(BaseModel):
     __tablename__ = 'cart_products'
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey('user.id', ondelete='CASCADE'),
+        ForeignKey('users.id', ondelete='CASCADE'),
     )
     product_id: Mapped[int] = mapped_column(
         ForeignKey('products.id', ondelete='CASCADE'),
