@@ -40,6 +40,8 @@ class TopUpBonusRepository(BaseRepository):
         get_all: Retrieve all TopUpBonus objects.
         update: Update an existing TopUpBonus object.
         delete_by_id: Delete a TopUpBonus object by ID.
+        get_by_top_up_amount: Retrieve a TopUpBonus that can be applied
+                              to the amount to be topped up.
     """
 
     def create(
@@ -155,3 +157,39 @@ class TopUpBonusRepository(BaseRepository):
         with self._session_factory() as session:
             with session.begin():
                 session.execute(statement)
+
+    def get_by_top_up_amount(
+            self,
+            amount: Decimal,
+    ) -> bonuses_models.TopUpBonus:
+        """
+        Retrieve a TopUpBonus that can be applied to the amount to be topped up.
+
+        Args:
+            amount (Decimal): The top-up amount.
+
+        Returns:
+            The retrieved TopUpBonus object.
+
+        Raises:
+            TopUpBonusDoesNotExistError: If no matching TopUpBonus is found.
+
+        Examples:
+            >>> repository = TopUpBonusRepository()
+            >>> bonus = repository.get_by_top_up_amount(amount=Decimal(200.0))
+            >>> bonus.min_amount_threshold
+            Decimal('100.0')
+            >>> bonus.bonus_percentage
+            10
+        """
+        statement = (
+            select(TopUpBonus)
+            .where(TopUpBonus.min_amount_threshold < amount)
+            .order_by(TopUpBonus.min_amount_threshold.asc())
+            .limit(1)
+        )
+        with self._session_factory() as session:
+            top_up_bonus = session.scalar(statement)
+        if top_up_bonus is None:
+            raise TopUpBonusDoesNotExistError
+        return map_to_dto(top_up_bonus)

@@ -1,9 +1,11 @@
 from decimal import Decimal
 
+import structlog
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message, ChatType
+from structlog.stdlib import BoundLogger
 
 from common.services import AdminsNotificator
 from common.views import answer_view, edit_message_by_view
@@ -15,9 +17,14 @@ from payments.views import (
     UserBalanceTopUpNotificationView,
 )
 from services.payments_apis import CoinbaseAPI
+from top_up_bonuses.exceptions import TopUpBonusDoesNotExistError
+from top_up_bonuses.repositories import TopUpBonusRepository
+from top_up_bonuses.services import calculate_amount_to_top_up_with_bonus
 from users.repositories import UserRepository
 
 __all__ = ('register_handlers',)
+
+logger: BoundLogger = structlog.get_logger('app')
 
 
 async def on_start_balance_top_up_flow(
@@ -42,6 +49,7 @@ async def top_up_balance_with_coinbase(
         callback_query: CallbackQuery,
         state: FSMContext,
         user_repository: UserRepository,
+        top_up_bonus_repository: TopUpBonusRepository,
         coinbase_api: CoinbaseAPI,
         admins_notificator: AdminsNotificator,
 ) -> None:
@@ -66,7 +74,26 @@ async def top_up_balance_with_coinbase(
         if amount <= 0:
             await callback_query.message.answer('🚫 Balance refill failed')
             return
-    user_repository.top_up_balance(user_id=user.id, amount_to_top_up=amount)
+
+    try:
+        top_up_bonus = top_up_bonus_repository.get_by_top_up_amount(amount)
+    except TopUpBonusDoesNotExistError:
+        top_up_bonus_percentage = 0
+    else:
+        top_up_bonus_percentage = top_up_bonus.bonus_percentage
+        logger.debug(
+            'Top up bonus has been applied to balance top up',
+            top_up_bonus_percentage=top_up_bonus_percentage,
+        )
+
+    amount_to_top_up_with_bonus = calculate_amount_to_top_up_with_bonus(
+        amount_to_top_up=amount,
+        bonus_percentage=top_up_bonus_percentage
+    )
+    user_repository.top_up_balance(
+        user_id=user.id,
+        amount_to_top_up=amount_to_top_up_with_bonus,
+    )
     await callback_query.message.delete()
     await callback_query.message.answer(
         f'✅ Balance was topped up by {amount:.2f}'
