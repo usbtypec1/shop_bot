@@ -25,11 +25,11 @@ from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
 from common.middlewares import DependencyInjectMiddleware
 from common.services import AdminsNotificator
+from common.views import ErrorView
 from database import session_factory
 from database.setup import init_tables
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
-from services import notifications
 from services.payments_apis import CoinbaseAPI
 from shop_info.repositories import ShopInfoRepository
 from support.repositories import (
@@ -151,10 +151,14 @@ def main():
             on_startup=on_startup,
             skip_updates=True,
         )
-    except RuntimeError as e:
+    except RuntimeError as error:
         logger.critical("Error during bot starting!")
+        view = ErrorView(error)
         asyncio.run(
-            asyncio.run(notifications.ErrorNotification(e).send())
+            admins_notificator.notify(
+                text=view.get_text(),
+                reply_markup=view.get_reply_markup(),
+            ),
         )
 
 

@@ -4,19 +4,25 @@ import uuid
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message, ContentType
+from loader import dp
+from services import product_services
 
 import config
 import database
 import responses.product_management
 from common.filters import AdminFilter
+from common.views import answer_view
 from database import queries
-from loader import dp
 from products.callback_data import (
     ProductCallbackFactory,
     ProductUnitCallbackFactory,
 )
+from products.services import answer_view_with_media
 from products.states import AddProductUnitStates, EditProductUnitStates
-from services import product_services
+from products.views import (
+    AdminProductDetailView, ProductUnitCreateView,
+    ProductUnitLoadingCompleteView
+)
 
 
 @dp.callback_query_handler(
@@ -27,10 +33,12 @@ from services import product_services
 async def add_product_unit(
         query: CallbackQuery,
         callback_data: dict[str, str],
+        state: FSMContext,
 ) -> None:
-    await responses.product_management.AddProductUnitResponse(query)
+    await state.update_data(callback_data | {'units': []})
+    view = ProductUnitCreateView()
     await AddProductUnitStates.waiting_content.set()
-    await dp.current_state().update_data(callback_data | {'units': []})
+    await answer_view(message=query.message, view=view)
 
 
 @dp.message_handler(
@@ -51,10 +59,14 @@ async def complete_units_loading(
             unit.create_product_unit(session)
         queries.edit_product_quantity(session, product_id, len(units))
         product = queries.get_product(session, product_id)
-        await responses.product_management.CompleteUnitLoadingResponse(message,
-                                                                       product.name)
-        await responses.product_management.ProductResponse(
-            message, product, product.category_id, product.subcategory_id
+        view = ProductUnitLoadingCompleteView(product.name)
+        await answer_view(message=message, view=view)
+        view = AdminProductDetailView(product)
+        await answer_view_with_media(
+            message=message,
+            base_path=config.PRODUCT_PICTURE_PATH,
+            product=product,
+            view=view,
         )
 
 
@@ -97,7 +109,7 @@ async def add_product_unit(message: Message, state: FSMContext) -> None:
                 product_unit_type='text'
             ))
     await state.update_data({'units': units})
-    await responses.product_management.SuccessUnitAddingResponse(message)
+    await message.answer('✅ Goods loaded')
 
 
 @dp.callback_query_handler(
@@ -149,7 +161,7 @@ async def edit_product_unit(
         query: CallbackQuery,
         callback_data: dict[str, str],
 ) -> None:
-    await responses.product_management.EditProductUnitsResponse(query)
+    await query.message.edit_text('📝 Enter the new product data, or Load file')
     await EditProductUnitStates.waiting_content.set()
     await dp.current_state().update_data(callback_data)
 
@@ -229,7 +241,7 @@ async def delete_product_unit(
         product_unit_life_cycle.delete_product_unit(session)
         queries.edit_product_quantity(session, product_id, -1)
         units = queries.get_not_sold_product_units(session, product_id)
-        await responses.product_management.SuccessRemovalUnitResponse(query)
+        await query.message.answer('✅ Position removed')
         await responses.product_management.ProductUnitsResponse(
             query, int(callback_data['category_id']), product_id, units,
             subcategory_id

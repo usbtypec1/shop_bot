@@ -5,7 +5,7 @@ import pydantic
 
 import config
 from payments.exceptions import BalanceAmountValidatorError
-from services import payments_apis
+from payments.services import payments_apis
 
 
 class PaymentsAPIsRepository:

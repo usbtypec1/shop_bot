@@ -10,6 +10,7 @@ import config
 import database
 import responses.payments
 import responses.products
+import sales.views
 from categories.repositories import CategoryRepository
 from database import queries
 from keyboards.inline.callback_factories import BuyProductCallbackFactory
@@ -205,7 +206,7 @@ async def pay_with_coinbase(
         charge = api.create_charge(product.name, amount,
                                    product.description[:199] if len(
                                        product.description) > 199 else product.description)
-        payment_message = await responses.payments.CoinbasePaymentLinkResponse(
+        payment_message = await sales.views.CoinbasePaymentLinkResponse(
             callback_query, amount, quantity, charge['hosted_url'])
         if await api.check_payment(charge):
             sale = queries.add_sale(
@@ -221,7 +222,7 @@ async def pay_with_coinbase(
                                                   product_unit.id)
             session.expunge_all()
             session.commit()
-            await responses.payments.PurchaseInformationResponse(
+            await sales.views.PurchaseInformationResponse(
                 callback_query, sale.id, product.name, quantity, amount,
                 product_units
             )
@@ -229,7 +230,7 @@ async def pay_with_coinbase(
                                                         product.name,
                                                         product_units).send()
         else:
-            await responses.payments.FailedPurchaseResponse(payment_message)
+            await callback_query.message.edit_text('🚫 Purchase failed')
 
 
 async def pay_with_balance(
@@ -263,7 +264,7 @@ async def pay_with_balance(
                                                   product_unit.id)
             session.expunge_all()
             session.commit()
-            await responses.payments.PurchaseInformationResponse(
+            await sales.views.PurchaseInformationResponse(
                 callback_query, sale.id, product.name, quantity, amount,
                 product_units
             )
@@ -271,7 +272,7 @@ async def pay_with_balance(
                                                         product.name,
                                                         product_units).send()
         else:
-            await responses.payments.NotEnoughBalanceResponse(callback_query)
+            await callback_query.message.edit_text('⭕️ Not enough balance!')
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
