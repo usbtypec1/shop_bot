@@ -1,2 +1,0 @@
-class SendMailError(Exception):
-    pass

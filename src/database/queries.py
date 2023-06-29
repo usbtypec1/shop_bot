@@ -20,10 +20,6 @@ def get_buyers(
     return session.execute(statement).all()
 
 
-def get_users_telegram_id(session: orm.Session) -> list[int]:
-    return session.scalars(select(schemas.User.telegram_id)).all()
-
-
 def get_product(
         session: orm.Session,
         product_id: int,
