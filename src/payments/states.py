@@ -1,7 +1,8 @@
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
-__all__ = ('TopUpBalance',)
+__all__ = ('UserBalanceTopUpStates',)
 
 
-class TopUpBalance(StatesGroup):
-    waiting_for_amount = State()
+class UserBalanceTopUpStates(StatesGroup):
+    amount = State()
+    payment_method = State()

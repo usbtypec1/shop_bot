@@ -1,6 +1,11 @@
+from decimal import Decimal
+
 from top_up_bonuses.exceptions import BonusPercentageValidationError
 
-__all__ = ('parse_top_up_bonus_percentage',)
+__all__ = (
+    'parse_top_up_bonus_percentage',
+    'calculate_amount_to_top_up_with_bonus',
+)
 
 
 def parse_top_up_bonus_percentage(bonus_percentage: str) -> int:
@@ -15,3 +20,10 @@ def parse_top_up_bonus_percentage(bonus_percentage: str) -> int:
             '❌ Bonus percentage must be greater or equal than 1'
         )
     return bonus_percentage
+
+
+def calculate_amount_to_top_up_with_bonus(
+        amount_to_top_up: Decimal,
+        bonus_percentage: int,
+) -> Decimal:
+    return amount_to_top_up + amount_to_top_up * bonus_percentage

@@ -1,9 +1,9 @@
 import aiogram.types
 
 import config
+from database import schemas
 from keyboards.inline import payments_keyboards
 from responses import base
-from database import schemas
 
 
 class CoinbasePaymentLinkResponse(base.BaseResponse):
@@ -12,28 +12,14 @@ class CoinbasePaymentLinkResponse(base.BaseResponse):
         self.__query = query
         self.__amount = amount
         self.__quantity = quantity
-        self.__keyboard = payments_keyboards.CoinbasePaymentKeyboard(payment_url)
+        self.__keyboard = payments_keyboards.CoinbasePaymentKeyboard(
+            payment_url)
 
     async def _send_response(self):
         await self.__query.answer()
         await self.__query.message.edit_text(
             "<b>Currency</b>: USD\n"
             f"<b>Quantity</b>: {self.__quantity} pc(s).\n"
-            f"<b>Amount: ${self.__amount}.</b>",
-            reply_markup=self.__keyboard
-        )
-
-
-class CoinbasePaymentBalanceResponse(base.BaseResponse):
-    def __init__(self, query: aiogram.types.CallbackQuery, amount: float, payment_url: str):
-        self.__query = query
-        self.__amount = amount
-        self.__keyboard = payments_keyboards.CoinbasePaymentKeyboard(payment_url)
-
-    async def _send_response(self):
-        await self.__query.answer()
-        await self.__query.message.edit_text(
-            "<b>Currency</b>: USD\n"
             f"<b>Amount: ${self.__amount}.</b>",
             reply_markup=self.__keyboard
         )
@@ -56,7 +42,8 @@ class NotEnoughBalanceResponse(base.BaseResponse):
 
 
 class PurchaseInformationResponse(base.BaseResponse):
-    def __init__(self, query: aiogram.types.CallbackQuery, sale_id: int, product_name: str,
+    def __init__(self, query: aiogram.types.CallbackQuery, sale_id: int,
+                 product_name: str,
                  quantity: int, amount: float, product_units: list[
                 schemas.ProductUnit]):
         self.__query = query
@@ -72,7 +59,8 @@ class PurchaseInformationResponse(base.BaseResponse):
         await self.__query.message.answer(text)
         media_group = None
         is_media_group_sent = False
-        for i, unit in enumerate(unit for unit in self.__product_units if unit.type == 'document'):
+        for i, unit in enumerate(unit for unit in self.__product_units if
+                                 unit.type == 'document'):
             if i % 10 == 0:
                 is_media_group_sent = False
                 if media_group is not None:
