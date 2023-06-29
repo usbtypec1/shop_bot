@@ -75,7 +75,7 @@ async def on_media_upload_finish(
     batch_move_files(
         base_path=config.PENDING_DIR_PATH / str(callback_query.from_user.id),
         file_names=media,
-        destination_path=config.PRODUCT_PICTURE_PATH,
+        destination_path=config.MEDIA_FILES_PATH,
     )
     product = product_repository.get_by_id(product_id)
     view = AdminProductDetailView(product)

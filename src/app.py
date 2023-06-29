@@ -97,7 +97,7 @@ def main():
     dispatcher = Dispatcher(bot, storage=MemoryStorage())
 
     config.PRODUCT_UNITS_PATH.mkdir(parents=True, exist_ok=True)
-    config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
+    config.MEDIA_FILES_PATH.mkdir(parents=True, exist_ok=True)
 
     scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
     app_settings = config.AppSettings()

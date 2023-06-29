@@ -64,7 +64,7 @@ async def complete_units_loading(
         view = AdminProductDetailView(product)
         await answer_view_with_media(
             message=message,
-            base_path=config.PRODUCT_PICTURE_PATH,
+            base_path=config.MEDIA_FILES_PATH,
             product=product,
             view=view,
         )
