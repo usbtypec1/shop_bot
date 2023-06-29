@@ -28,13 +28,19 @@ async def on_show_shop_info_menu(message: Message) -> None:
     await answer_view(message=message, view=ShopInfoMenuView())
 
 
-async def on_show_shop_info_detail(message: Message) -> None:
+async def on_show_shop_info_detail(
+        message: Message,
+        is_admin: bool,
+) -> None:
     shop_info = ShopInfo(message.text)
     shop_info_repository = ShopInfoRepository(session_factory)
     value = shop_info_repository.get_value_or_none(key=shop_info.name)
     value = value or message.text
-    view = ShopInfoDetailView(key=shop_info.name, value=value)
-    await answer_view(message=message, view=view)
+    if is_admin:
+        view = ShopInfoDetailView(key=shop_info.name, value=value)
+        await answer_view(message=message, view=view)
+    else:
+        await message.answer(value)
 
 
 async def on_start_shop_info_update_flow(
@@ -78,7 +84,6 @@ def register_handlers(dispatcher: Dispatcher) -> None:
     dispatcher.register_message_handler(
         on_show_shop_info_detail,
         Text(equals=[i.value for i in ShopInfo]),
-        AdminFilter(),
         state='*',
     )
     dispatcher.register_callback_query_handler(

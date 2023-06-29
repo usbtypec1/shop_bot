@@ -1,7 +1,7 @@
 import enum
 
 from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.schemas.base import BaseModel
 
@@ -31,6 +31,12 @@ class SupportTicket(BaseModel):
         default=SupportTicketStatus.OPEN,
     )
 
+    replies = relationship(
+        'SupportTicketReply',
+        back_populates='ticket',
+        cascade='all, delete',
+    )
+
 
 class SupportTicketReplySource(enum.Enum):
     USER = 'User'
@@ -40,8 +46,14 @@ class SupportTicketReplySource(enum.Enum):
 class SupportTicketReply(BaseModel):
     __tablename__ = 'support_ticket_replies'
 
-    support_ticket_id: Mapped[int] = mapped_column(
+    ticket_id: Mapped[int] = mapped_column(
         ForeignKey('support_tickets.id', ondelete='CASCADE'),
     )
     source: Mapped[SupportTicketReplySource]
     text: Mapped[str]
+
+    ticket = relationship(
+        'SupportTicket',
+        back_populates='replies',
+        cascade='all, delete',
+    )

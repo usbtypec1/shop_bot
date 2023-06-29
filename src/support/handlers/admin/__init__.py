@@ -2,14 +2,7 @@ from aiogram import Dispatcher
 
 from . import menu, list, detail, delete, update, search
 
-__all__ = (
-    'list',
-    'detail',
-    'update',
-    'delete',
-    'menu',
-    'search',
-)
+__all__ = ('register_handlers',)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:

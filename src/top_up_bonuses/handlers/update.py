@@ -9,7 +9,7 @@ from aiogram.types import Message, ContentType, ChatType, CallbackQuery
 from common.filters import AdminFilter
 from common.views import answer_view, edit_message_by_view
 from payments.services import parse_balance_amount
-from services.time_utils import get_now_datetime
+from common.services import get_now_datetime
 from time_sensitive_discounts.exceptions import DatetimeValidationError
 from time_sensitive_discounts.services import parse_datetime
 from top_up_bonuses.callback_data import TopUpBonusUpdateCallbackData

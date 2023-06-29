@@ -1,4 +1,7 @@
 from collections.abc import Iterable
+from datetime import datetime
+from typing import NewType
+from zoneinfo import ZoneInfo
 
 import structlog
 from aiogram import Bot
@@ -6,9 +9,26 @@ from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.exceptions import TelegramAPIError
 from structlog.stdlib import BoundLogger
 
-__all__ = ('AdminsNotificator',)
+__all__ = (
+    'AdminsNotificator',
+    'get_now_datetime',
+    'to_local_time',
+)
 
 logger: BoundLogger = structlog.get_logger('app')
+
+  
+TIMEZONE = ZoneInfo('US/Eastern')
+UTC = ZoneInfo('UTC')
+TZAware = NewType('TZAware', datetime)
+
+
+def get_now_datetime() -> TZAware:
+    return TZAware(datetime.now(tz=TIMEZONE))
+
+
+def to_local_time(dt: datetime) -> TZAware:
+    return TZAware(dt.replace(tzinfo=UTC).astimezone(TIMEZONE))
 
 
 class AdminsNotificator:

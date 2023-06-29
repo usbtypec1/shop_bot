@@ -7,7 +7,7 @@ from aiogram.types import Message, ContentType, ChatType, CallbackQuery
 
 from common.filters import AdminFilter
 from common.views import answer_view, edit_message_by_view
-from services.time_utils import get_now_datetime
+from common.services import get_now_datetime
 from time_sensitive_discounts.exceptions import DatetimeValidationError
 from time_sensitive_discounts.repositories import (
     TimeSensitiveDiscountRepository,
