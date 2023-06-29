@@ -2,24 +2,28 @@ from aiogram import Dispatcher
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message
 
-import database
-import responses.profile
-from database import queries
-from users.exceptions import UserNotInDatabase
+from common.views import answer_view
+from sales.repositories import SaleRepository
+from users.repositories import UserRepository
+from users.views import UserProfileView
+
+__all__ = ('on_show_profile_menu',)
 
 
-async def profile(message: Message) -> None:
-    with database.create_session() as session:
-        user = queries.get_user(session, telegram_id=message.from_user.id)
-        if user is None:
-            raise UserNotInDatabase
-        user_balance = queries.get_user_balance(session, user.id)
-        await responses.profile.ProfileResponse(
-            message, user.telegram_id, user.username, user_balance,
-            queries.count_user_purchases(session, user.id),
-            queries.get_user_orders_amount(session, user.id),
-            queries.get_purchases(session, user.id, limit=10)
-        )
+async def on_show_profile_menu(
+        message: Message,
+        user_repository: UserRepository,
+        sale_repository: SaleRepository
+) -> None:
+    user = user_repository.get_by_telegram_id(message.from_user.id)
+    total_orders_count = sale_repository.count_by_user_id(user.id)
+    total_orders_cost = sale_repository.calculate_total_cost_by_user_id(user.id)
+    view = UserProfileView(
+        user=user,
+        total_orders_cost=total_orders_cost,
+        total_orders_count=total_orders_count,
+    )
+    await answer_view(message=message, view=view)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
