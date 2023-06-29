@@ -28,9 +28,9 @@ from common.services import AdminsNotificator
 from common.views import ErrorView
 from database import session_factory
 from database.setup import init_tables
+from payments.services.payments_apis import CoinbaseAPI
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
-from services.payments_apis import CoinbaseAPI
 from shop_info.repositories import ShopInfoRepository
 from support.repositories import (
     SupportTicketRepository,

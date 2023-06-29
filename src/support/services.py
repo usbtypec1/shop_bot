@@ -1,24 +1,26 @@
 import datetime
 from typing import NoReturn
 
+import structlog
 from aiogram import Bot
 from aiogram.utils.exceptions import TelegramAPIError
+from structlog.stdlib import BoundLogger
 
-from common.services import get_now_datetime, to_local_time
 from common.models import Period
-from services.alerts import logger
+from common.services import get_now_datetime, to_local_time
 from support.exceptions import (
     InvalidSupportDateRangeError,
-    SupportTicketCreateRateLimitError
+    SupportTicketCreateRateLimitError,
 )
+from support.models import SupportTicket
+from support.views import SupportTicketStatusChangedNotificationView
 
 __all__ = (
     'validate_date_range',
     'check_support_ticket_create_rate_limit',
 )
 
-from support.models import SupportTicket
-from support.views import SupportTicketStatusChangedNotificationView
+logger: BoundLogger = structlog.get_logger('app')
 
 
 def validate_date_range(date_range: str) -> Period:

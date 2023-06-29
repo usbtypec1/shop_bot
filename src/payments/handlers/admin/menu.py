@@ -12,8 +12,8 @@ from common.filters import AdminFilter
 from common.views import answer_view, edit_message_by_view
 from payments.callback_data import PaymentSystemCredentialsStatusCallbackData
 from payments.exceptions import BalanceAmountValidatorError
+from payments.services.payments_apis import CoinbaseAPI
 from payments.views import PaymentManagementMenuView, CoinbaseManagementMenuView
-from services.payments_apis import CoinbaseAPI
 
 logger: BoundLogger = structlog.get_logger('app')
 

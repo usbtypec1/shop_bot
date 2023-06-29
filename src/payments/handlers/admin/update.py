@@ -6,7 +6,7 @@ import config
 from common.filters import AdminFilter
 from payments.callback_data import PaymentSystemCredentialsUpdateCallbackData
 from payments.states import CoinbaseCredentialsUpdateStates
-from services.payments_apis import CoinbaseAPI
+from payments.services.payments_apis import CoinbaseAPI
 
 __all__ = ('register_handlers',)
 

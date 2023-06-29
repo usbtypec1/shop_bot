@@ -6,10 +6,10 @@ import coinbase_commerce
 from coinbase_commerce import error
 from coinbase_commerce.api_resources import charge
 
-from services.payments_apis import base_payments_api
+from payments.services.payments_apis import BasePaymentAPI
 
 
-class CoinbaseAPI(base_payments_api.BasePaymentAPI):
+class CoinbaseAPI(BasePaymentAPI):
     def __init__(self, api_key: str):
         self.__client = coinbase_commerce.client.Client(api_key=api_key)
 

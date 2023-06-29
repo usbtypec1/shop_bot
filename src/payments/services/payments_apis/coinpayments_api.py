@@ -7,10 +7,10 @@ from urllib.parse import urlencode
 
 import httpx
 
-from services.payments_apis import base_payments_api
+from payments.services.payments_apis import BasePaymentAPI
 
 
-class CoinPaymentsAPI(base_payments_api.BasePaymentAPI):
+class CoinPaymentsAPI(BasePaymentAPI):
     api_url = 'https://www.coinpayments.net/api.php'
     api_version = 1
 
@@ -18,6 +18,7 @@ class CoinPaymentsAPI(base_payments_api.BasePaymentAPI):
         self.public_key = public_key
         self.secret_key = secret_key
 
+    # TODO Unsafe code. Transaction checking can fail if bot will be restarted
     async def check_transaction(self, txn_id: str) -> bool:
         while not (await self.get_tx_info(txid=txn_id))['result']['status']:
             await asyncio.sleep(30)
@@ -76,8 +77,10 @@ class CoinPaymentsAPI(base_payments_api.BasePaymentAPI):
     async def send_api_request(self, command: str, **kwargs) -> dict:
         params = self._build_params(command, **kwargs)
         signature = self._build_signature(params)
-        headers = {'HMAC': signature,
-                   'Content-Type': 'application/x-www-form-urlencoded'}
+        headers = {
+            'HMAC': signature,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
         async with httpx.AsyncClient() as session:
             return (await session.post(self.api_url,
                                        params=params,
