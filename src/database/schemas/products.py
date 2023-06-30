@@ -6,6 +6,7 @@ from sqlalchemy import String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel, Base
+from database.schemas.payment_methods import PaymentMethod
 
 __all__ = (
     'ProductMedia',
@@ -15,12 +16,6 @@ __all__ = (
     'ProductPermittedGateway',
     'PaymentMethod',
 )
-
-
-class PaymentMethod(enum.Enum):
-    COINBASE = 'Coinbase'
-    FROM_ADMIN = 'From Admin'
-    BALANCE = 'Balance'
 
 
 class ProductPermittedGateway(Base):
