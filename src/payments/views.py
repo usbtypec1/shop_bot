@@ -1,14 +1,25 @@
 from decimal import Decimal
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
 from common.views import View
+from payments.callback_data import (
+    PaymentSystemCredentialsUpdateCallbackData,
+    PaymentSystemCredentialsStatusCallbackData,
+)
 
 __all__ = (
     'UserBalanceMenuView',
     'UserBalanceTopUpPaymentMethodsView',
     'UserBalanceTopUpInvoiceView',
     'UserBalanceTopUpNotificationView',
+    'PaymentManagementMenuView',
+    'CoinbaseManagementMenuView',
 )
 
 
@@ -105,3 +116,64 @@ class UserBalanceTopUpNotificationView(View):
         else:
             username = str(self.__user_telegram_id)
         return f'✅ Balance was topped up by {self.__amount} by User {username}'
+
+
+class PaymentManagementMenuView(View):
+    text = '💳 Payment Management'
+    reply_markup = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton('🌐 Coinbase'),
+            ],
+            [
+                KeyboardButton('Top Up Bonuses'),
+            ],
+            [
+                KeyboardButton('⬅️ Back'),
+            ],
+        ],
+    )
+
+
+class CoinbaseManagementMenuView(View):
+    reply_markup = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text='🔑 Change API Key',
+                    callback_data=(
+                        PaymentSystemCredentialsUpdateCallbackData().new(
+                            system='coinbase',
+                        )
+                    ),
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='✅ Check',
+                    callback_data=(
+                        PaymentSystemCredentialsStatusCallbackData().new(
+                            system='coinbase',
+                        )
+                    ),
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text='🚫 Close',
+                    callback_data='close',
+                ),
+            ],
+        ],
+    )
+
+    def __init__(self, is_valid: bool = False):
+        self.__is_valid = is_valid
+
+    def get_text(self) -> str:
+        status = '✅ OK' if self.__is_valid else '❌ ERROR'
+        return (
+            '🌐 Coinbase\n'
+            f'Status: {status}'
+        )

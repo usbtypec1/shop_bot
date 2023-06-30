@@ -3,7 +3,7 @@ from aiogram.types import CallbackQuery
 
 from common.filters import AdminFilter
 from common.views import edit_message_by_view
-from services.alerts import notify_user_ticket_status_changed
+from support.services import notify_user_ticket_status_changed
 from support.callback_data import (
     SupportTicketStatusUpdateCallbackData,
     SupportTicketStatusListCallbackData,

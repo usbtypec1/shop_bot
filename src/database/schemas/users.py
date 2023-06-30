@@ -9,7 +9,7 @@ __all__ = ('User',)
 
 
 class User(BaseModel):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     username: Mapped[str | None] = mapped_column(String(32))

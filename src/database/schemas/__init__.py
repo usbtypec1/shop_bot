@@ -1,6 +1,7 @@
 from .cart import *
 from .categories import *
 from .discounts import *
+from .payment_methods import *
 from .products import *
 from .sales import *
 from .shop_info import *

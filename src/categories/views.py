@@ -87,7 +87,12 @@ class CategoryListView(CategoryDisplayMixin, View):
             ),
         )
 
-        row = [CloseButton()]
+        row = [
+            InlineKeyboardButton(
+                text='🚫 Close',
+                callback_data='close',
+            )
+        ]
         if self._is_subcategory:
             row.insert(0, InlineKeyboardButton(
                 text='⬅️ Back',
@@ -280,7 +285,12 @@ class UserCategoryListView(View):
                 ),
             )
 
-        markup.row(CloseButton())
+        markup.row(
+            InlineKeyboardButton(
+                text='🚫 Close',
+                callback_data='close',
+            )
+        )
 
         return markup
 

@@ -1,17 +1,26 @@
 import datetime
 from typing import NoReturn
 
-from common.services import get_now_datetime, to_local_time
+import structlog
+from aiogram import Bot
+from aiogram.utils.exceptions import TelegramAPIError
+from structlog.stdlib import BoundLogger
+
 from common.models import Period
+from common.services import get_now_datetime, to_local_time
 from support.exceptions import (
     InvalidSupportDateRangeError,
-    SupportTicketCreateRateLimitError
+    SupportTicketCreateRateLimitError,
 )
+from support.models import SupportTicket
+from support.views import SupportTicketStatusChangedNotificationView
 
 __all__ = (
     'validate_date_range',
     'check_support_ticket_create_rate_limit',
 )
+
+logger: BoundLogger = structlog.get_logger('app')
 
 
 def validate_date_range(date_range: str) -> Period:
@@ -34,4 +43,22 @@ def check_support_ticket_create_rate_limit(
     if remaining_time_in_seconds > 0:
         raise SupportTicketCreateRateLimitError(
             remaining_time_in_seconds=int(remaining_time_in_seconds),
+        )
+
+
+async def notify_user_ticket_status_changed(
+        bot: Bot,
+        support_ticket: SupportTicket,
+) -> None:
+    view = SupportTicketStatusChangedNotificationView(support_ticket)
+    try:
+        await bot.send_message(
+            text=view.get_text(),
+            chat_id=support_ticket.user_telegram_id,
+        )
+    except TelegramAPIError:
+        logger.warning(
+            'User notifications:'
+            ' could not send ticket status changed notification',
+            user_telegram_id=support_ticket.user_telegram_id,
         )

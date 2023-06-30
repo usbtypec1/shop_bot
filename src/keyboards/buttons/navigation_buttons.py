@@ -1,11 +1,6 @@
-import aiogram
+from aiogram.types import InlineKeyboardButton
 
 
-class BackButton(aiogram.types.KeyboardButton):
-    def __init__(self):
-        super().__init__('⬅️ Back')
-
-
-class InlineBackButton(aiogram.types.InlineKeyboardButton):
+class InlineBackButton(InlineKeyboardButton):
     def __init__(self, callback_query: str):
         super().__init__(text='⬅️ Back', callback_data=callback_query)

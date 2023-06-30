@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery, ContentType
 from common.filters import AdminFilter
 from common.views import answer_view
 from database.session import session_factory
-from keyboards.inline.callback_factories import ShopInfoUpdateCallbackData
+from shop_info.callback_data import ShopInfoUpdateCallbackData
 from shop_info.models import ShopInfo
 from shop_info.repositories import ShopInfoRepository
 from shop_info.states import ShopInfoUpdateStates

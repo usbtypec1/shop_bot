@@ -16,7 +16,7 @@ from payments.views import (
     UserBalanceTopUpInvoiceView,
     UserBalanceTopUpNotificationView,
 )
-from services.payments_apis import CoinbaseAPI
+from payments.services.payments_apis import CoinbaseAPI
 from top_up_bonuses.exceptions import TopUpBonusDoesNotExistError
 from top_up_bonuses.repositories import TopUpBonusRepository
 from top_up_bonuses.services import calculate_amount_to_top_up_with_bonus

@@ -1,6 +1,9 @@
 from collections.abc import Iterable
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    InlineKeyboardMarkup, InlineKeyboardButton,
+    ReplyKeyboardMarkup, KeyboardButton
+)
 
 from categories.models import Category
 from common.views import View
@@ -20,6 +23,8 @@ __all__ = (
     'AdminProductDetailView',
     'AdminAskForProductMediaView',
     'AdminProductDeleteView',
+    'ProductUnitCreateView',
+    'ProductUnitLoadingCompleteView',
 )
 
 
@@ -316,3 +321,44 @@ class AdminProductPermittedGatewaysView(View):
         )
 
         return markup
+
+
+class ProductUnitCreateView(View):
+    text = (
+        '📦 Enter the product data\n\n'
+        'Examples of download:\n\n'
+        'Product 1\n'
+        'Product 2\n'
+        'Product n\n\n'
+        'Grouped Documents\n\n'
+        'The products will be loaded until you click ✅ Complete'
+    )
+    reply_markup = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton('✅ Complete'),
+            ],
+        ],
+    )
+
+
+class ProductUnitLoadingCompleteView(View):
+    reply_markup = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton('📝 Products Management'),
+                KeyboardButton('📁 Categories Control'),
+            ],
+            [
+                KeyboardButton('⬅️ Back'),
+            ],
+        ]
+    )
+
+    def __init__(self, product_name: str):
+        self.__product_name = product_name
+
+    def get_text(self) -> str:
+        return f'✅ loading {self.__product_name} Completed'

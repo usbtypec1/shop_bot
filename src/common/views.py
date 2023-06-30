@@ -13,6 +13,7 @@ from aiogram.types import (
 from aiogram.utils.exceptions import TelegramAPIError
 
 __all__ = (
+    'ErrorView',
     'View',
     'edit_message_by_view',
     'answer_view',
@@ -80,3 +81,15 @@ async def send_views(
         else:
             sent_messages.append(sent_message)
     return sent_messages
+
+
+class ErrorView(View):
+    def __init__(self, exception: Exception):
+        self.__exception = exception
+
+    def get_text(self) -> str:
+        return (
+            f"❗ Error During Operation ❗\n"
+            f"{str(self.__exception)}\n\n❗"
+            f" The bot will restart automatically."
+        )

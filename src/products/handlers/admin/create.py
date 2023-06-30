@@ -352,12 +352,12 @@ async def on_product_create_finish(
     batch_move_files(
         base_path=config.PENDING_DIR_PATH / str(callback_query.from_user.id),
         file_names=[product_media.file_name for product_media in product.media],
-        destination_path=config.PRODUCT_PICTURE_PATH,
+        destination_path=config.MEDIA_FILES_PATH,
     )
     view = AdminProductDetailView(product)
     await answer_view_with_media(
         message=callback_query.message,
-        base_path=config.PRODUCT_PICTURE_PATH,
+        base_path=config.MEDIA_FILES_PATH,
         product=product,
         view=view,
     )
@@ -408,12 +408,12 @@ async def on_product_advanced_settings_create_finish(
     batch_move_files(
         base_path=config.PENDING_DIR_PATH / str(callback_query.from_user.id),
         file_names=[product_media.file_name for product_media in product.media],
-        destination_path=config.PRODUCT_PICTURE_PATH,
+        destination_path=config.MEDIA_FILES_PATH,
     )
     view = AdminProductDetailView(product)
     await answer_view_with_media(
         message=callback_query.message,
-        base_path=config.PRODUCT_PICTURE_PATH,
+        base_path=config.MEDIA_FILES_PATH,
         product=product,
         view=view,
     )

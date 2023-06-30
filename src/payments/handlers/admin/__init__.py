@@ -1,9 +1,10 @@
 from aiogram import Dispatcher
 
-from . import manage
+from . import menu, update
 
 __all__ = ('register_handlers',)
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
-    manage.register_handlers(dispatcher)
+    menu.register_handlers(dispatcher)
+    update.register_handlers(dispatcher)

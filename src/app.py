@@ -25,12 +25,12 @@ from cart.repositories import CartRepository
 from categories.repositories import CategoryRepository
 from common.middlewares import DependencyInjectMiddleware
 from common.services import AdminsNotificator
+from common.views import ErrorView
 from database import session_factory
 from database.setup import init_tables
+from payments.services.payments_apis import CoinbaseAPI
 from products.repositories import ProductRepository
 from sales.repositories import SaleRepository
-from services import notifications
-from services.payments_apis import CoinbaseAPI
 from shop_info.repositories import ShopInfoRepository
 from support.repositories import (
     SupportTicketRepository,
@@ -97,7 +97,7 @@ def main():
     dispatcher = Dispatcher(bot, storage=MemoryStorage())
 
     config.PRODUCT_UNITS_PATH.mkdir(parents=True, exist_ok=True)
-    config.PRODUCT_PICTURE_PATH.mkdir(parents=True, exist_ok=True)
+    config.MEDIA_FILES_PATH.mkdir(parents=True, exist_ok=True)
 
     scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
     app_settings = config.AppSettings()
@@ -151,10 +151,14 @@ def main():
             on_startup=on_startup,
             skip_updates=True,
         )
-    except RuntimeError as e:
+    except RuntimeError as error:
         logger.critical("Error during bot starting!")
+        view = ErrorView(error)
         asyncio.run(
-            asyncio.run(notifications.ErrorNotification(e).send())
+            admins_notificator.notify(
+                text=view.get_text(),
+                reply_markup=view.get_reply_markup(),
+            ),
         )
 
 

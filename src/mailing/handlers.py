@@ -4,13 +4,12 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import ContentType, Message
 
-import database
 from common.filters import AdminFilter
 from common.views import answer_view
-from database import queries
-from mailing.exceptions import SendMailError
+from mailing.services import send_mailing
 from mailing.states import MailingStates
 from mailing.views import MailingView, MailingFinishView
+from users.repositories import UserRepository
 from users.views import AdminMenuView
 
 logger = structlog.get_logger('app')
@@ -32,25 +31,18 @@ async def create_newsletter(message: Message) -> None:
 async def send_newsletter(
         message: Message,
         state: FSMContext,
+        user_repository: UserRepository,
 ) -> None:
     await state.finish()
-    with database.create_session() as session:
-        users_id = queries.get_users_telegram_id(session)
+    telegram_ids = user_repository.get_all_telegram_ids()
     await message.answer('✅ The mailing has started')
-    successfully_newsletters = unsuccessfully_newsletters = 0
-    for user_id in users_id:
-        try:
-            try:
-                await message.copy_to(user_id)
-            except Exception:
-                raise SendMailError
-        except SendMailError:
-            unsuccessfully_newsletters += 1
-        else:
-            successfully_newsletters += 1
+
+    received_users_count = await send_mailing(message, telegram_ids)
+    failed_newsletters_count = len(telegram_ids) - received_users_count
+
     view = MailingFinishView(
-        successful_newsletters=successfully_newsletters,
-        unsuccessful_newsletters=unsuccessfully_newsletters,
+        successful_newsletters=received_users_count,
+        unsuccessful_newsletters=failed_newsletters_count,
     )
     await answer_view(message=message, view=view)
     await answer_view(message=message, view=AdminMenuView())

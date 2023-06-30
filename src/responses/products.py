@@ -168,7 +168,7 @@ class ProductResponse(base.BaseResponse):
         if pictures_count == 1:
             await answer_media_with_text(
                 message=self.__query.message,
-                base_path=config.PRODUCT_PICTURE_PATH,
+                base_path=config.MEDIA_FILES_PATH,
                 product=self.__product,
                 caption=message_text,
                 reply_markup=self.__keyboard,
@@ -177,7 +177,7 @@ class ProductResponse(base.BaseResponse):
             await self.__query.message.delete()
             await answer_medias(
                 message=self.__query.message,
-                base_path=config.PRODUCT_PICTURE_PATH,
+                base_path=config.MEDIA_FILES_PATH,
                 product=self.__product,
             )
             await self.__query.message.answer(

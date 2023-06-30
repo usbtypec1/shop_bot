@@ -6,6 +6,7 @@ from sqlalchemy import String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from database.schemas.base import BaseModel, Base
+from database.schemas.payment_methods import PaymentMethod
 
 __all__ = (
     'ProductMedia',
@@ -15,12 +16,6 @@ __all__ = (
     'ProductPermittedGateway',
     'PaymentMethod',
 )
-
-
-class PaymentMethod(enum.Enum):
-    COINBASE = 'Coinbase'
-    FROM_ADMIN = 'From Admin'
-    BALANCE = 'Balance'
 
 
 class ProductPermittedGateway(Base):
@@ -114,6 +109,6 @@ class ProductUnit(BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
     content: Mapped[str]
     type: Mapped[str]
-    sale_id: Mapped[int] = mapped_column(ForeignKey('sale.id'))
+    sale_id: Mapped[int] = mapped_column(ForeignKey('sales.id'))
 
     product: Mapped[Product] = relationship('Product', back_populates='units')

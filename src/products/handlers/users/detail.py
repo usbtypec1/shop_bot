@@ -25,7 +25,7 @@ async def on_show_product_detail(
     await answer_view_with_media(
         view=view,
         message=callback_query.message,
-        base_path=config.PRODUCT_PICTURE_PATH,
+        base_path=config.MEDIA_FILES_PATH,
         product=product,
     )
 

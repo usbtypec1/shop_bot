@@ -6,7 +6,7 @@ from aiogram.types import (
 )
 
 from common.views import View
-from keyboards.inline.callback_factories import ShopInfoUpdateCallbackData
+from shop_info.callback_data import ShopInfoUpdateCallbackData
 from shop_info import models
 
 __all__ = (

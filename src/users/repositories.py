@@ -220,3 +220,9 @@ class UserRepository(BaseRepository):
         with self._session_factory() as session:
             with session.begin():
                 session.execute(statement)
+
+    def get_all_telegram_ids(self) -> list[int]:
+        statement = select(User.telegram_id)
+        with self._session_factory() as session:
+            rows = session.execute(statement).all()
+        return [row[0] for row in rows]

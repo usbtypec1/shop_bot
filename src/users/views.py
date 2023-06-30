@@ -9,11 +9,11 @@ from aiogram.types import (
 )
 
 from common.models import Buyer
+from common.services import get_now_datetime
 from common.views import View
 from keyboards.inline.callback_factories import (
     UserCallbackFactory,
 )
-from common.services import get_now_datetime
 from users.callback_data import (
     UserDetailCallbackData,
     UserDeleteCallbackData,
@@ -44,6 +44,7 @@ __all__ = (
     'UserUpdateMaxCartCostView',
     'UserPermanentDiscountGrantingReasonsView',
     'UserPermanentDiscountGrantingConfirmView',
+    'UserProfileView',
 )
 
 
@@ -176,7 +177,7 @@ class UserGeneralStatisticsView(View):
             self,
             *,
             buyers_count: int,
-            orders_total_cost: float,
+            orders_total_cost: Decimal,
             sold_products_count: int,
             sold_product_units_quantity: list[tuple[str, int, ...]],
             active_buyers: list[Buyer],
@@ -191,7 +192,8 @@ class UserGeneralStatisticsView(View):
         lines = [
             f'🙍‍♂ Number of buyers: {self.__buyers_count}'
             '➖➖➖➖➖➖➖➖➖➖',
-            f'🛒 Number of purchased items: {self.__sold_products_quantity}',
+            '🛒 Number of purchased items:'
+            f' {self.__sold_product_units_quantity}',
             '\n',
         ]
         lines += [
@@ -748,4 +750,32 @@ class UserPermanentDiscountGrantingConfirmView(View):
                     ),
                 ],
             ],
+        )
+
+
+class UserProfileView(View):
+
+    def __init__(
+            self,
+            *,
+            user: User,
+            total_orders_count: int,
+            total_orders_cost: Decimal,
+    ):
+        self.__user = user
+        self.__total_orders_count = total_orders_count
+        self.__total_orders_cost = total_orders_cost
+
+    def get_text(self) -> str:
+        if self.__user.username is None:
+            username = str(self.__user.id)
+        else:
+            username = f'@{self.__user.username}'
+        return (
+            f'🙍‍♂ User: {username}\n'
+            f'🆔 Telegram ID: {self.__user.telegram_id}\n'
+            f'💰 Your Current Balance: ${self.__user.balance:.2f}\n'
+            '➖➖➖➖➖➖➖➖➖➖\n'
+            f'🛒 Number of Purchases: {self.__total_orders_count}\n'
+            f'🔢 Total Amount: ${self.__total_orders_cost:.2f}\n'
         )
