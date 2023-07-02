@@ -47,10 +47,10 @@ logger = structlog.get_logger('app')
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
+    common.handlers.register_handlers(dispatcher)
     backup.handlers.register_handlers(dispatcher)
     cart.handlers.register_handlers(dispatcher)
     categories.handlers.register_handlers(dispatcher)
-    common.handlers.register_handlers(dispatcher)
     mailing.handlers.register_handlers(dispatcher)
     payments.handlers.register_handlers(dispatcher)
     products.handlers.register_handlers(dispatcher)
