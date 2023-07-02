@@ -2,5 +2,5 @@ class ProductDoesNotExistError(Exception):
     pass
 
 
-class InvalidProductQuantityError(Exception):
+class ProductQuantityValidationError(Exception):
     pass
