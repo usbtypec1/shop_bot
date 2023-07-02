@@ -6,6 +6,7 @@ __all__ = (
     'ProductUpdateStates',
     'EditProductUnitStates',
     'AddProductUnitStates',
+    'ProductBuyStates',
 )
 
 
@@ -47,3 +48,8 @@ class AddProductUnitStates(StatesGroup):
 
 class EditProductUnitStates(StatesGroup):
     waiting_content = State()
+
+
+class ProductBuyStates(State):
+    quantity = State()
+    payment_method = State()
