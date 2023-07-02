@@ -17,6 +17,7 @@ from aiogram.types import (
 from aiogram.utils.exceptions import TelegramAPIError
 
 from common.views import View, answer_view
+from products.exceptions import InvalidProductQuantityError
 from products.models import Product, ProductMedia, MediaType
 
 __all__ = (
@@ -24,6 +25,7 @@ __all__ = (
     'answer_view_with_media',
     'file_extension_to_media_type',
     'parse_media_types',
+    'parse_product_quantity',
 )
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger('app')
@@ -235,3 +237,15 @@ def parse_media_types(media: Iterable[str]) -> list[ProductMedia]:
         )
 
     return product_media
+
+
+def parse_product_quantity(quantity: str) -> int:
+    if not quantity.isdigit():
+        raise InvalidProductQuantityError(
+            '❌ Number of pieces must be a <b><u>number</u></b>'
+        )
+    if (quantity := int(quantity)) <= 0:
+        raise InvalidProductQuantityError(
+            '❌ Number of pieces must be greater than 0'
+        )
+    return quantity
