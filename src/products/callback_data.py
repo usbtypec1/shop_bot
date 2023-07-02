@@ -14,6 +14,7 @@ __all__ = (
     'AdminProductListCallbackData',
     'ProductCallbackFactory',
     'ProductUnitCallbackFactory',
+    'UserProductBuyCallbackData',
 )
 
 
@@ -131,3 +132,9 @@ class ProductUnitCallbackFactory(CallbackData):
             'id',
             'action',
         )
+
+
+class UserProductBuyCallbackData(ParseProductIdMixin, CallbackData):
+
+    def __init__(self):
+        super().__init__('user-product-buy', 'product_id')
