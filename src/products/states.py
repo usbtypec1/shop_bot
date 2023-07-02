@@ -50,6 +50,6 @@ class EditProductUnitStates(StatesGroup):
     waiting_content = State()
 
 
-class ProductBuyStates(State):
+class ProductBuyStates(StatesGroup):
     quantity = State()
     payment_method = State()
