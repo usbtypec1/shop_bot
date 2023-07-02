@@ -1,11 +1,11 @@
 from collections.abc import Iterable
 from decimal import Decimal
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 
 from cart import models as cart_models
 from common.repositories import BaseRepository
-from database.schemas import Sale, SoldProduct
+from database.schemas import Sale, SoldProduct, CartProduct
 from payments import models as payments_models
 from sales import models as sales_models
 
@@ -50,10 +50,16 @@ class SaleRepository(BaseRepository):
                 quantity=cart_product.quantity,
             ) for cart_product in cart_products
         ]
+        cart_product_ids = [cart_product.id for cart_product in cart_products]
+        cart_products_delete_statement = (
+            delete(CartProduct)
+            .where(CartProduct.id.in_(cart_product_ids))
+        )
         with self._session_factory() as session:
             with session.begin():
                 session.add(sale)
                 session.add_all(products_to_be_sold)
+                session.execute(cart_products_delete_statement)
 
                 session.flush()
                 session.refresh(sale)
