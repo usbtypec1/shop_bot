@@ -75,7 +75,12 @@ class SaleRepository(BaseRepository):
 
     def calculate_total_cost_by_user_id(self, user_id: int) -> Decimal:
         statement = (
-            select(func.sum(Sale.price_at_the_moment * Sale.quantity))
+            select(
+                func.sum(
+                    SoldProduct.price_at_the_moment * SoldProduct.quantity
+                )
+            )
+            .join(SoldProduct, onclause=Sale.id == SoldProduct.sale_id)
             .where(Sale.user_id == user_id)
         )
         with self._session_factory() as session:
@@ -83,7 +88,14 @@ class SaleRepository(BaseRepository):
         return row[0] if row is not None else Decimal('0')
 
     def calculate_total_cost(self) -> Decimal:
-        statement = select(func.sum(Sale.price_at_the_moment * Sale.quantity))
+        statement = (
+            select(
+                func.sum(
+                    SoldProduct.price_at_the_moment * SoldProduct.quantity
+                )
+            )
+            .join(SoldProduct, onclause=Sale.id == SoldProduct.sale_id)
+        )
         with self._session_factory() as session:
             row = session.execute(statement).first()
         return row[0] if row is not None else Decimal('0')
