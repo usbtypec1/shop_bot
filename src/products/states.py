@@ -5,7 +5,6 @@ __all__ = (
     'ProductCreateStates',
     'ProductUpdateStates',
     'EditProductUnitStates',
-    'EnterProductQuantityStates',
     'AddProductUnitStates',
 )
 
@@ -42,21 +41,9 @@ class ProductUpdateStates(StatesGroup):
     quantity = State()
 
 
-class AddProductStates(StatesGroup):
-    waiting_name = State()
-    waiting_description = State()
-    waiting_picture = State()
-    waiting_price = State()
-    waiting_content = State()
-
-
 class AddProductUnitStates(StatesGroup):
     waiting_content = State()
 
 
 class EditProductUnitStates(StatesGroup):
     waiting_content = State()
-
-
-class EnterProductQuantityStates(StatesGroup):
-    waiting_quantity = State()
