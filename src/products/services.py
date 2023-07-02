@@ -161,7 +161,9 @@ def parse_media_types(media: Iterable[str]) -> list[ProductMedia]:
 
 
 def parse_product_quantity(quantity: str) -> int:
-    if not quantity.isdigit():
+    try:
+        quantity = int(quantity)
+    except ValueError:
         raise ProductQuantityValidationError(
             '❌ Number of pieces must be a <b><u>number</u></b>'
         )
