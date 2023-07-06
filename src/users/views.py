@@ -11,9 +11,6 @@ from aiogram.types import (
 from common.models import Buyer
 from common.services import get_now_datetime
 from common.views import View
-from keyboards.inline.callback_factories import (
-    UserCallbackFactory,
-)
 from users.callback_data import (
     UserDetailCallbackData,
     UserDeleteCallbackData,
@@ -263,45 +260,6 @@ class UserListView(View):
                 InlineKeyboardButton(
                     text='🔎 Search Users',
                     callback_data='search-users',
-                )
-            )
-        else:
-            markup.row(
-                InlineKeyboardButton(
-                    text='⬅️ Back',
-                    callback_data=UserCallbackFactory().new(
-                        filter='',
-                        page=self.__page,
-                        id='',
-                        action='',
-                        is_confirmed='',
-                    )
-                )
-            )
-        if len(self.__users) > self.__page_size:
-            markup.row(
-                InlineKeyboardButton(
-                    text='Next 👉',
-                    callback_data=UserCallbackFactory().new(
-                        filter=self.__users_filter,
-                        page=self.__page + 1,
-                        id='',
-                        action='',
-                        is_confirmed='',
-                    )
-                )
-            )
-        if self.__page > 0:
-            markup.row(
-                InlineKeyboardButton(
-                    text='👈 Previous',
-                    callback_data=UserCallbackFactory().new(
-                        filter=self.__users_filter,
-                        page=self.__page - 1,
-                        id='',
-                        action='',
-                        is_confirmed='',
-                    )
                 )
             )
         markup.row(

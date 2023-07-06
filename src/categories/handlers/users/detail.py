@@ -24,7 +24,7 @@ async def on_show_category_detail(
         await callback_query.answer('Coming soon...', show_alert=True)
         return
 
-    subcategories = category_repository.get_subcategories(category_id)
+    subcategories = category_repository.get_categories(parent_id=category_id)
     products = product_repository.get_by_category_id(category_id)
     view = UserCategoryDetailView(
         subcategories=subcategories,

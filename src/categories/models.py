@@ -13,6 +13,7 @@ class Category:
     is_hidden: bool
     can_be_seen: bool
     parent_id: int | None
+    products_count: int
 
     @property
     def name_display(self) -> str:

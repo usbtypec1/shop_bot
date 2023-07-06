@@ -9,6 +9,8 @@ from cart.callback_data import (
 )
 from cart.models import CartProduct
 from common.views import View
+from products.callback_data import UserProductDetailCallbackData
+from products.models import PaymentMethod
 
 __all__ = (
     'UserShoppingCartView',
@@ -16,8 +18,6 @@ __all__ = (
     'NotEnoughProductQuantityWarningView',
     'UserShoppingCartDeleteAllAskForConfirmationView',
 )
-
-from products.callback_data import UserProductDetailCallbackData
 
 
 class HasOptionalMinAndMaxOrderQuantity(Protocol):

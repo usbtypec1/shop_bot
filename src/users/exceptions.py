@@ -4,3 +4,7 @@ class UserNotInDatabase(Exception):
 
 class PermanentDiscountValidationError(Exception):
     pass
+
+
+class InsufficientUserBalanceError(Exception):
+    pass

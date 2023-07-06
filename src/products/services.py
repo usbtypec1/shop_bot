@@ -2,6 +2,8 @@ import contextlib
 import pathlib
 import shutil
 from collections.abc import Iterable
+from decimal import Decimal
+from typing import Protocol
 from uuid import UUID
 
 import structlog
@@ -24,9 +26,14 @@ __all__ = (
     'file_extension_to_media_type',
     'parse_media_types',
     'parse_product_quantity',
+    'calculate_total_cost',
 )
 
 logger: structlog.stdlib.BoundLogger = structlog.get_logger('app')
+
+
+class HasTotalCostProperty(Protocol):
+    total_cost: Decimal
 
 
 def build_file_paths(
@@ -172,3 +179,7 @@ def parse_product_quantity(quantity: str) -> int:
             '❌ Number of pieces must be greater than 0'
         )
     return quantity
+
+
+def calculate_total_cost(items: Iterable[HasTotalCostProperty]) -> Decimal:
+    return sum(item.total_cost for item in items)

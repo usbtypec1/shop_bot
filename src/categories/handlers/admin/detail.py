@@ -17,7 +17,7 @@ async def on_show_category_detail(
 ) -> None:
     category_id: int = callback_data['category_id']
     category = category_repository.get_by_id(category_id)
-    subcategories = category_repository.get_subcategories(parent_id=category.id)
+    subcategories = category_repository.get_categories(parent_id=category.id)
     view = CategoryDetailView(category=category, subcategories=subcategories)
     await edit_message_by_view(message=callback_query.message, view=view)
 

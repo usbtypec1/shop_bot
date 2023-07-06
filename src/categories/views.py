@@ -17,8 +17,6 @@ from categories.callback_data import (
 )
 from categories.models import Category
 from common.views import View
-from keyboards.buttons.navigation_buttons import InlineBackButton
-from keyboards.inline.callback_factories import CategoriesCallbackFactory
 from products.callback_data import UserProductDetailCallbackData
 from products.models import Product
 
@@ -205,11 +203,6 @@ class CategoryDetailView(View, CategoryDisplayMixin):
             ),
         )
         markup.row(
-            InlineBackButton(
-                callback_query=CategoriesCallbackFactory().new(
-                    action='manage',
-                )
-            ),
             InlineKeyboardButton(text='🚫 Close', callback_data='close'),
         )
         return markup

@@ -1,16 +1,22 @@
+from collections.abc import Iterable
+
 import aiogram
 import aiogram.types
 import aiogram.utils.exceptions
 import structlog
 from aiogram import Bot
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.exceptions import TelegramAPIError
 
 import config
 from common.views import View
 from config import AppSettings
 from database import schemas
-from keyboards.inline import payments_keyboards
-from responses import base
+from sales.models import PaymentMethod
+
+__all__ = (
+    'UserProductBuyChoosePaymentMethodView',
+)
 
 logger = structlog.get_logger('app')
 
@@ -74,70 +80,20 @@ class NewPurchaseNotificationView(View):
         return text
 
 
-class CoinbasePaymentLinkResponse(base.BaseResponse):
-    def __init__(self, query: aiogram.types.CallbackQuery, amount: float,
-                 quantity: int, payment_url: str):
-        self.__query = query
-        self.__amount = amount
-        self.__quantity = quantity
-        self.__keyboard = payments_keyboards.CoinbasePaymentKeyboard(
-            payment_url)
+class UserProductBuyChoosePaymentMethodView(View):
+    text = 'Choose payment method'
 
-    async def _send_response(self):
-        await self.__query.answer()
-        await self.__query.message.edit_text(
-            "<b>Currency</b>: USD\n"
-            f"<b>Quantity</b>: {self.__quantity} pc(s).\n"
-            f"<b>Amount: ${self.__amount}.</b>",
-            reply_markup=self.__keyboard
+    def __init__(self, payment_methods: Iterable[PaymentMethod]):
+        self.__payment_methods = tuple(payment_methods)
+
+    def get_reply_markup(self) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text=payment_method.value,
+                        callback_data=payment_method.name,
+                    ),
+                ] for payment_method in self.__payment_methods
+            ],
         )
-
-
-class PurchaseInformationResponse(base.BaseResponse):
-    def __init__(self, query: aiogram.types.CallbackQuery, sale_id: int,
-                 product_name: str,
-                 quantity: int, amount: float, product_units: list[
-                schemas.ProductUnit]):
-        self.__query = query
-        self.__sale_id = sale_id
-        self.__product_name = product_name
-        self.__quantity = quantity
-        self.__amount = amount
-        self.__product_units = product_units
-
-    async def _send_response(self):
-        text = self.get_text()
-        await self.__query.message.delete()
-        await self.__query.message.answer(text)
-        media_group = None
-        is_media_group_sent = False
-        for i, unit in enumerate(unit for unit in self.__product_units if
-                                 unit.type == 'document'):
-            if i % 10 == 0:
-                is_media_group_sent = False
-                if media_group is not None:
-                    await self.__query.message.answer_media_group(media_group)
-                    is_media_group_sent = True
-                media_group = aiogram.types.MediaGroup()
-            path = config.PRODUCT_UNITS_PATH / unit.content
-            media_group.attach_document(aiogram.types.InputFile(path))
-        if not is_media_group_sent and media_group is not None:
-            await self.__query.message.answer_media_group(media_group)
-
-    def get_text(self):
-        text = (
-            '🛒 Purchase Information\n'
-            '➖➖➖➖➖➖➖➖➖➖\n'
-            f'🆔 Order Number: {self.__sale_id}\n'
-            '➖➖➖➖➖➖➖➖➖➖\n'
-            f'📙 Product Name: {self.__product_name}\n'
-            f'📦 Quantity: {self.__quantity} pc(s).\n'
-            f'💰 Amount of purchase: ${self.__amount}.\n'
-            '➖➖➖➖➖➖➖➖➖➖\n'
-            '📱 Data:\n\n'
-        )
-
-        for product_unit in self.__product_units:
-            if product_unit.type == 'text':
-                text += f'{product_unit.content}\n'
-        return text

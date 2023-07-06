@@ -77,7 +77,7 @@ class CartRepository(BaseRepository):
             user_id: int,
             product_id: int,
             quantity: int = 0,
-    ) -> None:
+    ) -> int:
         cart_product = CartProduct(
             user_id=user_id,
             product_id=product_id,
@@ -92,6 +92,7 @@ class CartRepository(BaseRepository):
             with session.begin():
                 session.add(cart_product)
                 session.execute(product_quantity_update_statement)
+        return cart_product.id
 
     def get_quantity(self, cart_product_id: int) -> int:
         statement = (

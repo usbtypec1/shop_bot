@@ -155,7 +155,7 @@ async def on_can_be_seen_option_choice(
         view = CategoryListView(categories)
     else:
         parent_category = category_repository.get_by_id(parent_id)
-        subcategories = category_repository.get_subcategories(parent_id)
+        subcategories = category_repository.get_categories(parent_id)
         view = CategoryDetailView(
             category=parent_category,
             subcategories=subcategories,

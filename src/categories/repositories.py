@@ -1,81 +1,64 @@
 import structlog
-from sqlalchemy import update, select, exists, delete
+from sqlalchemy import update, select, exists, delete, func
 from sqlalchemy.orm import Session
 from structlog.contextvars import bound_contextvars
 
 from categories import models as category_models
 from common.repositories import BaseRepository
-from database.schemas import Category
+from database.schemas import Category, Product
 
 __all__ = ('CategoryRepository',)
 
 logger = structlog.get_logger('app')
 
 
+def map_to_dto(
+        *,
+        category: Category,
+        products_count: int,
+) -> category_models.Category:
+    return category_models.Category(
+        id=category.id,
+        name=category.name,
+        icon=category.icon,
+        priority=category.priority,
+        max_displayed_stock_count=category.max_displayed_stock_count,
+        is_hidden=category.is_hidden,
+        can_be_seen=category.can_be_seen,
+        parent_id=category.parent_id,
+        products_count=products_count,
+    )
+
+
 class CategoryRepository(BaseRepository):
 
-    def get_categories(self) -> list[category_models.Category]:
+    def get_categories(
+            self,
+            parent_id: int | None = None,
+    ) -> list[category_models.Category]:
         statement = (
-            select(Category)
-            .where(Category.parent_id.is_(None))
+            select(Category, func.count(Product.id))
+            .join(Product, onclause=Category.id == Product.category_id)
+            .where(Category.parent_id == parent_id)
         )
 
-        with self._session_factory() as session:
-            logger.debug(
-                'Category repository: retrieving categories by parent ID'
-            )
-            categories = session.scalars(statement).all()
-            logger.debug(
-                'Category repository: retrieved categories by parent ID',
-                categories=categories,
-            )
-
-        return [
-            category_models.Category(
-                id=category.id,
-                name=category.name,
-                icon=category.icon,
-                priority=category.priority,
-                max_displayed_stock_count=category.max_displayed_stock_count,
-                is_hidden=category.is_hidden,
-                can_be_seen=category.can_be_seen,
-                parent_id=category.parent_id,
-            ) for category in categories
-        ]
-
-    def get_subcategories(
-            self,
-            parent_id: int,
-    ) -> list[category_models.Category]:
         with bound_contextvars(parent_id=parent_id):
-            statement = (
-                select(Category)
-                .where(Category.parent_id == parent_id)
-            )
-
             with self._session_factory() as session:
                 logger.debug(
-                    'Category repository: retrieving subcategories by parent ID'
+                    'Category repository: retrieving categories by parent ID'
                 )
-                subcategories = session.scalars(statement).all()
+                categories = session.execute(statement).all()
                 logger.debug(
                     'Category repository:'
-                    ' retrieved subcategories by parent ID',
-                    subcategories=subcategories,
+                    ' retrieved categories by parent ID',
+                    categories=categories,
                 )
 
-            return [
-                category_models.Category(
-                    id=category.id,
-                    name=category.name,
-                    icon=category.icon,
-                    priority=category.priority,
-                    max_displayed_stock_count=category.max_displayed_stock_count,
-                    is_hidden=category.is_hidden,
-                    can_be_seen=category.can_be_seen,
-                    parent_id=category.parent_id,
-                ) for category in subcategories
-            ]
+        return [
+            map_to_dto(category=category, products_count=products_count)
+            for category, products_count in categories
+            if category is not None
+        ]
 
     def get_by_id(self, category_id: int) -> category_models.Category:
         """
@@ -87,24 +70,23 @@ class CategoryRepository(BaseRepository):
         Returns:
             models.Category: The category object matching the given ID.
         """
+        statement = (
+            select(Category, func.count(Product.id))
+            .join(Product, onclause=Category.id == Product.category_id)
+            .where(Category.id == category_id)
+        )
+
         with bound_contextvars(category_id=category_id):
             logger.debug('Category repository: retrieving category by ID')
 
             with self._session_factory() as session:
-                result = session.get(Category, category_id)
+                row = session.execute(statement).first()
 
             logger.debug('Category repository: retrieved category by ID')
 
-        return category_models.Category(
-            id=result.id,
-            name=result.name,
-            icon=result.icon,
-            priority=result.priority,
-            max_displayed_stock_count=result.max_displayed_stock_count,
-            is_hidden=result.is_hidden,
-            can_be_seen=result.can_be_seen,
-            parent_id=result.parent_id,
-        )
+        category, products_count = row
+
+        return map_to_dto(category=category, products_count=products_count)
 
     def delete_by_id(self, category_id: int) -> bool:
         statement_to_delete_category = (
@@ -184,16 +166,7 @@ class CategoryRepository(BaseRepository):
                 session.add(category)
                 session.flush()
                 session.refresh(category)
-        return category_models.Category(
-            id=category.id,
-            name=category.name,
-            icon=category.icon,
-            priority=category.priority,
-            is_hidden=category.is_hidden,
-            can_be_seen=category.can_be_seen,
-            max_displayed_stock_count=category.max_displayed_stock_count,
-            parent_id=category.parent_id
-        )
+        return map_to_dto(category=category, products_count=0)
 
     def update_name(self, *, category_id: int, category_name: str) -> bool:
         """

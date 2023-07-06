@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from payments.models import PaymentMethod
 
-__all__ = ('Sale', 'SoldProduct')
+__all__ = ('Sale', 'SoldProduct', 'PaymentMethod')
 
 
 @dataclass(frozen=True, slots=True)

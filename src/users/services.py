@@ -2,7 +2,10 @@ from collections.abc import Iterable
 from decimal import Decimal
 from typing import Protocol
 
-from users.exceptions import PermanentDiscountValidationError
+from users.exceptions import (
+    PermanentDiscountValidationError,
+    InsufficientUserBalanceError
+)
 from users.models import UsersIdentifiers
 
 __all__ = (
@@ -10,6 +13,8 @@ __all__ = (
     'calculate_total_balance',
     'parse_permanent_discount',
     'calculate_discounted_price',
+    'validate_user_balance',
+    'validate_discount_percentage_range',
 )
 
 
@@ -62,6 +67,28 @@ def validate_discount_percentage_range(
     if not (0 <= discount_percentage <= 99):
         raise PermanentDiscountValidationError(
             '❌ Permanent discount must be within the range of 0 to 99'
+        )
+
+
+def validate_user_balance(
+        *,
+        user: HasBalance,
+        amount_to_subtract: Decimal,
+) -> None:
+    """
+    Validate if the user has sufficient balance to subtract specified amount.
+
+    Args:
+        user: The user object with a balance.
+        amount_to_subtract: The amount to be subtracted from the user's balance.
+
+    Raises:
+        InsufficientUserBalanceError: If the user's balance is less than the
+                                      amount to be subtracted.
+    """
+    if user.balance < amount_to_subtract:
+        raise InsufficientUserBalanceError(
+            '❌ You have insufficient funds in your balance'
         )
 
 
