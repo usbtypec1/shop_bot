@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import Session
 
@@ -201,3 +203,56 @@ class CartRepository(BaseRepository):
                         quantity_to_add=cart_product.quantity,
                     )
                 session.execute(delete_cart_products_statement)
+
+    def get_expired_cart_products(
+            self,
+            stored_time_in_seconds: int,
+    ) -> list[cart_models.CartProduct]:
+        expire_at = (
+                datetime.utcnow() - timedelta(seconds=stored_time_in_seconds)
+        )
+        statement = (
+            select(
+                CartProduct.id,
+                Product.id,
+                Product.name,
+                Product.price,
+                CartProduct.quantity,
+            )
+            .join(User, onclause=CartProduct.user_id == User.id)
+            .join(Product, onclause=CartProduct.product_id == Product.id)
+            .where(CartProduct.created_at <= expire_at)
+        )
+        with self._session_factory() as session:
+            rows = session.execute(statement).all()
+
+        return [
+            cart_models.CartProduct(
+                id=cart_product_id,
+                product=cart_models.Product(
+                    id=product_id,
+                    name=product_name,
+                    price=price,
+                ),
+                quantity=quantity,
+            )
+            for cart_product_id, product_id, product_name, price, quantity
+            in rows
+        ]
+
+    def release_expired_cart_product(
+            self,
+            cart_product: cart_models.CartProduct,
+    ):
+        delete_statement = (
+            delete(CartProduct)
+            .where(CartProduct.id == cart_product.id)
+        )
+        with self._session_factory() as session:
+            with session.begin():
+                session.execute(delete_statement)
+                self.__update_product_quantity(
+                    session=session,
+                    product_id=cart_product.product.id,
+                    quantity_to_add=cart_product.quantity,
+                )
