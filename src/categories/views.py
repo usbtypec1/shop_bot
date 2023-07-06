@@ -268,6 +268,14 @@ class UserCategoryListView(View):
                 category.name if category.icon is None
                 else f'{category.icon} {category.name}'
             )
+
+            if category.max_displayed_stock_count != 1:
+
+                if category.max_displayed_stock_count < category.products_count:
+                    text += f' ({category.max_displayed_stock_count}+)'
+                else:
+                    text += f' ({category.products_count})'
+
             markup.insert(
                 InlineKeyboardButton(
                     text=text,

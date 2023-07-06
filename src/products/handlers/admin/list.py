@@ -26,7 +26,7 @@ async def on_show_category_products_list(
         product_repository: ProductRepository,
 ) -> None:
     parent_id: int = callback_data['parent_id']
-    subcategories = category_repository.get_subcategories(parent_id)
+    subcategories = category_repository.get_categories(parent_id)
     products = product_repository.get_by_category_id(parent_id)
     view = AdminProductListView(
         parent_id=parent_id,
