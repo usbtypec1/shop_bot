@@ -264,6 +264,12 @@ class UserListView(View):
             )
         markup.row(
             InlineKeyboardButton(
+                text='🔎 Users without discount',
+                callback_data='show-users-without-permanent-discount',
+            ),
+        )
+        markup.row(
+            InlineKeyboardButton(
                 text='🚫 Close',
                 callback_data='close',
             )

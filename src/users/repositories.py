@@ -11,40 +11,36 @@ from users.exceptions import UserNotInDatabase
 __all__ = ('UserRepository',)
 
 
+def map_to_dto(user: User) -> users_models.User:
+    return users_models.User(
+        id=user.id,
+        telegram_id=user.telegram_id,
+        username=user.username,
+        balance=user.balance,
+        is_banned=user.is_banned,
+        created_at=user.created_at,
+        max_cart_cost=user.max_cart_cost,
+        permanent_discount=user.permanent_discount,
+    )
+
+
 class UserRepository(BaseRepository):
 
     def get_by_id(self, user_id: int) -> users_models.User:
+        statement = select(User).where(User.id == user_id)
         with self._session_factory() as session:
-            result = session.get(User, user_id)
-        if result is None:
+            user: User | None = session.scalar(statement)
+        if user is None:
             raise UserNotInDatabase
-        return users_models.User(
-            id=result.id,
-            telegram_id=result.telegram_id,
-            username=result.username,
-            balance=result.balance,
-            is_banned=result.is_banned,
-            created_at=result.created_at,
-            max_cart_cost=result.max_cart_cost,
-            permanent_discount=result.permanent_discount,
-        )
+        return map_to_dto(user)
 
     def get_by_telegram_id(self, telegram_id: int) -> users_models.User:
         statement = select(User).where(User.telegram_id == telegram_id)
         with self._session_factory() as session:
-            result = session.scalar(statement)
-        if result is None:
+            user: User | None = session.scalar(statement)
+        if user is None:
             raise UserNotInDatabase
-        return users_models.User(
-            id=result.id,
-            telegram_id=result.telegram_id,
-            username=result.username,
-            balance=result.balance,
-            is_banned=result.is_banned,
-            created_at=result.created_at,
-            max_cart_cost=result.max_cart_cost,
-            permanent_discount=result.permanent_discount,
-        )
+        return map_to_dto(user)
 
     def create(
             self,
@@ -56,16 +52,7 @@ class UserRepository(BaseRepository):
         with self._session_factory() as session:
             with session.begin():
                 session.merge(user)
-        return users_models.User(
-            id=user.id,
-            telegram_id=user.telegram_id,
-            username=user.username,
-            balance=user.balance,
-            is_banned=user.is_banned,
-            created_at=user.created_at,
-            max_cart_cost=user.max_cart_cost,
-            permanent_discount=user.permanent_discount,
-        )
+        return map_to_dto(user)
 
     def delete_by_id(self, user_id: int) -> bool:
         statement = delete(User).where(User.id == user_id)
@@ -226,3 +213,9 @@ class UserRepository(BaseRepository):
         with self._session_factory() as session:
             rows = session.execute(statement).all()
         return [row[0] for row in rows]
+
+    def get_without_permanent_discount(self) -> list[users_models.User]:
+        statement = select(User).where(User.permanent_discount != 0)
+        with self._session_factory() as session:
+            users = session.scalars(statement).all()
+        return [map_to_dto(user) for user in users]
