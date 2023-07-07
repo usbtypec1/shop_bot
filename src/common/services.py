@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from datetime import datetime
-from typing import NewType
+from typing import NewType, Any
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -13,11 +13,11 @@ __all__ = (
     'AdminsNotificator',
     'get_now_datetime',
     'to_local_time',
+    'render_money',
 )
 
 logger: BoundLogger = structlog.get_logger('app')
 
-  
 TIMEZONE = ZoneInfo('US/Eastern')
 UTC = ZoneInfo('UTC')
 TZAware = NewType('TZAware', datetime)
@@ -59,3 +59,18 @@ class AdminsNotificator:
                     'Could not send notification to admin',
                     chat_id=admin_id,
                 )
+
+
+def render_money(item: Any) -> str:
+    item = str(item)
+    dots_count = item.count('.')
+
+    if dots_count > 1:
+        raise ValueError('Invalid number')
+
+    if dots_count == 1:
+        integer_part, decimal_part = str(item).split('.')
+        trimmed_decimal_part = decimal_part.rstrip('0')
+        return f'{integer_part}.{trimmed_decimal_part}'.rstrip('.')
+
+    return item
