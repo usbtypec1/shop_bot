@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import NewType
 from uuid import UUID
 
@@ -37,7 +38,7 @@ class Product:
     category_id: int
     name: str
     description: str
-    price: float
+    price: Decimal
     quantity: int
     min_order_quantity: int | None
     max_order_quantity: int | None
