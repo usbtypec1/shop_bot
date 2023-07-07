@@ -8,6 +8,7 @@ from cart.callback_data import (
     CartProductQuantityUpdateCallbackData,
 )
 from cart.models import CartProduct
+from common.services import render_money
 from common.views import View
 from products.callback_data import UserProductDetailCallbackData
 from products.models import PaymentMethod
@@ -43,7 +44,7 @@ class UserShoppingCartView(View):
 
         return (
             f'Total items: {cart_products_total_count}'
-            f' / Total Amount: ${cart_products_total_cost:.2f}'
+            f' / Total Amount: ${render_money(cart_products_total_cost)}'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:

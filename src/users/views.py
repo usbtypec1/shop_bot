@@ -9,7 +9,7 @@ from aiogram.types import (
 )
 
 from common.models import Buyer
-from common.services import get_now_datetime
+from common.services import get_now_datetime, render_money
 from common.views import View
 from users.callback_data import (
     UserDetailCallbackData,
@@ -477,7 +477,7 @@ class UserBalanceTopUpAskForConfirmationView(View):
         return (
             f'Are you sure you want to top-up {username}\'s balance'
             f' with Telegram ID {self.__user.telegram_id}'
-            f' for ${self.__amount_to_top_up}?\n'
+            f' for ${render_money(self.__amount_to_top_up)}?\n'
             f'Method of payment: {self.__payment_method}'
         )
 
@@ -521,12 +521,13 @@ class UserBalanceTopUpReceiptView(View):
         return (
             f'Topped-up {self.__user.username or "user"}'
             f' with Telegram ID {self.__user.telegram_id}'
-            f' for ${self.__amount_to_top_up}\n'
+            f' for ${render_money(self.__amount_to_top_up)}\n'
             f'<code>Date: {now:%m/%d/%Y}{150 * " "}'
             f'Username: {username}'
             f'ID: {self.__user.telegram_id}{150 * " "}'
-            f'Topped Up amount: {self.__amount_to_top_up}{150 * " "}'
-            f'Total Balance: {self.__user.balance:.2f}{150 * " "}'
+            f'Topped Up amount: {render_money(self.__amount_to_top_up)}'
+            f'{150 * " "}'
+            f'Total Balance: {render_money(self.__user.balance)}{150 * " "}'
             f'Method of payment: {self.__payment_method}</code>'
         )
 
@@ -549,7 +550,7 @@ class UserSetSpecificBalanceAskForConfirmationView(View):
         return (
             f'Are you sure you want to change {username}\'s balance'
             f' with Telegram ID {self.__user.telegram_id}'
-            f' for ${self.__amount_to_set}?\n'
+            f' for ${render_money(self.__amount_to_set)}?\n'
             f'Reason: {self.__reason}'
         )
 
@@ -595,12 +596,13 @@ class UserSetSpecificBalanceReceiptView(View):
         return (
             f'Changed balance of {self.__user.username or "user"}'
             f' with Telegram ID {self.__user.telegram_id}'
-            f' from ${self.__old_balance:.2f} to ${self.__new_balance:.2f}\n'
+            f' from ${render_money(self.__old_balance)}'
+            f' to ${render_money(self.__new_balance)}\n'
             f'<code>Date: {now:%m/%d/%Y}{150 * " "}'
             f'Username: {username}'
             f'ID: {self.__user.telegram_id}{150 * " "}'
-            f'Previous balance: {self.__old_balance:.2f}{" " * 150}'
-            f'New Balance: {self.__new_balance:.2f}{" " * 150}'
+            f'Previous balance: {render_money(self.__old_balance)}{" " * 150}'
+            f'New Balance: {render_money(self.__new_balance)}{" " * 150}'
             f'Reason: {self.__reason}</code>'
         )
 
@@ -732,8 +734,8 @@ class UserProfileView(View):
         return (
             f'🙍‍♂ User: {username}\n'
             f'🆔 Telegram ID: {self.__user.telegram_id}\n'
-            f'💰 Your Current Balance: ${self.__user.balance:.2f}\n'
+            f'💰 Your Current Balance: ${render_money(self.__user.balance)}\n'
             '➖➖➖➖➖➖➖➖➖➖\n'
             f'🛒 Number of Purchases: {self.__total_orders_count}\n'
-            f'🔢 Total Amount: ${self.__total_orders_cost:.2f}\n'
+            f'🔢 Total Amount: ${render_money(self.__total_orders_cost)}\n'
         )

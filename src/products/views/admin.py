@@ -6,6 +6,7 @@ from aiogram.types import (
 )
 
 from categories.models import Category
+from common.services import render_money
 from common.views import View
 from products.callback_data import (
     AdminProductListCallbackData,
@@ -163,7 +164,7 @@ class AdminProductDetailView(View):
         lines = [
             f'📓 Name: {self.__product.name}',
             f'📋 Description:\n{self.__product.description}',
-            f'💳 Price: ${self.__product.price:.2f}',
+            f'💳 Price: ${render_money(self.__product.price)}',
             f'📦 Available to purchase: {self.__product.quantity}'
             f' pc{"s" if self.__product.quantity > 1 else ""}',
             f'📦 Min Order Quantity: {self.__product.min_order_quantity}',

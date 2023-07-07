@@ -7,6 +7,7 @@ from aiogram.types import (
     KeyboardButton,
 )
 
+from common.services import render_money
 from common.views import View
 from payments.callback_data import (
     PaymentSystemCredentialsUpdateCallbackData,
@@ -30,7 +31,7 @@ class UserBalanceMenuView(View):
 
     def get_text(self) -> str:
         return (
-            f'💰 You current balance: ${self.__balance:.2f}\n'
+            f'💰 You current balance: ${render_money(self.__balance)}\n'
             'Would you like to top up your balance?'
         )
 
@@ -81,7 +82,7 @@ class UserBalanceTopUpInvoiceView(View):
     def get_text(self) -> str:
         return (
             '<b>Currency</b>: USD\n'
-            f'<b>Amount: ${self.__amount_to_top_up:.2f}.</b>'
+            f'<b>Amount: ${render_money(self.__amount_to_top_up)}.</b>'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
@@ -115,7 +116,10 @@ class UserBalanceTopUpNotificationView(View):
             username = f'@{self.__username}'
         else:
             username = str(self.__user_telegram_id)
-        return f'✅ Balance was topped up by {self.__amount} by User {username}'
+        return (
+            f'✅ Balance was topped up by {render_money(self.__amount)}'
+            f' by User {username}'
+        )
 
 
 class PaymentManagementMenuView(View):

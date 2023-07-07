@@ -9,6 +9,7 @@ from aiogram.types import (
     KeyboardButton,
 )
 
+from common.services import render_money
 from common.views import View
 from top_up_bonuses.callback_data import (
     TopUpBonusDetailCallbackData,
@@ -105,7 +106,7 @@ class TopUpBonusCreateUpdateAskForConfirmationView(View):
 
         return (
             f'Are you sure you want to apply {self.__bonus_percentage}%'
-            f' bonus to any amount above ${self.__minimum_amount:.2f}'
+            f' bonus to any amount above ${render_money(self.__minimum_amount)}'
             f' which begins in {starts_at}'
             f' and finishes in {expires_at}'
         )
@@ -156,7 +157,7 @@ class TopUpBonusCreateReceiptView(View):
         return (
             '<code>'
             'Minimum amount to activate this top up bonus:'
-            f' ${self.__minimum_amount:.2f}\n'
+            f' ${render_money(self.__minimum_amount)}\n'
             f'Amount of bonus: {self.__bonus_percentage}%\n'
             f'Start Date: {starts_at}\n'
             f'Finish Date: {expires_at}\n'
@@ -176,7 +177,7 @@ class TopUpBonusDeleteAskForConfirmationView(View):
         return (
             'Are you sure you want to delete'
             f' {self.__top_up_bonus.bonus_percentage}% bonus on any amounts'
-            f' above ${self.__top_up_bonus.min_amount_threshold:.2f}?'
+            f' above ${render_money(self.__top_up_bonus.min_amount_threshold)}?'
         )
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
@@ -212,7 +213,8 @@ class TopUpBonusDetailView(View):
         return (
             '<b>Top Up Bonus</b>\n'
             f'<b>Bonus:</b> {self.__top_up_bonus.bonus_percentage}\n'
-            f'<b>Min Amount:</b> {self.__top_up_bonus.min_amount_threshold}\n'
+            '<b>Min Amount:</b>'
+            f' {render_money(self.__top_up_bonus.min_amount_threshold)}\n'
             f'<b>Start date</b>: {starts_at}\n'
             f'<b>End date</b>: {expires_at}'
         )
@@ -271,10 +273,10 @@ class TopUpBonusUpdateReceiptView(View):
 
         return (
             '<code>'
-            f'Previous Amount: ${self.__old_minimum_amount:.2f}\n'
+            f'Previous Amount: ${render_money(self.__old_minimum_amount)}\n'
             f'Old Bonus: {self.__old_bonus_percentage}%\n'
             'New Minimum amount to activate this top up bonus:'
-            f' ${self.__new_minimum_amount:.2f}\n'
+            f' ${render_money(self.__new_minimum_amount)}\n'
             f'New Amount of bonus: {self.__new_bonus_percentage}%\n'
             f'Start Date: {starts_at}\n'
             f'Finish Date: {expires_at}\n'
