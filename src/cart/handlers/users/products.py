@@ -78,6 +78,7 @@ async def on_product_quantity_input(
         return
 
     state_data = await state.get_data()
+    await state.finish()
     product_id: int = state_data['product_id']
     quantity = int(message.text)
     product = product_repository.get_by_id(product_id)

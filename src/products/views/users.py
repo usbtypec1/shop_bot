@@ -16,12 +16,25 @@ class UserProductDetailView(View):
         self.__product = product
 
     def get_text(self) -> str:
+        has_stocks = self.__product.quantity > 0
+        has_single_stock = self.__product.quantity == 1
+        is_stocks_displayed = self.__product.max_displayed_stock_count != 1
+
+        if not is_stocks_displayed and has_stocks:
+            stocks = 'In Stock'
+        else:
+            if self.__product.quantity > self.__product.max_displayed_stock_count:
+                stocks = f'{self.__product.max_displayed_stock_count} pcs +'
+            else:
+                stocks = f'{self.__product.quantity} pc'
+                if not has_single_stock:
+                    stocks += 's'
+
         lines = [
             f'📓 Name: {self.__product.name}',
             f'📋 Description:\n{self.__product.description}',
             f'💳 Price: ${self.__product.price:.2f}',
-            f'📦 Available to purchase: {self.__product.quantity}'
-            f' pc{"s" if self.__product.quantity > 1 else ""}',
+            f'📦 Available to purchase: {stocks}'
         ]
         return '\n'.join(lines)
 
