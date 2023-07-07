@@ -55,14 +55,15 @@ class TimeSensitiveDiscountCreateAskForConfirmationView(View):
         self.__expires_at = expires_at
 
     def get_text(self) -> str:
-        text = (
-            'Are you sure you want to create a discount which begins in'
-            f' {self.__starts_at:%m/%d/%Y %H:%M} and'
+        text = 'Are you sure you want to create a discount which begins'
+        text += (
+            ' now and' if self.__starts_at is None
+            else f' in {self.__starts_at:%m/%d/%Y %H:%M} and'
         )
-        if self.__expires_at is None:
-            text += ' never finishes'
-        else:
-            text += f' finishes in {self.__expires_at:%m/%d/%Y %H:%M}'
+        text += (
+            ' never finishes' if self.__expires_at is None else
+            f' finishes in {self.__expires_at:%m/%d/%Y %H:%M}'
+        )
         return text
 
     def get_reply_markup(self) -> InlineKeyboardMarkup:
