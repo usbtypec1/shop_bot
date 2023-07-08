@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from datetime import datetime
-from typing import NewType, Any
+from decimal import Decimal
+from typing import NewType
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -61,16 +62,12 @@ class AdminsNotificator:
                 )
 
 
-def render_money(item: Any) -> str:
-    item = str(item)
-    dots_count = item.count('.')
+def render_money(amount: Decimal) -> str:
+    amount = f'{amount:f}'
 
-    if dots_count > 1:
-        raise ValueError('Invalid number')
-
-    if dots_count == 1:
-        integer_part, decimal_part = str(item).split('.')
+    if amount.count('.') == 1:
+        integer_part, decimal_part = str(amount).split('.')
         trimmed_decimal_part = decimal_part.rstrip('0')
         return f'{integer_part}.{trimmed_decimal_part}'.rstrip('.')
 
-    return item
+    return amount
