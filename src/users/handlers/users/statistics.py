@@ -6,7 +6,6 @@ import database
 from common.filters import AdminFilter
 from common.models import Buyer
 from common.views import answer_view
-from database import queries, session_factory
 from sales.repositories import SaleRepository
 from users.repositories import UserRepository
 from users.views import UserStatisticsMenuView, UserGeneralStatisticsView
@@ -19,8 +18,8 @@ async def on_show_user_statistics_menu(message: Message) -> None:
 async def on_show_user_general_statistics(
         message: Message,
         sale_repository: SaleRepository,
+        user_repository: UserRepository,
 ) -> None:
-    user_repository = UserRepository(session_factory)
     buyers_count = user_repository.get_total_count()
     total_orders_count = sale_repository.count_all()
     total_orders_cost = sale_repository.calculate_total_cost()

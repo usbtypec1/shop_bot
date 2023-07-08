@@ -6,7 +6,6 @@ from aiogram.types import Message, CallbackQuery, ContentType
 
 from common.filters import AdminFilter
 from common.views import answer_view
-from database.session import session_factory
 from shop_info.callback_data import ShopInfoUpdateCallbackData
 from shop_info.models import ShopInfo
 from shop_info.repositories import ShopInfoRepository
@@ -31,9 +30,9 @@ async def on_show_shop_info_menu(message: Message) -> None:
 async def on_show_shop_info_detail(
         message: Message,
         is_admin: bool,
+        shop_info_repository: ShopInfoRepository,
 ) -> None:
     shop_info = ShopInfo(message.text)
-    shop_info_repository = ShopInfoRepository(session_factory)
     value = shop_info_repository.get_value_or_none(key=shop_info.name)
     value = value or message.text
     if is_admin:

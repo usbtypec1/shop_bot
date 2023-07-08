@@ -7,6 +7,8 @@ from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ParseMode, BotCommand
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 import backup.handlers
 import cart.handlers
@@ -27,7 +29,6 @@ from categories.repositories import CategoryRepository
 from common.middlewares import DependencyInjectMiddleware
 from common.services import AdminsNotificator
 from common.views import ErrorView
-from database import session_factory
 from database.setup import init_tables
 from payments.services.payments_apis import CoinbaseAPI
 from products.repositories import ProductRepository
@@ -95,20 +96,24 @@ def setup_logging():
 
 
 def main():
-    bot = Bot(config.AppSettings().bot_token, parse_mode=ParseMode.HTML)
+    app_settings = config.AppSettings()
+
+    bot = Bot(app_settings.bot_token, parse_mode=ParseMode.HTML)
     dispatcher = Dispatcher(bot, storage=MemoryStorage())
 
     config.PRODUCT_UNITS_PATH.mkdir(parents=True, exist_ok=True)
     config.MEDIA_FILES_PATH.mkdir(parents=True, exist_ok=True)
 
     scheduler = AsyncIOScheduler(timezone=str(tzlocal.get_localzone()))
-    app_settings = config.AppSettings()
     admin_telegram_ids = app_settings.admins_id
+
+    engine = create_engine('sqlite:///../data/database.db')
+    session_factory = sessionmaker(bind=engine, expire_on_commit=False)
 
     setup_logging()
     # tasks.setup_tasks(scheduler)
 
-    init_tables()
+    init_tables(engine)
 
     coinbase_settings = config.CoinbaseSettings()
 

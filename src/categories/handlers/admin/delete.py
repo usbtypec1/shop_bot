@@ -9,7 +9,6 @@ from categories.states import CategoryDeleteStates
 from categories.views import CategoryAskDeleteConfirmationView
 from common.filters import AdminFilter
 from common.views import edit_message_by_view
-from database.session import session_factory
 
 __all__ = ('register_handlers',)
 
@@ -47,11 +46,11 @@ async def on_ask_delete_category_confirmation(
 async def on_delete_category_confirm(
         callback_query: CallbackQuery,
         state: FSMContext,
+        category_repository: CategoryRepository,
 ) -> None:
     state_data = await state.get_data()
     category_id: int = state_data['category_id']
     await state.finish()
-    category_repository = CategoryRepository(session_factory)
     category_repository.delete_by_id(category_id)
     await callback_query.message.edit_text('Category has been deleted')
 
