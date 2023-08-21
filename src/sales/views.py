@@ -12,18 +12,45 @@ import config
 from common.views import View
 from config import AppSettings
 from database import schemas
-from sales.models import PaymentMethod
+from sales.models import PaymentMethod, Sale
 
 __all__ = (
     'UserProductBuyChoosePaymentMethodView',
 )
 
+from users.models import User
+
 logger = structlog.get_logger('app')
+
+
+class NewSaleNotificationView(View):
+
+    def __init__(self, sale: Sale, user: User):
+        self.__sale = sale
+        self.__user = user
+
+    def get_text(self) -> str:
+        username = self.__user.username or ''
+
+        return (
+            '🛒 New purchase\n'
+            '➖➖➖➖➖➖➖➖➖➖\n'
+            f'🆔 Order Number: {self.__sale.id}\n'
+            f'🙍‍♂ Customer: @{username}\n'
+            f'#️⃣ User ID: {self.__user.telegram_id}\n'
+            '➖➖➖➖➖➖➖➖➖➖\n'
+            f'📙 Product Name: {self.__product_name}\n'
+            f'📦 Quantity: {self.__sale.quantity} pc(s).\n'
+            f'💰 Amount of purchase: ${self.__sale.amount}.\n'
+            '➖➖➖➖➖➖➖➖➖➖\n'
+            f'💳 Payment Method: {self.__payment_method}\n'
+            '➖➖➖➖➖➖➖➖➖➖\n'
+        )
 
 
 class NewPurchaseNotificationView(View):
     def __init__(self, bot: Bot, sale: schemas.Sale, payment_method: str,
-                 product_name: str, product_units: list[schemas.ProductUnit]):
+                 product_name: str, product_units: list):
         self.__sale = sale
         self.__product_units = product_units
         self.__product_name = product_name

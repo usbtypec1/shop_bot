@@ -14,12 +14,23 @@ from common.views import answer_view, send_views
 from users.exceptions import UserNotInDatabase
 from users.repositories import UserRepository
 from users.views import (
-    AdminMenuView, UserGreetingsView,
-    NewUserNotificationView
+    AdminMenuView,
+    UserGreetingsView,
+    NewUserNotificationView,
+    DiscountsAndBonusesMenuView,
 )
 from users.views import UserMenuView, RulesView
 
+__all__ = ('register_handlers',)
+
 logger = structlog.get_logger('app')
+
+
+async def on_show_discounts_and_bonuses_menu(
+        message: Message,
+) -> None:
+    view = DiscountsAndBonusesMenuView()
+    await answer_view(message=message, view=view)
 
 
 async def on_accept_rules(
@@ -115,6 +126,12 @@ async def user_back(
 
 
 def register_handlers(dispatcher: Dispatcher) -> None:
+    dispatcher.register_message_handler(
+        on_show_discounts_and_bonuses_menu,
+        Text('Discounts & Bonuses'),
+        AdminFilter(),
+        state='*',
+    )
     dispatcher.register_message_handler(
         on_accept_rules,
         Text('✅ Accept'),

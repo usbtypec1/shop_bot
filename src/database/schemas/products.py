@@ -12,7 +12,6 @@ __all__ = (
     'ProductMedia',
     'MediaType',
     'Product',
-    'ProductUnit',
     'ProductPermittedGateway',
     'PaymentMethod',
 )
@@ -83,10 +82,6 @@ class Product(BaseModel):
         back_populates='products',
         cascade='all, delete',
     )
-    units: Mapped['ProductUnit'] = relationship(
-        'ProductUnit',
-        back_populates='product',
-    )
     cart_products: Mapped[list['CartProduct']] = relationship(
         'CartProduct',
         back_populates='product',
@@ -102,13 +97,3 @@ class Product(BaseModel):
             name='check_product_quantity_non_negative'
         ),
     )
-
-
-class ProductUnit(BaseModel):
-    __tablename__ = 'product_units'
-    product_id: Mapped[int] = mapped_column(ForeignKey('products.id'))
-    content: Mapped[str]
-    type: Mapped[str]
-    sale_id: Mapped[int] = mapped_column(ForeignKey('sales.id'))
-
-    product: Mapped[Product] = relationship('Product', back_populates='units')

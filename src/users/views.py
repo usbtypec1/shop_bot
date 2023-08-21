@@ -23,6 +23,7 @@ from users.models import User
 __all__ = (
     'RulesView',
     'UserMenuView',
+    'DiscountsAndBonusesMenuView',
     'AdminMenuView',
     'UserGreetingsView',
     'UserStatisticsMenuView',
@@ -115,6 +116,25 @@ class UserMenuView(View):
     )
 
 
+class DiscountsAndBonusesMenuView(View):
+    text = '🔹 Discounts & Bonuses 🔹'
+    reply_markup = ReplyKeyboardMarkup(
+        resize_keyboard=True,
+        keyboard=[
+            [
+                KeyboardButton('Permanent Discounts'),
+                KeyboardButton('Time Sensitive Discounts'),
+            ],
+            [
+                KeyboardButton('Top-Up Bonuses'),
+            ],
+            [
+                KeyboardButton('⬅️ Back'),
+            ],
+        ],
+    )
+
+
 class AdminMenuView(View):
     text = '🔹 Main Menu 🔹'
     reply_markup = ReplyKeyboardMarkup(
@@ -124,6 +144,9 @@ class AdminMenuView(View):
                 KeyboardButton('🛒 Products'),
                 KeyboardButton('🗂 Mng Categories & Prod'),
                 KeyboardButton('💳 Payment Management'),
+            ],
+            [
+                KeyboardButton('Discounts & Bonuses'),
             ],
             [
                 KeyboardButton('🏪 Shop Information'),
