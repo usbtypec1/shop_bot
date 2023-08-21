@@ -17,6 +17,7 @@ __all__ = (
     'View',
     'edit_message_by_view',
     'answer_view',
+    'send_views',
 )
 
 logger = structlog.get_logger('app')
