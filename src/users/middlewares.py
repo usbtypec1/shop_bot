@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import Protocol
 
 from aiogram.dispatcher.handler import CancelHandler
 from aiogram.dispatcher.middlewares import (
@@ -12,10 +11,7 @@ __all__ = (
     'BannedUserMiddleware',
 )
 
-
-class HasIsUserBannedMethod(Protocol):
-
-    def is_banned(self, telegram_id: int) -> bool: ...
+from users.repositories import UserRepository
 
 
 class AdminIdentifierMiddleware(LifetimeControllerMiddleware):
@@ -32,10 +28,12 @@ class AdminIdentifierMiddleware(LifetimeControllerMiddleware):
 class BannedUserMiddleware(LifetimeControllerMiddleware):
     skip_patterns = ('update', 'error')
 
-    def __init__(self, user_repository: HasIsUserBannedMethod):
+    def __init__(self, user_repository: UserRepository):
         super().__init__()
         self.__user_repository = user_repository
 
     async def pre_process(self, obj: Message | CallbackQuery, data, *args):
-        if self.__user_repository.is_banned(obj.from_user.id):
+        user = self.__user_repository.get_by_telegram_id(obj.from_user.id)
+        if user.is_banned:
             raise CancelHandler
+        data['user'] = user
