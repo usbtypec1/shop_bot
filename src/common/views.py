@@ -8,7 +8,7 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     ReplyKeyboardMarkup,
     ForceReply,
-    ReplyKeyboardRemove,
+    ReplyKeyboardRemove, CallbackQuery,
 )
 from aiogram.utils.exceptions import TelegramAPIError
 
@@ -18,6 +18,7 @@ __all__ = (
     'edit_message_by_view',
     'answer_view',
     'send_views',
+    'render_message_or_callback_query',
 )
 
 logger = structlog.get_logger('app')
@@ -82,6 +83,28 @@ async def send_views(
         else:
             sent_messages.append(sent_message)
     return sent_messages
+
+
+async def render_message_or_callback_query(
+        *,
+        message_or_callback_query: Message | CallbackQuery,
+        view: View,
+) -> Message:
+    match message_or_callback_query:
+        case Message():
+            return await answer_view(
+                message=message_or_callback_query,
+                view=view,
+            )
+        case CallbackQuery():
+            return await edit_message_by_view(
+                message=message_or_callback_query.message,
+                view=view,
+            )
+    raise ValueError(
+        '"message_or_callback_query"'
+        ' must be either Message or CallbackQuery',
+    )
 
 
 class ErrorView(View):
