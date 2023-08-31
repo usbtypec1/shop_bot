@@ -11,7 +11,10 @@ __all__ = (
     'BannedUserMiddleware',
 )
 
+from common.views import render_message_or_callback_query
+from users.exceptions import UserNotInDatabase
 from users.repositories import UserRepository
+from users.views import RulesView
 
 
 class AdminIdentifierMiddleware(LifetimeControllerMiddleware):
@@ -33,7 +36,15 @@ class BannedUserMiddleware(LifetimeControllerMiddleware):
         self.__user_repository = user_repository
 
     async def pre_process(self, obj: Message | CallbackQuery, data, *args):
-        user = self.__user_repository.get_by_telegram_id(obj.from_user.id)
-        if user.is_banned:
-            raise CancelHandler
-        data['user'] = user
+        try:
+            user = self.__user_repository.get_by_telegram_id(obj.from_user.id)
+        except UserNotInDatabase:
+            view = RulesView()
+            await render_message_or_callback_query(
+                message_or_callback_query=obj,
+                view=view,
+            )
+        else:
+            if user.is_banned:
+                raise CancelHandler
+            data['user'] = user
